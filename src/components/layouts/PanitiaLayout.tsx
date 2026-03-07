@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, FileText, Users, Truck, LogOut, Menu, Star } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Truck, LogOut, Menu } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -29,9 +30,7 @@ export default function PanitiaLayout({ children }: { children: React.ReactNode 
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground transform transition-transform lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-sidebar-primary flex items-center justify-center">
-              <Star className="w-5 h-5 text-sidebar-primary-foreground" />
-            </div>
+            <img src={logo} alt="Logo" className="w-10 h-10 rounded-full object-contain" />
             <div>
               <h2 className="font-serif text-lg font-bold">Al-Ikhlas</h2>
               <p className="text-xs opacity-75">Panel Panitia</p>
