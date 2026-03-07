@@ -9,7 +9,6 @@ import { DollarSign, Users, Package, Wheat, TrendingUp } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
-const TARGET_ZAKAT = 50000000;
 
 interface ZakatRow {
   id: string; nama_muzakki: string; jenis_zakat: string;
