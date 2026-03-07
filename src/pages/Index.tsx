@@ -9,7 +9,6 @@ import { DollarSign, Users, Package, Wheat, TrendingUp } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
-const TARGET_ZAKAT = 50000000;
 
 interface ZakatRow {
   id: string; nama_muzakki: string; jenis_zakat: string;
@@ -54,7 +53,6 @@ export default function Index() {
   const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
   const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
   const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
-  const progressPercent = Math.min((totalZakat / TARGET_ZAKAT) * 100, 100);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
@@ -119,16 +117,11 @@ export default function Index() {
           })}
         </div>
 
-        {/* Progress */}
+        {/* Terkumpul */}
         <Card>
-          <CardHeader><CardTitle className="font-serif text-xl">Progress Pengumpulan Zakat</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="font-serif text-xl">Total Terkumpul</CardTitle></CardHeader>
           <CardContent>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Terkumpul: {fmt(totalZakat)}</span>
-              <span>Target: {fmt(TARGET_ZAKAT)}</span>
-            </div>
-            <Progress value={progressPercent} className="h-4" />
-            <p className="text-center text-sm text-muted-foreground mt-2">{progressPercent.toFixed(1)}% dari target</p>
+            <p className="text-2xl md:text-3xl font-bold text-primary">{fmt(totalZakat)}</p>
           </CardContent>
         </Card>
 
