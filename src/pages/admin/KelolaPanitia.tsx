@@ -17,6 +17,7 @@ export default function KelolaPanitia() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchData = async () => {
     const { data: roles } = await supabase.from('user_roles').select('user_id, role, profiles(name, email)').eq('role', 'panitia');
