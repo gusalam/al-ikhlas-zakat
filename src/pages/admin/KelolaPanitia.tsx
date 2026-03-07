@@ -59,7 +59,14 @@ export default function KelolaPanitia() {
             <div className="space-y-4">
               <div><Label>Nama</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="h-12 text-base" /></div>
               <div><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Password</Label><Input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Password</Label>
+                <div className="relative">
+                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="h-12 text-base pr-12" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
               <Button onClick={handleSubmit} className="w-full h-12" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Tambah Panitia'}</Button>
             </div>
           </DialogContent>
