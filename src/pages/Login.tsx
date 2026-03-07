@@ -50,7 +50,12 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-base">Password</Label>
-              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="text-base h-12" />
+              <div className="relative">
+                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="text-base h-12 pr-12" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
               {submitting ? 'Masuk...' : 'Masuk'}
