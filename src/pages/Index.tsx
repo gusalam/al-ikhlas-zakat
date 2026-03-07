@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { DollarSign, Users, Package, Wheat, TrendingUp } from 'lucide-react';
+import { DollarSign, Users, Package, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
@@ -26,6 +25,7 @@ export default function Index() {
   const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
   const [mustahikCount, setMustahikCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchData = async () => {
     const [{ data: zakat }, { data: distribusi }, { data: mustahik }] = await Promise.all([
@@ -36,6 +36,7 @@ export default function Index() {
     setZakatData((zakat as any) || []);
     setDistribusiData((distribusi as any) || []);
     setMustahikCount(mustahik?.length || 0);
+    setLastUpdated(new Date());
     setLoading(false);
   };
 
@@ -52,7 +53,6 @@ export default function Index() {
   const totalZakat = totalFitrah + totalMal + totalShodaqoh;
   const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
   const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
-  const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
@@ -68,6 +68,7 @@ export default function Index() {
   const rtChartData = Object.entries(rtMap).map(([name, value]) => ({ name, value }));
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+  const fmtDate = (d: Date) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div>;
 
@@ -90,17 +91,23 @@ export default function Index() {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-8">
+        {/* Tanggal Update */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarDays className="w-4 h-4" />
+          <span>Data diperbarui: {fmtDate(lastUpdated)}</span>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Zakat Fitrah', value: fmt(totalFitrah), icon: DollarSign, color: 'text-primary' },
             { label: 'Zakat Mal', value: fmt(totalMal), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Shodaqoh', value: fmt(totalShodaqoh), icon: DollarSign, color: 'text-info' },
+            { label: 'Shodaqoh', value: fmt(totalShodaqoh), icon: DollarSign, color: 'text-primary' },
             { label: 'Total Terkumpul', value: fmt(totalZakat), icon: TrendingUp, color: 'text-primary' },
             { label: 'Total Muzakki', value: totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: mustahikCount.toString(), icon: Users, color: 'text-secondary' },
-            { label: 'KK Penerima', value: mustahikCount.toString(), icon: Package, color: 'text-info' },
-            { label: 'Beras (Kg)', value: `${totalBeras} Kg`, icon: Wheat, color: 'text-warning' },
+            { label: 'KK Penerima', value: mustahikCount.toString(), icon: Package, color: 'text-primary' },
+            { label: 'Beras (Kg)', value: `${totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
@@ -116,14 +123,6 @@ export default function Index() {
             );
           })}
         </div>
-
-        {/* Terkumpul */}
-        <Card>
-          <CardHeader><CardTitle className="font-serif text-xl">Total Terkumpul</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-2xl md:text-3xl font-bold text-primary">{fmt(totalZakat)}</p>
-          </CardContent>
-        </Card>
 
         {/* Charts */}
         <div className="grid md:grid-cols-2 gap-6">
