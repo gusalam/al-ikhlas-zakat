@@ -96,7 +96,8 @@ export default function DataZakat() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      {/* Desktop Table */}
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader>
@@ -131,6 +132,39 @@ export default function DataZakat() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
+        {data.map(z => (
+          <Card key={z.id}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-base">{z.nama_muzakki}</p>
+                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
+                      <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(z.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
+                <div><span className="text-muted-foreground">Beras:</span> <span className="font-medium">{z.jumlah_beras} Kg</span></div>
+                <div><span className="text-muted-foreground">RT:</span> <span className="font-medium">{z.rt?.nama_rt || '-'}</span></div>
+                <div><span className="text-muted-foreground">Tanggal:</span> <span className="font-medium">{new Date(z.tanggal).toLocaleDateString('id-ID')}</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </AdminLayout>
   );
 }
