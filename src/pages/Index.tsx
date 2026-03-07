@@ -53,7 +53,6 @@ export default function Index() {
   const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
   const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
   const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
-  const progressPercent = Math.min((totalZakat / TARGET_ZAKAT) * 100, 100);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
