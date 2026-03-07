@@ -14,16 +14,193 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      distribusi: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          jumlah: number
+          mustahik_id: string
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          jumlah?: number
+          mustahik_id: string
+          tanggal?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          jumlah?: number
+          mustahik_id?: string
+          tanggal?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "distribusi_mustahik_id_fkey"
+            columns: ["mustahik_id"]
+            isOneToOne: false
+            referencedRelation: "mustahik"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mustahik: {
+        Row: {
+          created_at: string | null
+          id: string
+          kategori: string | null
+          nama: string
+          rt_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          kategori?: string | null
+          nama: string
+          rt_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          kategori?: string | null
+          nama?: string
+          rt_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mustahik_rt_id_fkey"
+            columns: ["rt_id"]
+            isOneToOne: false
+            referencedRelation: "rt"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      rt: {
+        Row: {
+          created_at: string | null
+          id: string
+          nama_rt: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nama_rt: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nama_rt?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      zakat: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          jenis_zakat: string
+          jumlah_beras: number | null
+          jumlah_uang: number | null
+          nama_muzakki: string
+          rt_id: string | null
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          jenis_zakat: string
+          jumlah_beras?: number | null
+          jumlah_uang?: number | null
+          nama_muzakki: string
+          rt_id?: string | null
+          tanggal?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          jenis_zakat?: string
+          jumlah_beras?: number | null
+          jumlah_uang?: number | null
+          nama_muzakki?: string
+          rt_id?: string | null
+          tanggal?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zakat_rt_id_fkey"
+            columns: ["rt_id"]
+            isOneToOne: false
+            referencedRelation: "rt"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "panitia"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +327,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "panitia"],
+    },
   },
 } as const

@@ -1,0 +1,136 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Plus, Trash2, Pencil } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function DataZakat() {
+  const { user } = useAuth();
+  const [data, setData] = useState<any[]>([]);
+  const [rtList, setRtList] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+
+  const fetchData = async () => {
+    const [{ data: zakat }, { data: rt }] = await Promise.all([
+      supabase.from('zakat').select('*, rt(nama_rt)').order('tanggal', { ascending: false }),
+      supabase.from('rt').select('*').order('nama_rt'),
+    ]);
+    setData(zakat || []);
+    setRtList(rt || []);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+
+  const handleSubmit = async () => {
+    const payload = { ...form, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, created_by: user?.id };
+    if (editItem) {
+      const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success('Data zakat diperbarui');
+    } else {
+      const { error } = await supabase.from('zakat').insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success('Data zakat ditambahkan');
+    }
+    setOpen(false); resetForm(); setEditItem(null); fetchData();
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from('zakat').delete().eq('id', id);
+    if (error) toast.error(error.message);
+    else { toast.success('Data dihapus'); fetchData(); }
+  };
+
+  const openEdit = (item: any) => {
+    setEditItem(item);
+    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal });
+    setOpen(true);
+  };
+
+  const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+  return (
+    <AdminLayout>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-serif font-bold">Data Zakat</h1>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
+          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>RT</Label>
+                <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                  <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                  <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Jenis Zakat</Label>
+                <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v })}>
+                  <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
+                    <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
+                    <SelectItem value="Shodaqoh">Shodaqoh</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
+              <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <Card>
+        <CardContent className="overflow-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map(z => (
+                <TableRow key={z.id}>
+                  <TableCell>{z.nama_muzakki}</TableCell>
+                  <TableCell>{z.jenis_zakat}</TableCell>
+                  <TableCell>{fmt(Number(z.jumlah_uang))}</TableCell>
+                  <TableCell>{z.jumlah_beras} Kg</TableCell>
+                  <TableCell>{z.rt?.nama_rt || '-'}</TableCell>
+                  <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(z.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </AdminLayout>
+  );
+}
