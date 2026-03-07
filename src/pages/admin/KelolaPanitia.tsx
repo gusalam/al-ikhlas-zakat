@@ -20,8 +20,16 @@ export default function KelolaPanitia() {
   const [showPassword, setShowPassword] = useState(false);
 
   const fetchData = async () => {
-    const { data: roles } = await supabase.from('user_roles').select('user_id, role, profiles(name, email)').eq('role', 'panitia');
-    setPanitiaList(roles || []);
+    const { data: roles } = await supabase.from('user_roles').select('user_id, role').eq('role', 'panitia');
+    if (!roles || roles.length === 0) { setPanitiaList([]); return; }
+    const userIds = roles.map(r => r.user_id);
+    const { data: profiles } = await supabase.from('profiles').select('id, name, email').in('id', userIds);
+    const merged = roles.map(r => ({
+      ...r,
+      name: profiles?.find(p => p.id === r.user_id)?.name || '-',
+      email: profiles?.find(p => p.id === r.user_id)?.email || '-',
+    }));
+    setPanitiaList(merged);
   };
 
   useEffect(() => { fetchData(); }, []);
