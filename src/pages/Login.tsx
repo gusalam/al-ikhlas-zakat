@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +37,12 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
+        <div className="px-6 pt-6">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Kembali ke Beranda
+          </Link>
+        </div>
         <CardHeader className="text-center">
           <img src={logo} alt="Logo" className="w-20 h-20 mx-auto mb-4 rounded-full" />
           <CardTitle className="font-serif text-2xl">Login Sistem Zakat</CardTitle>
