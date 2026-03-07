@@ -88,8 +88,8 @@ export default function KelolaPanitia() {
             <TableBody>
               {panitiaList.map((p: any) => (
                 <TableRow key={p.user_id}>
-                  <TableCell>{(p.profiles as any)?.name || '-'}</TableCell>
-                  <TableCell>{(p.profiles as any)?.email || '-'}</TableCell>
+                  <TableCell>{p.name}</TableCell>
+                  <TableCell>{p.email}</TableCell>
                   <TableCell>
                     <AlertDialog>
                       <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
