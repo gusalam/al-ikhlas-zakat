@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +17,7 @@ export default function KelolaPanitia() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchData = async () => {
     const { data: roles } = await supabase.from('user_roles').select('user_id, role, profiles(name, email)').eq('role', 'panitia');
@@ -58,7 +60,14 @@ export default function KelolaPanitia() {
             <div className="space-y-4">
               <div><Label>Nama</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="h-12 text-base" /></div>
               <div><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Password</Label><Input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Password</Label>
+                <div className="relative">
+                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="h-12 text-base pr-12" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
               <Button onClick={handleSubmit} className="w-full h-12" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Tambah Panitia'}</Button>
             </div>
           </DialogContent>
