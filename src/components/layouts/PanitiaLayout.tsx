@@ -30,7 +30,7 @@ export default function PanitiaLayout({ children }: { children: React.ReactNode 
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-sidebar-primary flex items-center justify-center">
-              <Mosque className="w-5 h-5 text-sidebar-primary-foreground" />
+              <Star className="w-5 h-5 text-sidebar-primary-foreground" />
             </div>
             <div>
               <h2 className="font-serif text-lg font-bold">Al-Ikhlas</h2>
