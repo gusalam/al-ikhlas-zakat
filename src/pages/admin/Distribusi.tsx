@@ -76,7 +76,8 @@ export default function Distribusi() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      {/* Desktop Table */}
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
@@ -102,6 +103,34 @@ export default function Distribusi() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data distribusi</p>}
+        {data.map(d => (
+          <Card key={d.id}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p>
+                  <p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader><AlertDialogTitle>Hapus distribusi?</AlertDialogTitle></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(d.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">Jumlah:</span> <span className="font-medium">{fmt(Number(d.jumlah))}</span></div>
+                <div><span className="text-muted-foreground">Tanggal:</span> <span className="font-medium">{new Date(d.tanggal).toLocaleDateString('id-ID')}</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </AdminLayout>
   );
 }
