@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo, useRef, useEffect, useState } from 'react';
 
 interface RunningListWrapperProps {
   data: any[];
@@ -10,8 +10,8 @@ interface RunningListWrapperProps {
 }
 
 /**
- * Running list: shows `visibleCount` rows starting from `offset`, wrapping around.
- * Each row fades in smoothly when it appears.
+ * True running list: renders visibleCount+1 rows and uses CSS translateY
+ * to smoothly slide up by one row height, then snaps and advances.
  */
 export default function AutoScrollTableWrapper({
   data,
@@ -21,15 +21,51 @@ export default function AutoScrollTableWrapper({
   onResume,
   renderRow,
 }: RunningListWrapperProps) {
-  const visibleRows = useMemo(() => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rowHeight, setRowHeight] = useState(48);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevOffset = useRef(offset);
+
+  // Measure row height from first rendered row
+  useEffect(() => {
+    if (containerRef.current) {
+      const firstRow = containerRef.current.querySelector('[data-row]') as HTMLElement;
+      if (firstRow) {
+        setRowHeight(firstRow.offsetHeight);
+      }
+    }
+  });
+
+  // Detect offset change → trigger animation
+  useEffect(() => {
+    if (offset !== prevOffset.current && data.length > visibleCount) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => {
+        setIsAnimating(false);
+        prevOffset.current = offset;
+      }, 800); // match CSS transition duration
+      return () => clearTimeout(timer);
+    }
+    prevOffset.current = offset;
+  }, [offset, data.length, visibleCount]);
+
+  // Build rows: visibleCount + 1 for the sliding effect
+  const displayRows = useMemo(() => {
     if (data.length === 0) return [];
-    const rows: { item: any; originalIndex: number }[] = [];
-    for (let i = 0; i < Math.min(visibleCount, data.length); i++) {
-      const idx = (offset + i) % data.length;
-      rows.push({ item: data[idx], originalIndex: idx });
+    const count = Math.min(visibleCount + 1, data.length);
+    // Start from one before current offset when animating, to show the slide
+    const startIdx = isAnimating
+      ? (offset - 1 + data.length) % data.length
+      : offset;
+    const rows: { item: any; idx: number }[] = [];
+    for (let i = 0; i < count; i++) {
+      const idx = (startIdx + i) % data.length;
+      rows.push({ item: data[idx], idx });
     }
     return rows;
-  }, [data, offset, visibleCount]);
+  }, [data, offset, visibleCount, isAnimating]);
+
+  const translateY = isAnimating ? -rowHeight : 0;
 
   return (
     <div
@@ -38,9 +74,22 @@ export default function AutoScrollTableWrapper({
       onMouseLeave={onResume}
       onTouchStart={onPause}
       onTouchEnd={onResume}
-      className="select-none"
+      className="select-none overflow-hidden"
+      style={{ maxHeight: rowHeight * visibleCount }}
+      ref={containerRef}
     >
-      {visibleRows.map(({ item, originalIndex }) => renderRow(item, originalIndex))}
+      <div
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: isAnimating ? 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+        }}
+      >
+        {displayRows.map(({ item, idx }) => (
+          <div key={`row-${idx}`} data-row>
+            {renderRow(item, idx)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
