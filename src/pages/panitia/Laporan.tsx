@@ -199,10 +199,7 @@ export default function PanitiaLaporan() {
       </Card>
       <div className="md:hidden space-y-3">
         <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
-        </div>
+        <SearchInput placeholder="Cari nama mustahik..." value={searchDist} onChange={v => { setSearchDist(v); distPag.goTo(1); }} />
         {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {distribusiData.map(d => (
           <Card key={d.id}><CardContent className="p-3 space-y-1">
