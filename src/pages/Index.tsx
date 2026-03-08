@@ -104,11 +104,11 @@ export default function Index() {
           {[
             { label: 'Zakat Fitrah', value: fmt(totalFitrah), icon: DollarSign, color: 'text-primary' },
             { label: 'Zakat Mal', value: fmt(totalMal), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Shodaqoh', value: fmt(totalShodaqoh), icon: DollarSign, color: 'text-primary' },
+            { label: 'Infaq', value: fmt(totalInfaq), icon: DollarSign, color: 'text-primary' },
+            { label: 'Fidyah', value: fmt(totalFidyah), icon: DollarSign, color: 'text-secondary' },
             { label: 'Total Terkumpul', value: fmt(totalZakat), icon: TrendingUp, color: 'text-primary' },
             { label: 'Total Muzakki', value: totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: mustahikCount.toString(), icon: Users, color: 'text-secondary' },
-            { label: 'KK Penerima', value: mustahikCount.toString(), icon: Package, color: 'text-primary' },
             { label: 'Beras (Kg)', value: `${totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
             const Icon = stat.icon;
