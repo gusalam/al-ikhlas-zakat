@@ -17,6 +17,7 @@ const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)',
 const PAGE_SIZE = 20;
 
 export default function Index() {
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
   const { stats, fetchStats } = useZakatStats();
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
