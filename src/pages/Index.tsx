@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { Banknote, Users, Wheat, CalendarDays, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Banknote, Users, Wheat, CalendarDays } from 'lucide-react';
+import SearchInput from '@/components/SearchInput';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
@@ -174,13 +174,15 @@ export default function Index() {
 
   // ---- Pagination handlers ----
   const handleZakatPageChange = (newPage: number) => {
-    setZakatPage(newPage);
-    fetchZakat(zakatSearch, newPage);
+    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
+    setZakatPage(p);
+    fetchZakat(zakatSearch, p);
   };
 
   const handleDistPageChange = (newPage: number) => {
-    setDistPage(newPage);
-    fetchDistribusi(distSearch, newPage);
+    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
+    setDistPage(p);
+    fetchDistribusi(distSearch, p);
   };
 
   const pieKey = useAnimationLoop(20000);
@@ -277,9 +279,8 @@ export default function Index() {
         <Card>
           <CardHeader>
             <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
-            <div className="relative mt-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => handleZakatSearch(e.target.value)} className="pl-9" />
+            <div className="mt-2">
+              <SearchInput placeholder="Cari nama muzakki..." value={zakatSearch} onChange={handleZakatSearch} />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
@@ -326,9 +327,8 @@ export default function Index() {
         <Card>
           <CardHeader>
             <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
-            <div className="relative mt-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => handleDistSearch(e.target.value)} className="pl-9" />
+            <div className="mt-2">
+              <SearchInput placeholder="Cari nama mustahik..." value={distSearch} onChange={handleDistSearch} />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">

@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Download, FileText, Filter, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Download, FileText, Filter } from 'lucide-react';
+import SearchInput from '@/components/SearchInput';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 import { useZakatStats } from '@/hooks/useZakatStats';
@@ -147,10 +147,7 @@ export default function Laporan() {
       <Card className="mb-6 hidden md:block">
         <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
           <CardTitle className="font-serif text-lg">Data Zakat</CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
-          </div>
+          <SearchInput placeholder="Cari nama muzakki..." value={searchZakat} onChange={v => { setSearchZakat(v); zakatPag.goTo(1); }} className="w-64" />
         </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
@@ -171,10 +168,7 @@ export default function Laporan() {
       </Card>
       <div className="md:hidden space-y-3 mb-6">
         <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
-        </div>
+        <SearchInput placeholder="Cari nama muzakki..." value={searchZakat} onChange={v => { setSearchZakat(v); zakatPag.goTo(1); }} />
         {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {zakatData.map(t => (
           <Card key={t.id}><CardContent className="p-3 space-y-1">
@@ -194,10 +188,7 @@ export default function Laporan() {
       <Card className="mb-6 hidden md:block">
         <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
           <CardTitle className="font-serif text-lg">Data Distribusi</CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
-          </div>
+          <SearchInput placeholder="Cari nama mustahik..." value={searchDist} onChange={v => { setSearchDist(v); distPag.goTo(1); }} className="w-64" />
         </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
@@ -217,10 +208,7 @@ export default function Laporan() {
       </Card>
       <div className="md:hidden space-y-3">
         <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
-        </div>
+        <SearchInput placeholder="Cari nama mustahik..." value={searchDist} onChange={v => { setSearchDist(v); distPag.goTo(1); }} />
         {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {distribusiData.map(d => (
           <Card key={d.id}><CardContent className="p-3 space-y-1">

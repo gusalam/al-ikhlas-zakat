@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, RotateCcw } from 'lucide-react';
+import SearchInput from '@/components/SearchInput';
 import { friendlyError } from '@/lib/errorHandler';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
@@ -148,10 +149,7 @@ export default function PanitiaMustahik() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
           <div className="flex gap-2 flex-wrap items-center">
-            <div className="relative w-48 sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
-            </div>
+            <SearchInput placeholder="Cari nama mustahik..." value={search} onChange={v => { setSearch(v); pag.goTo(1); }} className="w-48 sm:w-64" />
             <FormDialog />
           </div>
         </div>

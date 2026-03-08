@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 import { toast } from 'sonner';
-import { Plus, Search, Eye, Download, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Eye, Download, Pencil, Trash2, Search } from 'lucide-react';
+import SearchInput from '@/components/SearchInput';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/KwitansiZakat';
@@ -288,10 +289,7 @@ export default function InputZakat() {
       <Card className="hidden md:block">
         <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
           <CardTitle className="font-serif text-lg">Riwayat Zakat</CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama muzakki..." value={listSearch} onChange={e => { setListSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
-          </div>
+          <SearchInput placeholder="Cari nama muzakki..." value={listSearch} onChange={v => { setListSearch(v); pag.goTo(1); }} className="w-64" />
         </CardHeader>
         <CardContent className="overflow-auto p-0">
           <Table>
@@ -327,10 +325,7 @@ export default function InputZakat() {
         <div className="flex items-center justify-between gap-2 mb-2">
           <h2 className="font-serif font-semibold text-base">Riwayat Zakat</h2>
         </div>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama muzakki..." value={listSearch} onChange={e => { setListSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
-        </div>
+        <SearchInput placeholder="Cari nama muzakki..." value={listSearch} onChange={v => { setListSearch(v); pag.goTo(1); }} />
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
         {data.map(t => (
           <Card key={t.id}>
