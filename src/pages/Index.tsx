@@ -8,15 +8,17 @@ import { Banknote, Users, Wheat, CalendarDays } from 'lucide-react';
 import SearchInput from '@/components/SearchInput';
 import logo from '@/assets/logo-masjid.webp';
 import { useZakatStats } from '@/hooks/useZakatStats';
-import PaginationControls from '@/components/PaginationControls';
 import SplashScreen from '@/components/SplashScreen';
 import AnimatedStatCard from '@/components/AnimatedStatCard';
 import { useAnimationLoop } from '@/hooks/useAnimationLoop';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
+import AutoScrollTableWrapper from '@/components/AutoScrollTableWrapper';
 
 const SPLASH_KEY = 'zakat-splash-shown';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100; // fetch more for auto-scroll
+const VISIBLE_ROWS = 10;
 
 export default function Index() {
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
@@ -31,83 +33,51 @@ export default function Index() {
   const [zakatSearch, setZakatSearch] = useState('');
   const [distSearch, setDistSearch] = useState('');
 
-  // Pagination state (0-indexed)
-  const [zakatPage, setZakatPage] = useState(0);
-  const [zakatTotal, setZakatTotal] = useState(0);
-  const [distPage, setDistPage] = useState(0);
-  const [distTotal, setDistTotal] = useState(0);
-
-  const zakatTotalPages = Math.max(1, Math.ceil(zakatTotal / PAGE_SIZE));
-  const distTotalPages = Math.max(1, Math.ceil(distTotal / PAGE_SIZE));
-
   // Refs for latest values (avoid stale closures in realtime callbacks)
   const zakatSearchRef = useRef('');
   const distSearchRef = useRef('');
-  const zakatPageRef = useRef(0);
-  const distPageRef = useRef(0);
 
   // Sync refs
   zakatSearchRef.current = zakatSearch;
   distSearchRef.current = distSearch;
-  zakatPageRef.current = zakatPage;
-  distPageRef.current = distPage;
+
+  // Auto-scroll hooks
+  const zakatScroll = useAutoScroll({ totalItems: zakatData.length, visibleItems: VISIBLE_ROWS, intervalMs: 3000, isPaused: !!zakatSearch });
+  const distScroll = useAutoScroll({ totalItems: distribusiData.length, visibleItems: VISIBLE_ROWS, intervalMs: 3000, isPaused: !!distSearch });
 
   // Debounce timer refs
   const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const distDebounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // ---- Fetch zakat data ----
-  const fetchZakat = useCallback(async (search: string, page: number) => {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    // Fetch count separately (lightweight, no joins)
-    let countQuery = supabase
-      .from('transaksi_zakat')
-      .select('id', { count: 'exact', head: true });
-
-    if (search.trim()) {
-      countQuery = countQuery.ilike('nama_muzakki', `%${search.trim()}%`);
-    }
-
-    // Fetch data with joins (no count overhead)
-    let dataQuery = supabase
+  // ---- Fetch zakat data (all matching, no pagination) ----
+  const fetchZakat = useCallback(async (search: string) => {
+    let query = supabase
       .from('transaksi_zakat')
       .select('id, nama_muzakki, alamat_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
       .order('tanggal', { ascending: false })
-      .range(from, to);
+      .limit(PAGE_SIZE);
 
     if (search.trim()) {
-      dataQuery = dataQuery.ilike('nama_muzakki', `%${search.trim()}%`);
+      query = query.ilike('nama_muzakki', `%${search.trim()}%`);
     }
 
-    const [countResult, dataResult] = await Promise.all([countQuery, dataQuery]);
-
-    if (!dataResult.error) {
-      setZakatData(dataResult.data || []);
-      setZakatTotal(countResult.count || 0);
-    }
+    const { data, error } = await query;
+    if (!error) setZakatData(data || []);
   }, []);
 
-  // ---- Fetch distribusi data ----
-  const fetchDistribusi = useCallback(async (search: string, page: number) => {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { data, count, error } = await supabase
+  // ---- Fetch distribusi data (all matching, no pagination) ----
+  const fetchDistribusi = useCallback(async (search: string) => {
+    const { data, error } = await supabase
       .from('distribusi')
-      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, alamat, rt(nama_rt))', { count: 'exact' })
+      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, alamat, rt(nama_rt))')
       .order('tanggal', { ascending: false })
       .ilike('mustahik.nama', search.trim() ? `%${search.trim()}%` : '%')
-      .range(from, to);
+      .limit(PAGE_SIZE);
 
-    if (!error) {
-      setDistribusiData(data || []);
-      setDistTotal(count || 0);
-    }
+    if (!error) setDistribusiData(data || []);
   }, []);
 
-  // ---- Fetch chart data (only once, no search/pagination) ----
+  // ---- Fetch chart data ----
   const fetchChartData = useCallback(async () => {
     const { data } = await supabase.rpc('get_zakat_per_rt');
     if (data && Array.isArray(data)) {
@@ -120,8 +90,8 @@ export default function Index() {
     const init = async () => {
       await Promise.all([
         fetchStats(),
-        fetchZakat('', 0),
-        fetchDistribusi('', 0),
+        fetchZakat(''),
+        fetchDistribusi(''),
         fetchChartData(),
       ]);
       setLastUpdated(new Date());
@@ -134,8 +104,8 @@ export default function Index() {
   useEffect(() => {
     const handleRealtimeUpdate = () => {
       fetchStats();
-      fetchZakat(zakatSearchRef.current, zakatPageRef.current);
-      fetchDistribusi(distSearchRef.current, distPageRef.current);
+      fetchZakat(zakatSearchRef.current);
+      fetchDistribusi(distSearchRef.current);
       fetchChartData();
       setLastUpdated(new Date());
     };
@@ -158,8 +128,7 @@ export default function Index() {
     setZakatSearch(value);
     clearTimeout(zakatDebounceRef.current);
     zakatDebounceRef.current = setTimeout(() => {
-      setZakatPage(0);
-      fetchZakat(value, 0);
+      fetchZakat(value);
     }, 400);
   };
 
@@ -167,22 +136,8 @@ export default function Index() {
     setDistSearch(value);
     clearTimeout(distDebounceRef.current);
     distDebounceRef.current = setTimeout(() => {
-      setDistPage(0);
-      fetchDistribusi(value, 0);
+      fetchDistribusi(value);
     }, 400);
-  };
-
-  // ---- Pagination handlers ----
-  const handleZakatPageChange = (newPage: number) => {
-    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
-    setZakatPage(p);
-    fetchZakat(zakatSearch, p);
-  };
-
-  const handleDistPageChange = (newPage: number) => {
-    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
-    setDistPage(p);
-    fetchDistribusi(distSearch, p);
   };
 
   const pieKey = useAnimationLoop(20000);
@@ -284,18 +239,26 @@ export default function Index() {
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
+            <AutoScrollTableWrapper
+              onPause={zakatScroll.pause}
+              onResume={zakatScroll.resume}
+              isScrolling={zakatScroll.isScrolling}
+              totalItems={zakatData.length}
+              scrollIndex={zakatScroll.scrollIndex}
+              visibleItems={VISIBLE_ROWS}
+            >
             <Table>
               <TableHeader><TableRow><TableHead>Nama Muzakki</TableHead><TableHead>Jenis Zakat</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {zakatData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : zakatData.map((z: any) => {
+                ) : zakatScroll.visibleData(zakatData).map((z: any) => {
                   const details = z.detail_zakat || [];
                   const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
                   const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                   const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                   return (
-                    <TableRow key={z.id}>
+                    <TableRow key={z.id} className="animate-fade-in">
                       <TableCell className="font-medium">
                         {z.nama_muzakki}
                         {(z.rt?.nama_rt || z.alamat_muzakki) && (
@@ -312,14 +275,7 @@ export default function Index() {
                 })}
               </TableBody>
             </Table>
-            <PaginationControls
-              page={zakatPage}
-              totalPages={zakatTotalPages}
-              totalCount={zakatTotal}
-              onNext={() => handleZakatPageChange(Math.min(zakatPage + 1, zakatTotalPages - 1))}
-              onPrev={() => handleZakatPageChange(Math.max(zakatPage - 1, 0))}
-              onGoTo={(p) => handleZakatPageChange(p)}
-            />
+            </AutoScrollTableWrapper>
           </CardContent>
         </Card>
 
@@ -332,13 +288,21 @@ export default function Index() {
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
+            <AutoScrollTableWrapper
+              onPause={distScroll.pause}
+              onResume={distScroll.resume}
+              isScrolling={distScroll.isScrolling}
+              totalItems={distribusiData.length}
+              scrollIndex={distScroll.scrollIndex}
+              visibleItems={VISIBLE_ROWS}
+            >
             <Table>
               <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {distribusiData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : distribusiData.map((d: any) => (
-                  <TableRow key={d.id}>
+                ) : distScroll.visibleData(distribusiData).map((d: any) => (
+                  <TableRow key={d.id} className="animate-fade-in">
                     <TableCell className="font-medium">
                       {d.mustahik?.nama || '-'}
                       {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
@@ -354,14 +318,7 @@ export default function Index() {
                 ))}
               </TableBody>
             </Table>
-            <PaginationControls
-              page={distPage}
-              totalPages={distTotalPages}
-              totalCount={distTotal}
-              onNext={() => handleDistPageChange(Math.min(distPage + 1, distTotalPages - 1))}
-              onPrev={() => handleDistPageChange(Math.max(distPage - 1, 0))}
-              onGoTo={(p) => handleDistPageChange(p)}
-            />
+            </AutoScrollTableWrapper>
           </CardContent>
         </Card>
       </main>
