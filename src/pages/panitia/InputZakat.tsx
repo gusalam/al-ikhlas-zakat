@@ -265,7 +265,7 @@ export default function InputZakat() {
               </div>
             )}
 
-            <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
+            <div><Label>Alamat Muzakki <span className="text-destructive">*</span></Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Contoh: Gang Melati, Jakarta" required /></div>
 
             <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="panitia" />
 
