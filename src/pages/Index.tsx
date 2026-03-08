@@ -10,8 +10,7 @@ import { useZakatStats } from '@/hooks/useZakatStats';
 import SplashScreen from '@/components/SplashScreen';
 import AnimatedStatCard from '@/components/AnimatedStatCard';
 import { useAnimationLoop } from '@/hooks/useAnimationLoop';
-import { useAutoScroll } from '@/hooks/useAutoScroll';
-import AutoScrollTableWrapper from '@/components/AutoScrollTableWrapper';
+import InfiniteTickerList from '@/components/InfiniteTickerList';
 
 const SPLASH_KEY = 'zakat-splash-shown';
 
@@ -41,8 +40,9 @@ export default function Index() {
   distSearchRef.current = distSearch;
 
   // Auto-scroll hooks
-  const zakatScroll = useAutoScroll({ totalItems: zakatData.length, intervalMs: 3000, isPaused: !!zakatSearch });
-  const distScroll = useAutoScroll({ totalItems: distribusiData.length, intervalMs: 3000, isPaused: !!distSearch });
+  // Search-based pause for ticker
+  const zakatTickerPaused = !!zakatSearch;
+  const distTickerPaused = !!distSearch;
 
   // Debounce timer refs
   const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -241,19 +241,17 @@ export default function Index() {
             <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Muzakki</div><div>Jenis Zakat</div><div>Jumlah</div><div>Tanggal</div>
             </div>
-            <AutoScrollTableWrapper
+            <InfiniteTickerList
               data={zakatData}
-              offset={zakatScroll.offset}
               visibleCount={VISIBLE_ROWS}
-              onPause={zakatScroll.pause}
-              onResume={zakatScroll.resume}
+              isPaused={zakatTickerPaused}
               renderRow={(z: any, idx: number) => {
                 const details = z.detail_zakat || [];
                 const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
                 const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                 const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                 return (
-                  <div key={`z-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
+                  <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                     <div className="font-medium">
                       {z.nama_muzakki}
                       {(z.rt?.nama_rt || z.alamat_muzakki) && (
@@ -269,9 +267,6 @@ export default function Index() {
                 );
               }}
             />
-            {zakatData.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            )}
           </CardContent>
         </Card>
 
@@ -287,14 +282,12 @@ export default function Index() {
             <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Mustahik</div><div>Sumber Zakat</div><div>Jumlah Bantuan</div><div>Tanggal</div>
             </div>
-            <AutoScrollTableWrapper
+            <InfiniteTickerList
               data={distribusiData}
-              offset={distScroll.offset}
               visibleCount={VISIBLE_ROWS}
-              onPause={distScroll.pause}
-              onResume={distScroll.resume}
+              isPaused={distTickerPaused}
               renderRow={(d: any, idx: number) => (
-                <div key={`d-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
+                <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                   <div className="font-medium">
                     {d.mustahik?.nama || '-'}
                     {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
@@ -309,9 +302,6 @@ export default function Index() {
                 </div>
               )}
             />
-            {distribusiData.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            )}
           </CardContent>
         </Card>
       </main>
