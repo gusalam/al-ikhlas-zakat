@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Wheat } from 'lucide-react';
+import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
 
 export default function PanitiaDashboard() {
