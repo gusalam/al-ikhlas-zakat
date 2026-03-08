@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 import { friendlyError } from '@/lib/errorHandler';
@@ -16,20 +17,70 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
+const MONTHS = [
+  { value: 'all', label: 'Semua Bulan' },
+  { value: '1', label: 'Januari' }, { value: '2', label: 'Februari' }, { value: '3', label: 'Maret' },
+  { value: '4', label: 'April' }, { value: '5', label: 'Mei' }, { value: '6', label: 'Juni' },
+  { value: '7', label: 'Juli' }, { value: '8', label: 'Agustus' }, { value: '9', label: 'September' },
+  { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' },
+];
+
+function getYearOptions() {
+  const currentYear = new Date().getFullYear();
+  const years = [{ value: 'all', label: 'Semua Tahun' }];
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    years.push({ value: String(y), label: String(y) });
+  }
+  return years;
+}
+
+function getDateRange(month: string, year: string): { startDate?: string; endDate?: string } {
+  if (year === 'all') return {};
+  const y = parseInt(year);
+  if (month === 'all') {
+    return { startDate: `${y}-01-01`, endDate: `${y}-12-31` };
+  }
+  const m = parseInt(month);
+  const start = new Date(y, m - 1, 1);
+  const end = new Date(y, m, 0); // last day of month
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  };
+}
+
 export default function PanitiaLaporan() {
   const { stats, fetchStats } = useZakatStats();
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
+  const [filterMonth, setFilterMonth] = useState('all');
+  const [filterYear, setFilterYear] = useState('all');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
+  const yearOptions = useMemo(getYearOptions, []);
+
+  const { startDate, endDate } = useMemo(() => getDateRange(filterMonth, filterYear), [filterMonth, filterYear]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await fetchStats();
+        await fetchStats(startDate, endDate);
+
+        let zakatQuery = supabase.from('zakat').select('*, rt(nama_rt)', { count: 'exact' }).order('tanggal', { ascending: false });
+        let distQuery = supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
+
+        if (startDate) {
+          zakatQuery = zakatQuery.gte('tanggal', startDate);
+          distQuery = distQuery.gte('tanggal', startDate);
+        }
+        if (endDate) {
+          zakatQuery = zakatQuery.lte('tanggal', endDate);
+          distQuery = distQuery.lte('tanggal', endDate);
+        }
+
         const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([
-          supabase.from('zakat').select('*, rt(nama_rt)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
-          supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
+          zakatQuery.range(zakatPag.from, zakatPag.to),
+          distQuery.range(distPag.from, distPag.to),
         ]);
         if (ze) throw ze;
         if (de) throw de;
@@ -42,9 +93,13 @@ export default function PanitiaLaporan() {
       }
     };
     fetchData();
-  }, [zakatPag.page, distPag.page]);
+  }, [zakatPag.page, distPag.page, startDate, endDate]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+  const filterLabel = filterYear === 'all' ? 'Semua Periode' :
+    filterMonth === 'all' ? `Tahun ${filterYear}` :
+    `${MONTHS.find(m => m.value === filterMonth)?.label} ${filterYear}`;
 
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
@@ -61,6 +116,7 @@ export default function PanitiaLaporan() {
     const zakatSheet = zakatData.map(z => ({ 'Nama Muzakki': z.nama_muzakki, 'Jenis': z.jenis_zakat, 'Jumlah Uang': z.jumlah_uang, 'Jumlah Beras': z.jumlah_beras, 'RT': z.rt?.nama_rt || '-', 'Tanggal': z.tanggal }));
     const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-', 'Jumlah': d.jumlah, 'Tanggal': d.tanggal }));
     const summarySheet = [
+      { Keterangan: 'Periode', Jumlah: filterLabel },
       { Keterangan: 'Zakat Fitrah', Jumlah: stats.totalFitrah },
       { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal },
       { Keterangan: 'Infaq', Jumlah: stats.totalInfaq },
@@ -73,13 +129,13 @@ export default function PanitiaLaporan() {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(zakatSheet), 'Data Zakat');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(distSheet), 'Distribusi');
-    XLSX.writeFile(wb, 'Laporan_Zakat_Al_Ikhlas.xlsx');
+    XLSX.writeFile(wb, `Laporan_Zakat_${filterLabel.replace(/\s/g, '_')}.xlsx`);
   };
 
   const exportPdfLaporan = () => {
     exportPdf({
       title: 'Laporan Keuangan Zakat — Masjid Al-Ikhlas',
-      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      subtitle: `Periode: ${filterLabel} | Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
       headers: ['Keterangan', 'Jumlah'],
       rows: [
         ['Zakat Fitrah', fmt(stats.totalFitrah)], ['Zakat Mal', fmt(stats.totalMal)],
@@ -87,7 +143,7 @@ export default function PanitiaLaporan() {
         ['Total Pemasukan', fmt(stats.totalZakat)], ['Total Distribusi', fmt(stats.totalDistribusi)],
         ['Saldo Zakat', fmt(stats.saldoZakat)],
       ],
-      filename: 'Laporan_Keuangan_Zakat_Al_Ikhlas.pdf',
+      filename: `Laporan_Keuangan_${filterLabel.replace(/\s/g, '_')}.pdf`,
     });
   };
 
@@ -95,11 +151,27 @@ export default function PanitiaLaporan() {
     <PanitiaLayout>
       <div className="flex flex-col gap-4 mb-6">
         <h1 className="text-2xl font-serif font-bold">Laporan Keuangan</h1>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); zakatPag.goTo(1); distPag.goTo(1); }}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={filterYear} onValueChange={(v) => { setFilterYear(v); if (v === 'all') setFilterMonth('all'); zakatPag.goTo(1); distPag.goTo(1); }}>
+            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+            <SelectContent>{yearOptions.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={exportExcel}><Download className="w-4 h-4 mr-1" />Excel</Button>
           <Button size="sm" onClick={exportPdfLaporan}><FileText className="w-4 h-4 mr-1" />PDF Laporan</Button>
         </div>
       </div>
+
+      {filterYear !== 'all' && (
+        <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
