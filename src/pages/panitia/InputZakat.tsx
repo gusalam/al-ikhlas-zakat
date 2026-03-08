@@ -45,6 +45,8 @@ export default function InputZakat() {
   const [editItem, setEditItem] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
   const pag = usePagination(50);
+  const [listSearch, setListSearch] = useState('');
+  const debouncedListSearch = useDebounce(listSearch, 400);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<MuzakkiSuggestion[]>([]);
