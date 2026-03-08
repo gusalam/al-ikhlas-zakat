@@ -148,11 +148,10 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       }
       if (p.beras > 0) {
         doc.setFont('helvetica', 'normal');
-        doc.text(`Beras : ${p.beras} Liter`, 155, y);
+        doc.text(`Beras : ${fmtBeras(p.beras)}`, 145, y);
       } else if (p.no === 1) {
         doc.setFont('helvetica', 'normal');
-        doc.text('Beras :', 155, y);
-        doc.text('Liter', 185, y);
+        doc.text('Beras :', 145, y);
       }
       y += 7;
     });
