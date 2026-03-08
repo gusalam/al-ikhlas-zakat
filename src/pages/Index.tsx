@@ -174,13 +174,15 @@ export default function Index() {
 
   // ---- Pagination handlers ----
   const handleZakatPageChange = (newPage: number) => {
-    setZakatPage(newPage);
-    fetchZakat(zakatSearch, newPage);
+    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
+    setZakatPage(p);
+    fetchZakat(zakatSearch, p);
   };
 
   const handleDistPageChange = (newPage: number) => {
-    setDistPage(newPage);
-    fetchDistribusi(distSearch, newPage);
+    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
+    setDistPage(p);
+    fetchDistribusi(distSearch, p);
   };
 
   const pieKey = useAnimationLoop(20000);
