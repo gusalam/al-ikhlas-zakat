@@ -168,15 +168,15 @@ export default function Laporan() {
   return (
     <AdminLayout>
       <div className="flex flex-col gap-4 mb-6">
-        <h1 className="text-2xl font-serif font-bold">Laporan</h1>
+        <h1 className="text-xl sm:text-2xl font-serif font-bold">Laporan</h1>
         <div className="flex gap-2 flex-wrap items-center">
-          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Filter className="w-4 h-4 text-muted-foreground hidden sm:block" />
           <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filterYear} onValueChange={(v) => { setFilterYear(v); if (v === 'all') setFilterMonth('all'); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[120px] sm:w-[130px]"><SelectValue /></SelectTrigger>
             <SelectContent>{yearOptions.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
@@ -192,53 +192,54 @@ export default function Laporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang` },
           { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg` },
           { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg` },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
-          <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+          <Card key={s.label}>
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{s.label}</p>
+              <p className="text-sm sm:text-xl font-bold truncate">{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card>
-          <CardHeader><CardTitle className="font-serif">Grafik Jenis Zakat</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Grafik Jenis Zakat</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend /></PieChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={false}>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /></PieChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="font-serif">Zakat per RT</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Zakat per RT</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {rtChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={rtChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={rtChartData} margin={{ left: -10, right: 5 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={11} tick={{ fontSize: 10 }} /><YAxis fontSize={11} width={50} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
         </Card>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader><CardTitle className="font-serif">Data Zakat</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+      {/* Data Zakat - Desktop */}
+      <Card className="mb-6 hidden md:block">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
@@ -250,10 +251,30 @@ export default function Laporan() {
           <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
         </CardContent>
       </Card>
+      {/* Data Zakat - Mobile */}
+      <div className="md:hidden space-y-3 mb-6">
+        <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
+        {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
+        {zakatData.map(z => (
+          <Card key={z.id}>
+            <CardContent className="p-3 space-y-1">
+              <p className="font-semibold text-sm">{z.nama_muzakki}</p>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <span><span className="text-muted-foreground">Jenis:</span> {z.jenis_zakat}</span>
+                <span><span className="text-muted-foreground">Uang:</span> {fmt(Number(z.jumlah_uang))}</span>
+                <span><span className="text-muted-foreground">Beras:</span> {z.jumlah_beras} Kg</span>
+                <span><span className="text-muted-foreground">Tgl:</span> {new Date(z.tanggal).toLocaleDateString('id-ID')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
+      </div>
 
-      <Card>
-        <CardHeader><CardTitle className="font-serif">Data Distribusi</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+      {/* Data Distribusi - Desktop */}
+      <Card className="hidden md:block">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
@@ -265,6 +286,24 @@ export default function Laporan() {
           <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
         </CardContent>
       </Card>
+      {/* Data Distribusi - Mobile */}
+      <div className="md:hidden space-y-3">
+        <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
+        {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
+        {distribusiData.map(d => (
+          <Card key={d.id}>
+            <CardContent className="p-3 space-y-1">
+              <p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span>
+                <span><span className="text-muted-foreground">Jumlah:</span> {fmt(Number(d.jumlah))}</span>
+                <span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
+      </div>
     </AdminLayout>
   );
 }
