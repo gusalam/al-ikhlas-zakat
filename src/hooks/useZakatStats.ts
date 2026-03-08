@@ -8,6 +8,7 @@ export interface ZakatStats {
   totalFidyah: number;
   totalZakat: number;
   totalBeras: number;
+  totalJiwaFitrah: number;
   totalMuzakki: number;
   totalMustahik: number;
   totalZakatCount: number;
@@ -16,7 +17,7 @@ export interface ZakatStats {
 
 const defaultStats: ZakatStats = {
   totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0,
-  totalZakat: 0, totalBeras: 0, totalMuzakki: 0, totalMustahik: 0,
+  totalZakat: 0, totalBeras: 0, totalJiwaFitrah: 0, totalMuzakki: 0, totalMustahik: 0,
   totalZakatCount: 0, totalMustahikCount: 0,
 };
 
