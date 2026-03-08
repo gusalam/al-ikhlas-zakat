@@ -17,7 +17,7 @@ const SPLASH_KEY = 'zakat-splash-shown';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 const PAGE_SIZE = 100; // fetch more for auto-scroll
-const VISIBLE_ROWS = 10;
+const VISIBLE_ROWS = 5;
 
 export default function Index() {
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
@@ -238,7 +238,7 @@ export default function Index() {
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <div className="grid grid-cols-4 gap-2 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Muzakki</div><div>Jenis Zakat</div><div>Jumlah</div><div>Tanggal</div>
             </div>
             <AutoScrollTableWrapper
@@ -253,7 +253,7 @@ export default function Index() {
                 const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                 const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                 return (
-                  <div key={`z-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                  <div key={`z-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                     <div className="font-medium">
                       {z.nama_muzakki}
                       {(z.rt?.nama_rt || z.alamat_muzakki) && (
@@ -284,7 +284,7 @@ export default function Index() {
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <div className="grid grid-cols-4 gap-2 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Mustahik</div><div>Sumber Zakat</div><div>Jumlah Bantuan</div><div>Tanggal</div>
             </div>
             <AutoScrollTableWrapper
@@ -294,7 +294,7 @@ export default function Index() {
               onPause={distScroll.pause}
               onResume={distScroll.resume}
               renderRow={(d: any, idx: number) => (
-                <div key={`d-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                <div key={`d-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                   <div className="font-medium">
                     {d.mustahik?.nama || '-'}
                     {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
