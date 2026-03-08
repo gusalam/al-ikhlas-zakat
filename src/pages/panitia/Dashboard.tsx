@@ -32,7 +32,7 @@ export default function PanitiaDashboard() {
           { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote },
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
-          { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users },
+          { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },
         ].map(s => {
