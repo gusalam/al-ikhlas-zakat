@@ -19,24 +19,33 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: string
+          jenis_bantuan: string | null
           jumlah: number
+          jumlah_beras: number | null
           mustahik_id: string
+          sumber_zakat: string | null
           tanggal: string
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
           id?: string
+          jenis_bantuan?: string | null
           jumlah?: number
+          jumlah_beras?: number | null
           mustahik_id: string
+          sumber_zakat?: string | null
           tanggal?: string
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
           id?: string
+          jenis_bantuan?: string | null
           jumlah?: number
+          jumlah_beras?: number | null
           mustahik_id?: string
+          sumber_zakat?: string | null
           tanggal?: string
         }
         Relationships: [
