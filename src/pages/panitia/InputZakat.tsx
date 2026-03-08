@@ -9,15 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
 
 export default function InputZakat() {
   const { user } = useAuth();
   const [data, setData] = useState<any[]>([]);
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '' });
+  const [kwitansiOpen, setKwitansiOpen] = useState(false);
+  const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
 
   const fetchData = async () => {
     const [{ data: zakat }, { data: rt }] = await Promise.all([
@@ -39,8 +42,37 @@ export default function InputZakat() {
     if (error) { toast.error(error.message); return; }
     toast.success('Zakat berhasil dicatat');
     setOpen(false);
-    setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+
+    // Show kwitansi
+    const newCount = data.length + 1;
+    setKwitansiData({
+      nomor: newCount,
+      nama_muzakki: form.nama_muzakki,
+      jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+      jenis_zakat: form.jenis_zakat,
+      jumlah_uang: Number(form.jumlah_uang) || 0,
+      jumlah_beras: Number(form.jumlah_beras) || 0,
+      tanggal: form.tanggal,
+      penerima: form.penerima || form.nama_muzakki,
+    });
+    setKwitansiOpen(true);
+
+    setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '' });
     fetchData();
+  };
+
+  const showKwitansi = (z: any, index: number) => {
+    setKwitansiData({
+      nomor: index + 1,
+      nama_muzakki: z.nama_muzakki,
+      jumlah_jiwa: 1,
+      jenis_zakat: z.jenis_zakat,
+      jumlah_uang: Number(z.jumlah_uang) || 0,
+      jumlah_beras: Number(z.jumlah_beras) || 0,
+      tanggal: z.tanggal,
+      penerima: z.nama_muzakki,
+    });
+    setKwitansiOpen(true);
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -51,10 +83,11 @@ export default function InputZakat() {
         <h1 className="text-xl md:text-2xl font-serif font-bold">Input Zakat</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Input Zakat Baru</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} className="h-12 text-base" /></div>
               <div><Label>RT</Label>
                 <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
                   <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
@@ -67,31 +100,43 @@ export default function InputZakat() {
                   <SelectContent>
                     <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
                     <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
-                    <SelectItem value="Shodaqoh">Shodaqoh</SelectItem>
+                    <SelectItem value="Shodaqoh">Infaq / Shodaqoh</SelectItem>
+                    <SelectItem value="Fidyah">Fidyah</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Jumlah Beras (Liter)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
               <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Nama Penerima</Label><Input value={form.penerima} onChange={e => setForm({ ...form, penerima: e.target.value })} placeholder="Kosongkan jika sama dengan muzakki" className="h-12 text-base" /></div>
               <Button onClick={handleSubmit} className="w-full h-12">Simpan Zakat</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+
       {/* Desktop Table */}
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
-              {data.map(z => (
+              {data.map((z, i) => (
                 <TableRow key={z.id}>
                   <TableCell>{z.nama_muzakki}</TableCell>
                   <TableCell>{z.jenis_zakat}</TableCell>
                   <TableCell>{fmt(Number(z.jumlah_uang))}</TableCell>
                   <TableCell>{z.jumlah_beras} Kg</TableCell>
                   <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>
+                    <Button size="sm" variant="outline" onClick={() => showKwitansi(z, i)}>
+                      <FileText className="w-4 h-4 mr-1" />Kwitansi
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -102,12 +147,17 @@ export default function InputZakat() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
-        {data.map(z => (
+        {data.map((z, i) => (
           <Card key={z.id}>
             <CardContent className="p-4 space-y-2">
-              <div>
-                <p className="font-semibold text-base">{z.nama_muzakki}</p>
-                <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-base">{z.nama_muzakki}</p>
+                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => showKwitansi(z, i)}>
+                  <FileText className="w-4 h-4" />
+                </Button>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
@@ -118,6 +168,8 @@ export default function InputZakat() {
           </Card>
         ))}
       </div>
+
+      <KwitansiZakat open={kwitansiOpen} onOpenChange={setKwitansiOpen} data={kwitansiData} />
     </PanitiaLayout>
   );
 }
