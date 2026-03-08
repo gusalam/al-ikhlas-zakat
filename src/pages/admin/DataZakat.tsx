@@ -146,6 +146,16 @@ export default function DataZakat() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Cari nama muzakki..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
           </div>
+          <Select value={filterRt} onValueChange={v => { setFilterRt(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua RT" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua RT</SelectItem>
+              {rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {(search || filterRt !== 'all') && (
+            <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setFilterRt('all'); pag.goTo(1); }}><RotateCcw className="w-4 h-4 mr-1" />Reset</Button>
+          )}
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Zakat — Masjid Al-Ikhlas',
