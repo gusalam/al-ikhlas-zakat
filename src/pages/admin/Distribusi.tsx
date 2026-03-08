@@ -14,6 +14,9 @@ import { Plus, Trash2, Wallet } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
+import { useZakatStats } from '@/hooks/useZakatStats';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function Distribusi() {
   const { user } = useAuth();
@@ -21,32 +24,29 @@ export default function Distribusi() {
   const [mustahikList, setMustahikList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ mustahik_id: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0] });
-  const [saldoZakat, setSaldoZakat] = useState(0);
+  const { stats, fetchStats } = useZakatStats();
+  const pag = usePagination(50);
 
   const fetchData = async () => {
-    const [{ data: dist }, { data: mustahik }, { data: zakat }] = await Promise.all([
-      supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))').order('tanggal', { ascending: false }),
+    const [{ data: dist, count }, { data: mustahik }] = await Promise.all([
+      supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
       supabase.from('mustahik').select('id, nama'),
-      supabase.from('zakat').select('jumlah_uang'),
     ]);
     setData(dist || []);
+    pag.setTotalCount(count || 0);
     setMustahikList(mustahik || []);
-    const totalZakat = (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang || 0), 0);
-    const totalDist = (dist || []).reduce((s, d) => s + Number(d.jumlah || 0), 0);
-    setSaldoZakat(totalZakat - totalDist);
+    await fetchStats();
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [pag.page]);
 
   const handleSubmit = async () => {
     const jumlah = Number(form.jumlah);
-    if (jumlah > saldoZakat) {
+    if (jumlah > stats.saldoZakat) {
       toast.error('Distribusi tidak boleh melebihi saldo zakat yang tersedia.');
       return;
     }
-    const { error } = await supabase.from('distribusi').insert({
-      mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id,
-    });
+    const { error } = await supabase.from('distribusi').insert({ mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success('Distribusi zakat berhasil dicatat ✓');
     setOpen(false); setForm({ mustahik_id: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0] }); fetchData();
@@ -68,7 +68,7 @@ export default function Distribusi() {
           <div className="flex items-center gap-2 mt-1">
             <Wallet className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
-            <Badge variant={saldoZakat < 0 ? 'destructive' : 'secondary'} className="font-semibold">{fmt(saldoZakat)}</Badge>
+            <Badge variant={stats.saldoZakat < 0 ? 'destructive' : 'secondary'} className="font-semibold">{fmt(stats.saldoZakat)}</Badge>
           </div>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -95,7 +95,7 @@ export default function Distribusi() {
           </DialogContent>
         </Dialog>
       </div>
-      {/* Desktop Table */}
+
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
@@ -103,10 +103,7 @@ export default function Distribusi() {
             <TableBody>
               {data.map(d => (
                 <TableRow key={d.id}>
-                  <TableCell>{d.mustahik?.nama || '-'}</TableCell>
-                  <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
-                  <TableCell>{fmt(Number(d.jumlah))}</TableCell>
-                  <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <AlertDialog>
                       <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
@@ -120,20 +117,19 @@ export default function Distribusi() {
               ))}
             </TableBody>
           </Table>
+          <div className="p-4">
+            <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
+          </div>
         </CardContent>
       </Card>
 
-      {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data distribusi</p>}
         {data.map(d => (
           <Card key={d.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p>
-                  <p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p>
-                </div>
+                <div><p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p><p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p></div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
                   <AlertDialogContent>
@@ -149,6 +145,7 @@ export default function Distribusi() {
             </CardContent>
           </Card>
         ))}
+        <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
       </div>
     </AdminLayout>
   );

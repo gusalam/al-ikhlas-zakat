@@ -6,68 +6,60 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Link } from 'react-router-dom';
 import { DollarSign, Users, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import { useZakatStats } from '@/hooks/useZakatStats';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
-interface ZakatRow {
-  id: string; nama_muzakki: string; jenis_zakat: string;
-  jumlah_uang: number; jumlah_beras: number; tanggal: string;
-  rt_id: string | null; rt: { nama_rt: string } | null;
-}
-
-interface DistribusiRow {
-  id: string; jumlah: number; tanggal: string;
-  mustahik: { nama: string; rt: { nama_rt: string } | null } | null;
-}
-
 export default function Index() {
-  const [zakatData, setZakatData] = useState<ZakatRow[]>([]);
-  const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
-  const [mustahikCount, setMustahikCount] = useState(0);
+  const { stats, fetchStats } = useZakatStats();
+  const [zakatData, setZakatData] = useState<any[]>([]);
+  const [distribusiData, setDistribusiData] = useState<any[]>([]);
+  const [rtChartData, setRtChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const zakatPag = usePagination(50);
+  const distPag = usePagination(50);
 
   const fetchData = async () => {
-    const [{ data: zakat }, { data: distribusi }, { data: mustahik }] = await Promise.all([
-      supabase.from('zakat').select('*, rt(nama_rt)').order('tanggal', { ascending: false }),
-      supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))').order('tanggal', { ascending: false }),
-      supabase.from('mustahik').select('id'),
+    await fetchStats();
+
+    const [zRes, dRes, rtRes] = await Promise.all([
+      supabase.from('zakat').select('id, nama_muzakki, jenis_zakat, jumlah_uang, jumlah_beras, tanggal', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
+      supabase.from('distribusi').select('id, jumlah, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
+      supabase.from('zakat').select('jumlah_uang, rt(nama_rt)'),
     ]);
-    setZakatData((zakat as any) || []);
-    setDistribusiData((distribusi as any) || []);
-    setMustahikCount(mustahik?.length || 0);
+
+    setZakatData(zRes.data || []);
+    zakatPag.setTotalCount(zRes.count || 0);
+    setDistribusiData(dRes.data || []);
+    distPag.setTotalCount(dRes.count || 0);
+
+    const rtMap: Record<string, number> = {};
+    (rtRes.data || []).forEach((z: any) => {
+      const rtName = z.rt?.nama_rt || 'Tidak ada RT';
+      rtMap[rtName] = (rtMap[rtName] || 0) + Number(z.jumlah_uang || 0);
+    });
+    setRtChartData(Object.entries(rtMap).map(([name, value]) => ({ name, value })));
+
     setLastUpdated(new Date());
     setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
-    const zakatSub = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, fetchData).subscribe();
-    const distSub = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
-    return () => { supabase.removeChannel(zakatSub); supabase.removeChannel(distSub); };
-  }, []);
-
-  const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalMal = zakatData.filter(z => z.jenis_zakat === 'Zakat Mal').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalZakat = totalFitrah + totalMal + totalInfaq + totalFidyah;
-  const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
-  const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
+    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, fetchData).subscribe();
+    const ch2 = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
+  }, [zakatPag.page, distPag.page]);
 
   const pieData = [
-    { name: 'Zakat Fitrah', value: totalFitrah },
-    { name: 'Zakat Mal', value: totalMal },
-    { name: 'Infaq', value: totalInfaq },
-    { name: 'Fidyah', value: totalFidyah },
+    { name: 'Zakat Fitrah', value: stats.totalFitrah },
+    { name: 'Zakat Mal', value: stats.totalMal },
+    { name: 'Infaq', value: stats.totalInfaq },
+    { name: 'Fidyah', value: stats.totalFidyah },
   ].filter(d => d.value > 0);
-
-  const rtMap: Record<string, number> = {};
-  zakatData.forEach(z => {
-    const rtName = z.rt?.nama_rt || 'Tidak ada RT';
-    rtMap[rtName] = (rtMap[rtName] || 0) + Number(z.jumlah_uang);
-  });
-  const rtChartData = Object.entries(rtMap).map(([name, value]) => ({ name, value }));
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const fmtDate = (d: Date) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -76,7 +68,6 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -86,39 +77,31 @@ export default function Index() {
               <p className="text-sm md:text-base opacity-90">Transparansi Zakat Online — Ramadhan 1447H</p>
             </div>
           </div>
-          <Link to="/login" className="hidden md:inline-flex px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:opacity-90 transition">
-            Login Panitia
-          </Link>
+          <Link to="/login" className="hidden md:inline-flex px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:opacity-90 transition">Login Panitia</Link>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Tanggal Update */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarDays className="w-4 h-4" />
-          <span>Data diperbarui: {fmtDate(lastUpdated)}</span>
+          <CalendarDays className="w-4 h-4" /><span>Data diperbarui: {fmtDate(lastUpdated)}</span>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Zakat Fitrah', value: fmt(totalFitrah), icon: DollarSign, color: 'text-primary' },
-            { label: 'Zakat Mal', value: fmt(totalMal), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Infaq', value: fmt(totalInfaq), icon: DollarSign, color: 'text-primary' },
-            { label: 'Fidyah', value: fmt(totalFidyah), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Total Terkumpul', value: fmt(totalZakat), icon: TrendingUp, color: 'text-primary' },
-            { label: 'Total Muzakki', value: totalMuzakki.toString(), icon: Users, color: 'text-primary' },
-            { label: 'Total Mustahik', value: mustahikCount.toString(), icon: Users, color: 'text-secondary' },
-            { label: 'Beras (Kg)', value: `${totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
+            { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-primary' },
+            { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-secondary' },
+            { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-primary' },
+            { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-secondary' },
+            { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: TrendingUp, color: 'text-primary' },
+            { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
+            { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-secondary' },
+            { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
               <Card key={stat.label} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`w-5 h-5 ${stat.color}`} />
-                    <span className="text-sm text-muted-foreground">{stat.label}</span>
-                  </div>
+                  <div className="flex items-center gap-2 mb-2"><Icon className={`w-5 h-5 ${stat.color}`} /><span className="text-sm text-muted-foreground">{stat.label}</span></div>
                   <p className="text-lg md:text-xl font-bold">{stat.value}</p>
                 </CardContent>
               </Card>
@@ -126,7 +109,6 @@ export default function Index() {
           })}
         </div>
 
-        {/* Charts */}
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader><CardTitle className="font-serif text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
@@ -137,53 +119,36 @@ export default function Index() {
                     <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                       {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                    <Legend />
+                    <Tooltip formatter={(v: number) => fmt(v)} /><Legend />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-12">Belum ada data zakat</p>
-              )}
+              ) : <p className="text-center text-muted-foreground py-12">Belum ada data zakat</p>}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader><CardTitle className="font-serif text-xl">Zakat per RT</CardTitle></CardHeader>
             <CardContent>
               {rtChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={rtChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" fontSize={12} />
-                    <YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                    <Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
+                    <Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-12">Belum ada data</p>
-              )}
+              ) : <p className="text-center text-muted-foreground py-12">Belum ada data</p>}
             </CardContent>
           </Card>
         </div>
 
-        {/* Tables */}
         <Card>
           <CardHeader><CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle></CardHeader>
           <CardContent className="overflow-auto">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Muzakki</TableHead>
-                  <TableHead>Jenis Zakat</TableHead>
-                  <TableHead>Jumlah</TableHead>
-                  <TableHead>Tanggal</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow><TableHead>Nama Muzakki</TableHead><TableHead>Jenis Zakat</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {zakatData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : zakatData.slice(0, 50).map((z) => (
+                ) : zakatData.map((z: any) => (
                   <TableRow key={z.id}>
                     <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
                     <TableCell>{z.jenis_zakat}</TableCell>
@@ -193,6 +158,7 @@ export default function Index() {
                 ))}
               </TableBody>
             </Table>
+            <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
           </CardContent>
         </Card>
 
@@ -200,18 +166,11 @@ export default function Index() {
           <CardHeader><CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle></CardHeader>
           <CardContent className="overflow-auto">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Mustahik</TableHead>
-                  <TableHead>RT</TableHead>
-                  <TableHead>Jumlah Bantuan</TableHead>
-                  <TableHead>Tanggal</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {distribusiData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : distribusiData.slice(0, 50).map((d) => (
+                ) : distribusiData.map((d: any) => (
                   <TableRow key={d.id}>
                     <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
                     <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
@@ -221,11 +180,11 @@ export default function Index() {
                 ))}
               </TableBody>
             </Table>
+            <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
           </CardContent>
         </Card>
       </main>
 
-      {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
           <p className="font-serif text-lg">Masjid Al-Ikhlas</p>

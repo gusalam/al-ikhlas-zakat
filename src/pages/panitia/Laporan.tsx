@@ -9,45 +9,48 @@ import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 import { friendlyError } from '@/lib/errorHandler';
 import { toast } from '@/hooks/use-toast';
+import { useZakatStats } from '@/hooks/useZakatStats';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function PanitiaLaporan() {
+  const { stats, fetchStats } = useZakatStats();
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
+  const zakatPag = usePagination(50);
+  const distPag = usePagination(50);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [{ data: z, error: ze }, { data: d, error: de }] = await Promise.all([
-          supabase.from('zakat').select('*, rt(nama_rt)'),
-          supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))'),
+        await fetchStats();
+        const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([
+          supabase.from('zakat').select('*, rt(nama_rt)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
+          supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
         ]);
         if (ze) throw ze;
         if (de) throw de;
         setZakatData(z || []);
+        zakatPag.setTotalCount(zc || 0);
         setDistribusiData(d || []);
+        distPag.setTotalCount(dc || 0);
       } catch (err) {
         toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' });
       }
     };
     fetchData();
-  }, []);
+  }, [zakatPag.page, distPag.page]);
 
-  const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalMal = zakatData.filter(z => z.jenis_zakat === 'Zakat Mal').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
-  const totalPemasukan = totalFitrah + totalMal + totalInfaq + totalFidyah;
-  const saldoZakat = totalPemasukan - totalDistribusi;
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
   const pieData = [
-    { name: 'Zakat Fitrah', value: totalFitrah },
-    { name: 'Zakat Mal', value: totalMal },
-    { name: 'Infaq', value: totalInfaq },
-    { name: 'Fidyah', value: totalFidyah },
+    { name: 'Zakat Fitrah', value: stats.totalFitrah },
+    { name: 'Zakat Mal', value: stats.totalMal },
+    { name: 'Infaq', value: stats.totalInfaq },
+    { name: 'Fidyah', value: stats.totalFidyah },
   ].filter(d => d.value > 0);
 
   const rtMap: Record<string, number> = {};
@@ -55,22 +58,16 @@ export default function PanitiaLaporan() {
   const rtChartData = Object.entries(rtMap).map(([name, value]) => ({ name, value }));
 
   const exportExcel = () => {
-    const zakatSheet = zakatData.map(z => ({
-      'Nama Muzakki': z.nama_muzakki, 'Jenis': z.jenis_zakat, 'Jumlah Uang': z.jumlah_uang,
-      'Jumlah Beras': z.jumlah_beras, 'RT': z.rt?.nama_rt || '-', 'Tanggal': z.tanggal,
-    }));
-    const distSheet = distribusiData.map(d => ({
-      'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-',
-      'Jumlah': d.jumlah, 'Tanggal': d.tanggal,
-    }));
+    const zakatSheet = zakatData.map(z => ({ 'Nama Muzakki': z.nama_muzakki, 'Jenis': z.jenis_zakat, 'Jumlah Uang': z.jumlah_uang, 'Jumlah Beras': z.jumlah_beras, 'RT': z.rt?.nama_rt || '-', 'Tanggal': z.tanggal }));
+    const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-', 'Jumlah': d.jumlah, 'Tanggal': d.tanggal }));
     const summarySheet = [
-      { Keterangan: 'Zakat Fitrah', Jumlah: totalFitrah },
-      { Keterangan: 'Zakat Mal', Jumlah: totalMal },
-      { Keterangan: 'Infaq', Jumlah: totalInfaq },
-      { Keterangan: 'Fidyah', Jumlah: totalFidyah },
-      { Keterangan: 'Total Pemasukan', Jumlah: totalPemasukan },
-      { Keterangan: 'Total Distribusi', Jumlah: totalDistribusi },
-      { Keterangan: 'Saldo Zakat', Jumlah: saldoZakat },
+      { Keterangan: 'Zakat Fitrah', Jumlah: stats.totalFitrah },
+      { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal },
+      { Keterangan: 'Infaq', Jumlah: stats.totalInfaq },
+      { Keterangan: 'Fidyah', Jumlah: stats.totalFidyah },
+      { Keterangan: 'Total Pemasukan', Jumlah: stats.totalZakat },
+      { Keterangan: 'Total Distribusi', Jumlah: stats.totalDistribusi },
+      { Keterangan: 'Saldo Zakat', Jumlah: stats.saldoZakat },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
@@ -85,13 +82,10 @@ export default function PanitiaLaporan() {
       subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
       headers: ['Keterangan', 'Jumlah'],
       rows: [
-        ['Zakat Fitrah', fmt(totalFitrah)],
-        ['Zakat Mal', fmt(totalMal)],
-        ['Infaq', fmt(totalInfaq)],
-        ['Fidyah', fmt(totalFidyah)],
-        ['Total Pemasukan', fmt(totalPemasukan)],
-        ['Total Distribusi', fmt(totalDistribusi)],
-        ['Saldo Zakat', fmt(saldoZakat)],
+        ['Zakat Fitrah', fmt(stats.totalFitrah)], ['Zakat Mal', fmt(stats.totalMal)],
+        ['Infaq', fmt(stats.totalInfaq)], ['Fidyah', fmt(stats.totalFidyah)],
+        ['Total Pemasukan', fmt(stats.totalZakat)], ['Total Distribusi', fmt(stats.totalDistribusi)],
+        ['Saldo Zakat', fmt(stats.saldoZakat)],
       ],
       filename: 'Laporan_Keuangan_Zakat_Al_Ikhlas.pdf',
     });
@@ -108,23 +102,23 @@ export default function PanitiaLaporan() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Zakat Fitrah', value: fmt(totalFitrah) },
-          { label: 'Zakat Mal', value: fmt(totalMal) },
-          { label: 'Infaq', value: fmt(totalInfaq) },
-          { label: 'Fidyah', value: fmt(totalFidyah) },
-          { label: 'Total Pemasukan', value: fmt(totalPemasukan), highlight: true },
-          { label: 'Total Distribusi', value: fmt(totalDistribusi) },
-          { label: 'Saldo Zakat', value: fmt(saldoZakat), highlight: true, isSaldo: true },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal) },
+          { label: 'Infaq', value: fmt(stats.totalInfaq) },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah) },
+          { label: 'Total Pemasukan', value: fmt(stats.totalZakat), highlight: true },
+          { label: 'Total Distribusi', value: fmt(stats.totalDistribusi) },
+          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), highlight: true, isSaldo: true },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className={`text-xl font-bold ${(s as any).isSaldo ? (saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
+              <p className={`text-xl font-bold ${(s as any).isSaldo ? (stats.saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader><CardTitle className="font-serif">Grafik Jenis Zakat</CardTitle></CardHeader>
           <CardContent>
@@ -146,6 +140,36 @@ export default function PanitiaLaporan() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mb-6">
+        <CardHeader><CardTitle className="font-serif">Data Zakat</CardTitle></CardHeader>
+        <CardContent className="overflow-auto">
+          <Table>
+            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {zakatData.map(z => (
+                <TableRow key={z.id}><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="font-serif">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto">
+          <Table>
+            <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {distribusiData.map(d => (
+                <TableRow key={d.id}><TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
+        </CardContent>
+      </Card>
     </PanitiaLayout>
   );
 }
