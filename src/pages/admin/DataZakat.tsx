@@ -115,12 +115,24 @@ export default function DataZakat() {
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
-                <div><Label>RT</Label>
-                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                <div>
+                  <Label>Status Muzakki</Label>
+                  <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RT">RT</SelectItem>
+                      <SelectItem value="Jamaah">Jamaah</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
+                {form.status_muzakki === 'RT' && (
+                  <div><Label>RT</Label>
+                    <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                      <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div><Label>Jenis Zakat</Label>
                   <Select value={form.jenis_zakat} onValueChange={v => {
                     if (v === 'Zakat Fitrah') {
