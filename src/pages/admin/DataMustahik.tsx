@@ -157,9 +157,25 @@ export default function DataMustahik() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Select value={filterRt} onValueChange={v => { setFilterRt(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua RT" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua RT</SelectItem>
+              {rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterKategori} onValueChange={v => { setFilterKategori(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Kategori</SelectItem>
+              {KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
