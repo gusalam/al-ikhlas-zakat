@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Banknote, Users, Wheat, TrendingUp, Truck } from 'lucide-react';
+import { Banknote, Users, Wheat, TrendingUp, Truck, Package, ArrowDownCircle, ArrowUpCircle, BarChart3 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { friendlyError } from '@/lib/errorHandler';
@@ -60,6 +60,35 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
+      {/* Stok Zakat Audit */}
+      <Card className="mb-8 border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />Audit Stok Zakat
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: 'Uang Masuk', value: fmt(stats.totalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Uang Didistribusikan', value: fmt(stats.totalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Uang', value: fmt(stats.sisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
+              { label: 'Beras Masuk', value: `${stats.totalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Beras Didistribusikan', value: `${stats.totalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Beras', value: `${stats.sisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
+            ].map(s => {
+              const Icon = s.icon;
+              return (
+                <div key={s.label} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className={`p-2 rounded-lg bg-background ${s.color}`}><Icon className="w-5 h-5" /></div>
+                  <div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-lg font-bold">{s.value}</p></div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-emerald-600' },
