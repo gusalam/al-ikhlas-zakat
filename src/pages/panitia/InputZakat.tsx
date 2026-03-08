@@ -144,7 +144,7 @@ export default function InputZakat() {
   const openEdit = (item: any) => {
     setEditItem(item);
     const details = item.detail_zakat || [];
-    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, penerima: '', alamat: '', status_muzakki: item.status_muzakki || 'RT' });
+    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, penerima: '', alamat: '', status_muzakki: item.status_muzakki || 'RT', alamat_muzakki: item.alamat_muzakki || '' });
     const d = emptyDetail();
     details.forEach((det: any) => {
       if (det.jenis_zakat === 'Zakat Fitrah') { d.fitrah = { enabled: true, jumlah_jiwa: String(det.jumlah_jiwa || 1), harga_beras: '15000', jumlah_uang: String(det.jumlah_uang || 0), jumlah_beras: String(det.jumlah_beras || 0) }; }
