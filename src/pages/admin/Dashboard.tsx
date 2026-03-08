@@ -77,29 +77,29 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold mb-4 sm:mb-6">Dashboard Admin</h1>
       {/* Stok Zakat Audit */}
-      <Card className="mb-8 border-primary/20">
+      <Card className="mb-6 sm:mb-8 border-primary/20">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" />Audit Stok Zakat
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="p-3 sm:p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
             {[
               { label: 'Uang Masuk', value: fmt(aTotalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Uang Didistribusikan', value: fmt(aTotalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Uang Distribusi', value: fmt(aTotalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
               { label: 'Sisa Uang', value: fmt(aSisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
               { label: 'Beras Masuk', value: `${aTotalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Beras Didistribusikan', value: `${aTotalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Beras Distribusi', value: `${aTotalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
               { label: 'Sisa Beras', value: `${aSisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
             ].map(s => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className={`p-2 rounded-lg bg-background ${s.color}`}><Icon className="w-5 h-5" /></div>
-                  <div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-lg font-bold">{s.value}</p></div>
+                <div key={s.label} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-muted/50">
+                  <div className={`p-1.5 sm:p-2 rounded-lg bg-background ${s.color}`}><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></div>
+                  <div className="min-w-0"><p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{s.label}</p><p className="text-sm sm:text-lg font-bold whitespace-nowrap" style={{ wordBreak: 'keep-all' }}>{s.value}</p></div>
                 </div>
               );
             })}
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
         {[
           { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600' },
           { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600' },
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
         ].map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}><CardContent className="p-4"><div className="flex items-center gap-2 mb-2"><div className={`p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-5 h-5" /></div></div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-lg font-bold mt-1">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-3 sm:p-4"><div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2"><div className={`p-1.5 sm:p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></div></div><p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p><p className="text-sm sm:text-lg font-bold mt-0.5 sm:mt-1 whitespace-nowrap" style={{ wordBreak: 'keep-all' }}>{s.value}</p></CardContent></Card>
           );
         })}
       </div>
