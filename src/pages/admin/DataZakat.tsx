@@ -76,6 +76,16 @@ export default function DataZakat() {
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
+  const DeleteButton = ({ id }: { id: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
@@ -93,10 +103,10 @@ export default function DataZakat() {
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
                 <div><Label>RT</Label>
                   <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
                     <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -110,7 +120,7 @@ export default function DataZakat() {
                       setForm({ ...form, jenis_zakat: v });
                     }
                   }}>
-                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
                       <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
@@ -128,15 +138,15 @@ export default function DataZakat() {
                         const beras = 2.5;
                         const uang = beras * (Number(harga) || 0);
                         setForm({ ...form, harga_beras: harga, jumlah_beras: String(beras), jumlah_uang: String(uang) });
-                      }} className="h-12 text-base" /></div>
+                      }} /></div>
                       <p className="text-xs text-muted-foreground">Rumus: 1 jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(2.5 * (Number(form.harga_beras) || 0))}</strong></p>
                     </CardContent>
                   </Card>
                 )}
-                <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
-                <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
-                <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
-                <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
+                <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} /></div>
+                <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} /></div>
+                <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
+                <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -155,13 +165,7 @@ export default function DataZakat() {
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Kwitansi"><FileText className="w-4 h-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
-                          <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(z.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <DeleteButton id={z.id} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -180,8 +184,15 @@ export default function DataZakat() {
           <Card key={z.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div><p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p><span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span></div>
-                <Button size="sm" variant="outline" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
+                <div>
+                  <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
+                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
+                  <DeleteButton id={z.id} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>

@@ -40,7 +40,7 @@ export default function DataMustahik() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => setForm({ ...emptyForm });
+  const resetForm = () => { setForm({ ...emptyForm }); setEditItem(null); };
 
   const handleSubmit = async () => {
     if (!form.nama.trim()) { toast.error('Nama wajib diisi'); return; }
@@ -64,7 +64,7 @@ export default function DataMustahik() {
       if (error) { toast.error(friendlyError(error)); return; }
       toast.success('Data mustahik berhasil ditambahkan ✓');
     }
-    setOpen(false); resetForm(); setEditItem(null); fetchData();
+    setOpen(false); resetForm(); fetchData();
   };
 
   const handleDelete = async (id: string) => {
@@ -73,28 +73,44 @@ export default function DataMustahik() {
     else { toast.success('Data mustahik berhasil dihapus ✓'); fetchData(); }
   };
 
+  const openEdit = (m: any) => {
+    setEditItem(m);
+    setForm({ nama: m.nama, rt_id: m.rt_id || '', kategori: m.kategori || '', alamat: m.alamat || '', status: m.status || 'RT' });
+    setOpen(true);
+  };
+
+  const DeleteButton = ({ id }: { id: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Hapus mustahik?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-2xl font-serif font-bold">Data Mustahik</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => exportPdf({
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Mustahik — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
             headers: ['No', 'Nama', 'Status', 'RT', 'Kategori', 'Alamat'],
             rows: data.map((m, i) => [String(i + 1), m.nama, m.status || '-', m.rt?.nama_rt || '-', m.kategori || '-', m.alamat || '-']),
             filename: 'Data_Mustahik_Al_Ikhlas.pdf',
-          })}><FileText className="w-4 h-4 mr-2" />Export PDF</Button>
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
-            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
+          })}><FileText className="w-4 h-4 mr-1" />Export PDF</Button>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+            <DialogTrigger asChild><Button size="sm"><Plus className="w-4 h-4 mr-1" />Tambah</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Mustahik</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div><Label>Nama</Label><Input value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} className="h-12 text-base" /></div>
-                <div><Label>Alamat</Label><Input value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Alamat mustahik" className="h-12 text-base" /></div>
+                <div><Label>Nama</Label><Input value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} /></div>
+                <div><Label>Alamat</Label><Input value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Alamat mustahik" /></div>
                 <div><Label>Status Penerima</Label>
                   <Select value={form.status} onValueChange={v => setForm({ ...form, status: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
-                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="RT">RT</SelectItem>
                       <SelectItem value="Jamaah">Jamaah</SelectItem>
@@ -104,7 +120,7 @@ export default function DataMustahik() {
                 {form.status === 'RT' && (
                   <div><Label>RT <span className="text-destructive">*</span></Label>
                     <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                      <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
                       <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
@@ -112,24 +128,25 @@ export default function DataMustahik() {
                 {form.status === 'Jamaah' && (
                   <div><Label>RT (opsional)</Label>
                     <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                      <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT (opsional)" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Pilih RT (opsional)" /></SelectTrigger>
                       <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 )}
                 <div><Label>Kategori <span className="text-destructive">*</span></Label>
                   <Select value={form.kategori} onValueChange={v => setForm({ ...form, kategori: v })}>
-                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
                     <SelectContent>{KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan' : 'Tambah'}</Button>
+                <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan' : 'Tambah'}</Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       </div>
-      <Card>
+
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Alamat</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
@@ -143,14 +160,8 @@ export default function DataMustahik() {
                   <TableCell>{m.alamat || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(m); setForm({ nama: m.nama, rt_id: m.rt_id || '', kategori: m.kategori || '', alamat: m.alamat || '', status: m.status || 'RT' }); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>Hapus mustahik?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
-                          <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(m.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Pencil className="w-4 h-4" /></Button>
+                      <DeleteButton id={m.id} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -162,6 +173,32 @@ export default function DataMustahik() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data mustahik</p>}
+        {data.map(m => (
+          <Card key={m.id}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-base">{m.nama}</p>
+                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{m.kategori || '-'}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}><Pencil className="w-4 h-4" /></Button>
+                  <DeleteButton id={m.id} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">Status:</span> <span className="font-medium">{m.status || '-'}</span></div>
+                <div><span className="text-muted-foreground">RT:</span> <span className="font-medium">{m.rt?.nama_rt || '-'}</span></div>
+              </div>
+              {m.alamat && <p className="text-sm text-muted-foreground">{m.alamat}</p>}
+            </CardContent>
+          </Card>
+        ))}
+        <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
+      </div>
     </AdminLayout>
   );
 }
