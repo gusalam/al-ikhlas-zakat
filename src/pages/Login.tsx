@@ -30,9 +30,8 @@ export default function Login() {
     const { error } = await signIn(email, password);
     if (error) {
       toast.error(friendlyError(error));
-      setSubmitting(false);
     }
-    // Redirect handled by AuthContext state change
+    setSubmitting(false);
   };
 
   return (
