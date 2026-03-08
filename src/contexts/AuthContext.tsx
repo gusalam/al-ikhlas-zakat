@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type AppRole = 'admin' | 'panitia' | null;
 
@@ -25,13 +26,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
+  const clearAuth = () => {
+    setUser(null);
+    setSession(null);
+    setRole(null);
+    setProfile(null);
+  };
+
+  const fetchUserData = async (userId: string): Promise<boolean> => {
     const [{ data: roleData }, { data: profileData }] = await Promise.all([
       supabase.from('user_roles').select('role').eq('user_id', userId).single(),
       supabase.from('profiles').select('name, email').eq('id', userId).single(),
     ]);
-    setRole((roleData?.role as AppRole) || null);
+
+    const userRole = (roleData?.role as AppRole) || null;
+
+    if (!userRole) {
+      // User has no role — force logout
+      toast.error('Akun Anda tidak memiliki akses ke sistem. Silakan hubungi admin.');
+      await supabase.auth.signOut();
+      clearAuth();
+      return false;
+    }
+
+    setRole(userRole);
     setProfile(profileData || null);
+    return true;
   };
 
   useEffect(() => {
@@ -39,19 +59,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => fetchUserData(session.user.id), 0);
+        // Use setTimeout to avoid Supabase deadlock
+        setTimeout(async () => {
+          const ok = await fetchUserData(session.user.id);
+          if (!ok) return; // already cleared
+          setLoading(false);
+        }, 0);
       } else {
         setRole(null);
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserData(session.user.id);
+        const ok = await fetchUserData(session.user.id);
+        if (!ok) {
+          setLoading(false);
+          return;
+        }
       }
       setLoading(false);
     });
@@ -66,10 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setRole(null);
-    setProfile(null);
+    clearAuth();
   };
 
   return (
