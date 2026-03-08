@@ -42,10 +42,6 @@ export default function Distribusi() {
 
   const handleSubmit = async () => {
     const jumlah = Number(form.jumlah);
-    if (jumlah > stats.saldoZakat) {
-      toast.error('Distribusi tidak boleh melebihi saldo zakat yang tersedia.');
-      return;
-    }
     const { error } = await supabase.from('distribusi').insert({ mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success('Distribusi zakat berhasil dicatat ✓');
