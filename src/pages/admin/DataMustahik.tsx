@@ -47,7 +47,7 @@ export default function DataMustahik() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch, filterRt, filterKategori]);
 
   const resetForm = () => { setForm({ ...emptyForm }); setEditItem(null); };
 
