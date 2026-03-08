@@ -19,14 +19,19 @@ export default function Distribusi() {
   const [mustahikList, setMustahikList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ mustahik_id: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0] });
+  const [saldoZakat, setSaldoZakat] = useState(0);
 
   const fetchData = async () => {
-    const [{ data: dist }, { data: mustahik }] = await Promise.all([
+    const [{ data: dist }, { data: mustahik }, { data: zakat }] = await Promise.all([
       supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))').order('tanggal', { ascending: false }),
       supabase.from('mustahik').select('id, nama'),
+      supabase.from('zakat').select('jumlah_uang'),
     ]);
     setData(dist || []);
     setMustahikList(mustahik || []);
+    const totalZakat = (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang || 0), 0);
+    const totalDist = (dist || []).reduce((s, d) => s + Number(d.jumlah || 0), 0);
+    setSaldoZakat(totalZakat - totalDist);
   };
 
   useEffect(() => { fetchData(); }, []);
