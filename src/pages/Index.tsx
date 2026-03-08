@@ -9,11 +9,15 @@ import { Input } from '@/components/ui/input';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
+import SplashScreen from '@/components/SplashScreen';
+
+const SPLASH_KEY = 'zakat-splash-shown';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 const PAGE_SIZE = 20;
 
 export default function Index() {
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
   const { stats, fetchStats } = useZakatStats();
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
@@ -186,6 +190,8 @@ export default function Index() {
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const fmtDate = (d: Date) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  if (showSplash) return <SplashScreen onComplete={() => { sessionStorage.setItem(SPLASH_KEY, '1'); setShowSplash(false); }} />;
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div>;
 
