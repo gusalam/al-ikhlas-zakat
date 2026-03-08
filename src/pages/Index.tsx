@@ -295,7 +295,14 @@ export default function Index() {
                   const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                   return (
                     <TableRow key={z.id}>
-                      <TableCell className="font-medium">{z.nama_muzakki}{z.alamat_muzakki ? <span className="block text-xs text-muted-foreground">{z.alamat_muzakki}</span> : ''}</TableCell>
+                      <TableCell className="font-medium">
+                        {z.nama_muzakki}
+                        {(z.rt?.nama_rt || z.alamat_muzakki) && (
+                          <span className="block text-xs text-muted-foreground">
+                            {[z.rt?.nama_rt, z.alamat_muzakki].filter(Boolean).join(' — ')}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{jenisList || '-'}</TableCell>
                       <TableCell>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</TableCell>
                       <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
