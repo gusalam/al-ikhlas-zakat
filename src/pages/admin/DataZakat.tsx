@@ -26,7 +26,7 @@ export default function DataZakat() {
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' });
+  const [form, setForm] = useState({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' });
   const [detail, setDetail] = useState<DetailForm>(emptyDetail());
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
