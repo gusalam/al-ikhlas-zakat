@@ -20,7 +20,7 @@ export default function PanitiaDashboard() {
   const fetchData = useCallback(async () => {
     await fetchStats();
     const { data } = await supabase.rpc('get_zakat_per_rt');
-    setRtStats((data as RtStat[]) || []);
+    setRtStats((data as unknown as RtStat[]) || []);
   }, [fetchStats]);
 
   useEffect(() => {
