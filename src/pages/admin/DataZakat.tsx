@@ -37,7 +37,7 @@ export default function DataZakat() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000' });
 
   const handleSubmit = async () => {
     const payload = { ...form, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, created_by: user?.id };
