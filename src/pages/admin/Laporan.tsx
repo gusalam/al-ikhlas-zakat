@@ -139,7 +139,13 @@ export default function Laporan() {
       </div>
 
       <Card className="mb-6 hidden md:block">
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <CardTitle className="font-serif text-lg">Data Zakat</CardTitle>
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
+          </div>
+        </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
