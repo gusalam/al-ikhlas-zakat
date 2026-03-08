@@ -228,14 +228,26 @@ export default function InputZakat() {
   const EditFormFields = () => (
     <div className="space-y-4">
       <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+      <div>
+        <Label>Status Muzakki</Label>
+        <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="RT">RT</SelectItem>
+            <SelectItem value="Jamaah">Jamaah</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label>RT</Label>
-          <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-            <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-            <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
+        {form.status_muzakki === 'RT' && (
+          <div>
+            <Label>RT</Label>
+            <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+              <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+              <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        )}
         <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} /></div>
       </div>
       <div>
