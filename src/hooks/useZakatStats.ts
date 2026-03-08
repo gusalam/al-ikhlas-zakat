@@ -10,10 +10,7 @@ export interface ZakatStats {
   totalBeras: number;
   totalMuzakki: number;
   totalMustahik: number;
-  totalDistribusi: number;
-  saldoZakat: number;
   totalZakatCount: number;
-  totalDistribusiCount: number;
   totalMustahikCount: number;
 }
 
