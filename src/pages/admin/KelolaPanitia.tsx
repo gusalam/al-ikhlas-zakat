@@ -58,31 +58,42 @@ export default function KelolaPanitia() {
     else { toast.success('Role panitia berhasil dihapus ✓'); fetchData(); }
   };
 
+  const DeleteButton = ({ userId }: { userId: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Hapus panitia?</AlertDialogTitle><AlertDialogDescription>Role panitia akan dihapus dari user ini.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(userId)}>Hapus</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Kelola Panitia</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Kelola Panitia</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah Panitia</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Tambah Panitia Baru</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div><Label>Nama</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="h-12 text-base" /></div>
+              <div><Label>Nama</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label>Email</Label><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
               <div><Label>Password</Label>
                 <div className="relative">
-                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="h-12 text-base pr-12" />
+                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="pr-12" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
-              <Button onClick={handleSubmit} className="w-full h-12" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Tambah Panitia'}</Button>
+              <Button onClick={handleSubmit} className="w-full" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Tambah Panitia'}</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Email</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
@@ -91,21 +102,28 @@ export default function KelolaPanitia() {
                 <TableRow key={p.user_id}>
                   <TableCell>{p.name}</TableCell>
                   <TableCell>{p.email}</TableCell>
-                  <TableCell>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>Hapus panitia?</AlertDialogTitle><AlertDialogDescription>Role panitia akan dihapus dari user ini.</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(p.user_id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
+                  <TableCell><DeleteButton userId={p.user_id} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <div className="md:hidden space-y-3">
+        {panitiaList.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada panitia</p>}
+        {panitiaList.map((p: any) => (
+          <Card key={p.user_id}>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="font-semibold">{p.name}</p>
+                <p className="text-sm text-muted-foreground">{p.email}</p>
+              </div>
+              <DeleteButton userId={p.user_id} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </AdminLayout>
   );
 }

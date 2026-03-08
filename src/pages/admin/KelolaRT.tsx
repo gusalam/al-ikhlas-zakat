@@ -25,6 +25,8 @@ export default function KelolaRT() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const resetForm = () => { setNamaRt(''); setEditItem(null); };
+
   const handleSubmit = async () => {
     if (editItem) {
       const { error } = await supabase.from('rt').update({ nama_rt: namaRt }).eq('id', editItem.id);
@@ -35,7 +37,7 @@ export default function KelolaRT() {
       if (error) { toast.error(friendlyError(error)); return; }
       toast.success('Data RT berhasil ditambahkan ✓');
     }
-    setOpen(false); setNamaRt(''); setEditItem(null); fetchData();
+    setOpen(false); resetForm(); fetchData();
   };
 
   const handleDelete = async (id: string) => {
@@ -44,22 +46,33 @@ export default function KelolaRT() {
     else { toast.success('Data RT berhasil dihapus ✓'); fetchData(); }
   };
 
+  const DeleteButton = ({ id }: { id: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Hapus RT?</AlertDialogTitle><AlertDialogDescription>Semua data terkait RT ini mungkin terpengaruh.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Kelola RT</h1>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setNamaRt(''); setEditItem(null); } }}>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Kelola RT</h1>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah RT</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} RT</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div><Label>Nama RT</Label><Input value={namaRt} onChange={e => setNamaRt(e.target.value)} placeholder="RT 01" className="h-12 text-base" /></div>
-              <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan' : 'Tambah'}</Button>
+              <div><Label>Nama RT</Label><Input value={namaRt} onChange={e => setNamaRt(e.target.value)} placeholder="RT 01" /></div>
+              <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan' : 'Tambah'}</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama RT</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
@@ -70,13 +83,7 @@ export default function KelolaRT() {
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => { setEditItem(r); setNamaRt(r.nama_rt); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>Hapus RT?</AlertDialogTitle><AlertDialogDescription>Semua data terkait RT ini mungkin terpengaruh.</AlertDialogDescription></AlertDialogHeader>
-                          <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(r.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <DeleteButton id={r.id} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -85,6 +92,21 @@ export default function KelolaRT() {
           </Table>
         </CardContent>
       </Card>
+
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data RT</p>}
+        {data.map(r => (
+          <Card key={r.id}>
+            <CardContent className="p-4 flex items-center justify-between">
+              <p className="font-semibold">{r.nama_rt}</p>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditItem(r); setNamaRt(r.nama_rt); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
+                <DeleteButton id={r.id} />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </AdminLayout>
   );
 }
