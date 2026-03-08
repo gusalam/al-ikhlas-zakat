@@ -15,32 +15,33 @@ export default function InfiniteTickerList({
   durationPerItem = 3,
   isPaused = false,
 }: InfiniteTickerListProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const firstCopyRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [measured, setMeasured] = useState<{ totalH: number; visibleH: number } | null>(null);
+  const [heights, setHeights] = useState<{ total: number; visible: number } | null>(null);
 
+  // Measure after mount and data changes
   useEffect(() => {
-    const measure = () => {
-      if (!firstCopyRef.current) return;
-      const rows = firstCopyRef.current.children;
-      if (rows.length === 0) return;
+    const el = firstCopyRef.current;
+    if (!el) return;
 
-      let totalH = 0;
-      let visibleH = 0;
-      for (let i = 0; i < rows.length; i++) {
-        const h = (rows[i] as HTMLElement).getBoundingClientRect().height;
-        totalH += h;
-        if (i < visibleCount) visibleH += h;
+    const doMeasure = () => {
+      const children = el.children;
+      if (children.length === 0) return;
+      let total = 0;
+      let visible = 0;
+      for (let i = 0; i < children.length; i++) {
+        const h = (children[i] as HTMLElement).offsetHeight;
+        total += h;
+        if (i < visibleCount) visible += h;
       }
-      setMeasured({ totalH, visibleH });
+      if (total > 0 && visible > 0) {
+        setHeights({ total, visible });
+      }
     };
 
-    // Measure after a frame to ensure layout is complete
-    const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(measure);
-    });
-    return () => cancelAnimationFrame(raf);
+    // Use setTimeout to ensure layout is settled
+    const t = setTimeout(doMeasure, 100);
+    return () => clearTimeout(t);
   }, [data, visibleCount]);
 
   const paused = isPaused || isHovered;
@@ -63,20 +64,18 @@ export default function InfiniteTickerList({
     );
   }
 
-  const containerHeight = measured?.visibleH;
-  const totalHeight = measured?.totalH || 0;
+  const isReady = heights !== null;
 
   return (
     <div
-      ref={containerRef}
       className="overflow-hidden relative"
-      style={{ height: containerHeight ? containerHeight : 'auto' }}
+      style={{ height: isReady ? heights.visible : 'auto' }}
       onMouseEnter={handlePause}
       onMouseLeave={handleResume}
       onTouchStart={handlePause}
       onTouchEnd={handleResume}
     >
-      {measured && (
+      {isReady && (
         <>
           <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
@@ -84,20 +83,22 @@ export default function InfiniteTickerList({
       )}
 
       <div
-        className={measured ? 'ticker-scroll' : ''}
-        style={measured ? {
+        className={isReady ? 'ticker-scroll' : ''}
+        style={isReady ? {
           animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
-          '--ticker-distance': `-${totalHeight}px`,
+          '--ticker-distance': `-${heights.total}px`,
         } as React.CSSProperties : undefined}
       >
+        {/* First copy - always rendered for measurement */}
         <div ref={firstCopyRef}>
           {data.map((item, i) => (
             <div key={`a-${i}`}>{renderRow(item, i)}</div>
           ))}
         </div>
-        {measured && (
-          <div>
+        {/* Second copy for seamless loop - only after measurement */}
+        {isReady && (
+          <div aria-hidden="true">
             {data.map((item, i) => (
               <div key={`b-${i}`}>{renderRow(item, i)}</div>
             ))}
