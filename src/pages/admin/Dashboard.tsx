@@ -72,6 +72,7 @@ export default function AdminDashboard() {
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
+          { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
         ].map(s => {
           const Icon = s.icon;

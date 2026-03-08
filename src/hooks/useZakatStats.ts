@@ -47,6 +47,7 @@ export function useZakatStats() {
       totalFidyah: Number(d.total_fidyah) || 0,
       totalZakat: Number(d.total_zakat) || 0,
       totalBeras: Number(d.total_beras) || 0,
+      totalJiwaFitrah: Number(d.total_jiwa_fitrah) || 0,
       totalMuzakki: Number(d.total_muzakki) || 0,
       totalMustahik: Number(d.total_mustahik) || 0,
       totalZakatCount: Number(d.total_zakat_count) || 0,

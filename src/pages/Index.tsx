@@ -94,6 +94,7 @@ export default function Index() {
             { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-secondary' },
             { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-secondary' },
+            { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-primary' },
             { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
             const Icon = stat.icon;
