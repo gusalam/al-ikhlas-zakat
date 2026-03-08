@@ -58,6 +58,7 @@ export default function DataZakat() {
   const handleSubmit = async () => {
     const items = buildDetails();
     if (!form.nama_muzakki.trim()) { toast.error('Nama muzakki wajib diisi'); return; }
+    if (!form.alamat_muzakki.trim()) { toast.error('Alamat muzakki wajib diisi untuk transparansi data.'); return; }
     if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
 
     if (editItem) {
