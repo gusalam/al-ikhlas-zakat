@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,43 +14,57 @@ export default function PanitiaDashboard() {
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [{ data: zakat, error: ze }, { data: mustahik, error: me }, { data: distribusi, error: de }] = await Promise.all([
-          supabase.from('zakat').select('nama_muzakki, jumlah_uang, jumlah_beras, jenis_zakat, rt_id, tanggal'),
-          supabase.from('mustahik').select('id'),
-          supabase.from('distribusi').select('jumlah, tanggal'),
-        ]);
-        if (ze) throw ze;
-        if (me) throw me;
-        if (de) throw de;
+  const fetchData = useCallback(async () => {
+    try {
+      const [{ data: zakat, error: ze }, { data: mustahik, error: me }, { data: distribusi, error: de }] = await Promise.all([
+        supabase.from('zakat').select('nama_muzakki, jumlah_uang, jumlah_beras, jenis_zakat, rt_id, tanggal'),
+        supabase.from('mustahik').select('id'),
+        supabase.from('distribusi').select('jumlah, tanggal'),
+      ]);
+      if (ze) throw ze;
+      if (me) throw me;
+      if (de) throw de;
 
-        const z = zakat || [];
-        const d = distribusi || [];
-        setZakatData(z);
-        setDistribusiData(d);
+      const z = zakat || [];
+      const d = distribusi || [];
+      setZakatData(z);
+      setDistribusiData(d);
 
-        const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang), 0);
-        const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
-        setStats({
-          totalZakat,
-          totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
-          totalMustahik: mustahik?.length || 0,
-          totalDistribusi,
-          totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras), 0),
-          saldoZakat: totalZakat - totalDistribusi,
-          totalFitrah: z.filter(item => item.jenis_zakat === 'Zakat Fitrah').reduce((s, item) => s + Number(item.jumlah_uang), 0),
-          totalMal: z.filter(item => item.jenis_zakat === 'Zakat Mal').reduce((s, item) => s + Number(item.jumlah_uang), 0),
-          totalInfaq: z.filter(item => item.jenis_zakat === 'Infaq' || item.jenis_zakat === 'Shodaqoh').reduce((s, item) => s + Number(item.jumlah_uang), 0),
-          totalFidyah: z.filter(item => item.jenis_zakat === 'Fidyah').reduce((s, item) => s + Number(item.jumlah_uang), 0),
-        });
-      } catch (err) {
-        toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' });
-      }
-    };
-    fetchData();
+      const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang), 0);
+      const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
+      setStats({
+        totalZakat,
+        totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
+        totalMustahik: mustahik?.length || 0,
+        totalDistribusi,
+        totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras), 0),
+        saldoZakat: totalZakat - totalDistribusi,
+        totalFitrah: z.filter(item => item.jenis_zakat === 'Zakat Fitrah').reduce((s, item) => s + Number(item.jumlah_uang), 0),
+        totalMal: z.filter(item => item.jenis_zakat === 'Zakat Mal').reduce((s, item) => s + Number(item.jumlah_uang), 0),
+        totalInfaq: z.filter(item => item.jenis_zakat === 'Infaq' || item.jenis_zakat === 'Shodaqoh').reduce((s, item) => s + Number(item.jumlah_uang), 0),
+        totalFidyah: z.filter(item => item.jenis_zakat === 'Fidyah').reduce((s, item) => s + Number(item.jumlah_uang), 0),
+      });
+    } catch (err) {
+      toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' });
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+
+    // Realtime subscriptions
+    const zakatChannel = supabase.channel('panitia-dash-zakat')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, () => fetchData())
+      .subscribe();
+    const distribusiChannel = supabase.channel('panitia-dash-distribusi')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, () => fetchData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(zakatChannel);
+      supabase.removeChannel(distribusiChannel);
+    };
+  }, [fetchData]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
