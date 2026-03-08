@@ -62,8 +62,9 @@ export default function PanitiaLaporan() {
     const fetchData = async () => {
       try {
         await fetchStats(startDate, endDate);
+        const distJoin = debouncedSearchDist.trim() ? 'mustahik!inner(nama, alamat, rt(nama_rt))' : 'mustahik(nama, alamat, rt(nama_rt))';
         let zq = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
-        let dq = supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
+        let dq = supabase.from('distribusi').select(`*, ${distJoin}`, { count: 'exact' }).order('tanggal', { ascending: false });
         if (startDate) { zq = zq.gte('tanggal', startDate); dq = dq.gte('tanggal', startDate); }
         if (endDate) { zq = zq.lte('tanggal', endDate); dq = dq.lte('tanggal', endDate); }
         if (debouncedSearchZakat.trim()) zq = zq.ilike('nama_muzakki', `%${debouncedSearchZakat.trim()}%`);
