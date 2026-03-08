@@ -8,10 +8,11 @@ import { Banknote, Users, Wheat, CalendarDays } from 'lucide-react';
 import SearchInput from '@/components/SearchInput';
 import logo from '@/assets/logo-masjid.webp';
 import { useZakatStats } from '@/hooks/useZakatStats';
-import PaginationControls from '@/components/PaginationControls';
 import SplashScreen from '@/components/SplashScreen';
 import AnimatedStatCard from '@/components/AnimatedStatCard';
 import { useAnimationLoop } from '@/hooks/useAnimationLoop';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
+import AutoScrollTableWrapper from '@/components/AutoScrollTableWrapper';
 
 const SPLASH_KEY = 'zakat-splash-shown';
 
