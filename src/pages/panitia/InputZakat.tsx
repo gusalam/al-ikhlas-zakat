@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, FileText, Search, Eye, Download } from 'lucide-react';
+import { Plus, Search, Eye, Download, Pencil, Trash2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +40,8 @@ export default function InputZakat() {
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const pag = usePagination(50);
 
   // Muzakki search
@@ -141,6 +145,48 @@ export default function InputZakat() {
     }
   };
 
+  const openEdit = (item: any) => {
+    setEditItem(item);
+    setForm({
+      nama_muzakki: item.nama_muzakki,
+      jenis_zakat: item.jenis_zakat,
+      jumlah_uang: String(item.jumlah_uang || 0),
+      jumlah_beras: String(item.jumlah_beras || 0),
+      rt_id: item.rt_id || '',
+      tanggal: item.tanggal,
+      jumlah_jiwa: String(item.jumlah_jiwa || 1),
+      penerima: '',
+      metode_fitrah: Number(item.jumlah_beras) > 0 ? 'beras' : 'uang',
+      alamat: '',
+    });
+    setEditOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editItem) return;
+    const { error } = await supabase.from('zakat').update({
+      nama_muzakki: form.nama_muzakki.trim(),
+      jenis_zakat: form.jenis_zakat,
+      jumlah_uang: Number(form.jumlah_uang) || 0,
+      jumlah_beras: Number(form.jumlah_beras) || 0,
+      rt_id: form.rt_id || null,
+      tanggal: form.tanggal,
+      jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+    }).eq('id', editItem.id);
+    if (error) { toast.error(friendlyError(error)); return; }
+    toast.success('Data zakat berhasil diperbarui ✓');
+    setEditOpen(false);
+    setEditItem(null);
+    resetForm();
+    fetchData();
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from('zakat').delete().eq('id', id);
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data zakat berhasil dihapus ✓'); fetchData(); }
+  };
+
   const toKwitansiData = (z: any) => ({
     nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1,
     jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0,
@@ -157,6 +203,64 @@ export default function InputZakat() {
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+  const DeleteButton = ({ id }: { id: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="Hapus"><Trash2 className="w-4 h-4 text-destructive" /></Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Hapus data zakat?</AlertDialogTitle>
+          <AlertDialogDescription>Data ini akan dihapus permanen dan tidak dapat dikembalikan.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  const EditFormFields = () => (
+    <div className="space-y-4">
+      <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>RT</Label>
+          <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+            <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+            <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} /></div>
+      </div>
+      <div>
+        <Label>Jenis Zakat</Label>
+        <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
+            <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
+            <SelectItem value="Infaq">Infaq</SelectItem>
+            <SelectItem value="Fidyah">Fidyah</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Metode Pembayaran</Label>
+        <RadioGroup value={form.metode_fitrah} onValueChange={v => setForm({ ...form, metode_fitrah: v as 'uang' | 'beras' })} className="flex gap-4 mt-2">
+          <div className="flex items-center space-x-2"><RadioGroupItem value="uang" id="edit-m-uang" /><Label htmlFor="edit-m-uang" className="cursor-pointer">Uang</Label></div>
+          <div className="flex items-center space-x-2"><RadioGroupItem value="beras" id="edit-m-beras" /><Label htmlFor="edit-m-beras" className="cursor-pointer">Beras</Label></div>
+        </RadioGroup>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} placeholder="0" /></div>
+        <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} placeholder="0" /></div>
+      </div>
+      <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
+    </div>
+  );
 
   return (
     <PanitiaLayout>
@@ -275,7 +379,7 @@ export default function InputZakat() {
         </Card>
       )}
 
-      {/* Riwayat Zakat */}
+      {/* Riwayat Zakat - Desktop */}
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
@@ -288,6 +392,8 @@ export default function InputZakat() {
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDownloadKwitansi(z)} title="Download Kwitansi"><Download className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(z)} title="Edit"><Pencil className="w-4 h-4" /></Button>
+                      <DeleteButton id={z.id} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -300,6 +406,7 @@ export default function InputZakat() {
         </CardContent>
       </Card>
 
+      {/* Riwayat Zakat - Mobile */}
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
         {data.map(z => (
@@ -310,6 +417,8 @@ export default function InputZakat() {
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)} title="Lihat"><Eye className="w-4 h-4" /></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadKwitansi(z)} title="Download"><Download className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)} title="Edit"><Pencil className="w-4 h-4" /></Button>
+                  <DeleteButton id={z.id} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -322,6 +431,29 @@ export default function InputZakat() {
         ))}
         <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Edit Data Zakat</DialogTitle></DialogHeader>
+          <EditFormFields />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="w-full mt-4">Simpan Perubahan</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Simpan perubahan?</AlertDialogTitle>
+                <AlertDialogDescription>Data zakat akan diperbarui dengan data yang baru.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={handleUpdate}>Simpan</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </DialogContent>
+      </Dialog>
 
       <KwitansiZakat open={kwitansiOpen} onOpenChange={setKwitansiOpen} data={kwitansiData} />
     </PanitiaLayout>
