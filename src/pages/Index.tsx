@@ -26,9 +26,9 @@ export default function Index() {
     await fetchStats();
 
     const [zRes, dRes, rtRes] = await Promise.all([
-      supabase.from('zakat').select('id, nama_muzakki, jenis_zakat, jumlah_uang, jumlah_beras, tanggal', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
+      supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
       supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
-      supabase.from('zakat').select('jumlah_uang, rt(nama_rt)'),
+      supabase.from('transaksi_zakat').select('rt(nama_rt), detail_zakat(jumlah_uang)'),
     ]);
 
     setZakatData(zRes.data || []);
