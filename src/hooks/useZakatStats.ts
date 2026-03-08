@@ -49,21 +49,28 @@ export function useZakatStats() {
       return;
     }
     const d = data as any;
+    const totalZakat = Number(d.total_zakat) || 0;
+    const totalBeras = Number(d.total_beras) || 0;
+    const totalDistribusiUang = Number(d.total_distribusi) || 0;
+    const totalDistribusiBeras = Number(d.total_distribusi_beras) || 0;
     setStats({
       totalFitrah: Number(d.total_fitrah) || 0,
       totalMal: Number(d.total_mal) || 0,
       totalInfaq: Number(d.total_infaq) || 0,
       totalFidyah: Number(d.total_fidyah) || 0,
-      totalZakat: Number(d.total_zakat) || 0,
+      totalZakat,
       totalBerasFitrah: Number(d.total_beras_fitrah) || 0,
       totalBerasFidyah: Number(d.total_beras_fidyah) || 0,
-      totalBeras: Number(d.total_beras) || 0,
+      totalBeras,
       totalJiwaFitrah: Number(d.total_jiwa_fitrah) || 0,
       totalMuzakki: Number(d.total_muzakki) || 0,
       totalMustahik: Number(d.total_mustahik) || 0,
       totalZakatCount: Number(d.total_zakat_count) || 0,
       totalMustahikCount: Number(d.total_mustahik_count) || 0,
-      totalDistribusiBeras: Number(d.total_distribusi_beras) || 0,
+      totalDistribusiUang,
+      totalDistribusiBeras,
+      sisaUang: totalZakat - totalDistribusiUang,
+      sisaBeras: totalBeras - totalDistribusiBeras,
     });
     setLoading(false);
   }, []);
