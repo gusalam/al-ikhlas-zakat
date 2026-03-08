@@ -25,7 +25,7 @@ export default function DataZakat() {
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT' });
+  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT', jumlah_jiwa: '1' });
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
@@ -42,10 +42,10 @@ export default function DataZakat() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT' });
+  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT', jumlah_jiwa: '1' });
 
   const handleSubmit = async () => {
-    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki };
+    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki, jumlah_jiwa: Number(form.jumlah_jiwa) || 1 };
     if (editItem) {
       const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
@@ -66,7 +66,7 @@ export default function DataZakat() {
 
   const openEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000', status_muzakki: item.status_muzakki || 'RT' });
+    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000', status_muzakki: item.status_muzakki || 'RT', jumlah_jiwa: String(item.jumlah_jiwa || 1) });
     setOpen(true);
   };
 
@@ -136,11 +136,12 @@ export default function DataZakat() {
                 <div><Label>Jenis Zakat</Label>
                   <Select value={form.jenis_zakat} onValueChange={v => {
                     if (v === 'Zakat Fitrah') {
-                      const beras = 2.5;
+                      const jiwa = Number(form.jumlah_jiwa) || 1;
+                      const beras = jiwa * 2.5;
                       const uang = beras * (Number(form.harga_beras) || 0);
                       setForm({ ...form, jenis_zakat: v, jumlah_beras: String(beras), jumlah_uang: String(uang) });
                     } else {
-                      setForm({ ...form, jenis_zakat: v });
+                      setForm({ ...form, jenis_zakat: v, jumlah_uang: '', jumlah_beras: '' });
                     }
                   }}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -153,16 +154,28 @@ export default function DataZakat() {
                   </Select>
                 </div>
                 {form.jenis_zakat === 'Zakat Fitrah' && (
+                  <div>
+                    <Label>Jumlah Jiwa <span className="text-destructive">*</span></Label>
+                    <Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => {
+                      const jiwa = Number(e.target.value) || 1;
+                      const beras = jiwa * 2.5;
+                      const uang = beras * (Number(form.harga_beras) || 0);
+                      setForm({ ...form, jumlah_jiwa: e.target.value, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                    }} />
+                  </div>
+                )}
+                {form.jenis_zakat === 'Zakat Fitrah' && (
                   <Card className="border-primary/20 bg-primary/5">
                     <CardContent className="p-4 space-y-3">
                       <p className="text-sm font-semibold text-primary">Kalkulasi Zakat Fitrah</p>
                       <div><Label>Harga Beras per Kg (Rp)</Label><Input type="number" value={form.harga_beras} onChange={e => {
                         const harga = e.target.value;
-                        const beras = 2.5;
+                        const jiwa = Number(form.jumlah_jiwa) || 1;
+                        const beras = jiwa * 2.5;
                         const uang = beras * (Number(harga) || 0);
                         setForm({ ...form, harga_beras: harga, jumlah_beras: String(beras), jumlah_uang: String(uang) });
                       }} /></div>
-                      <p className="text-xs text-muted-foreground">Rumus: 1 jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(2.5 * (Number(form.harga_beras) || 0))}</strong></p>
+                      <p className="text-xs text-muted-foreground">Rumus: {Number(form.jumlah_jiwa) || 1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format((Number(form.jumlah_jiwa) || 1) * 2.5 * (Number(form.harga_beras) || 0))}</strong></p>
                     </CardContent>
                   </Card>
                 )}
