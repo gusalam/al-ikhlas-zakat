@@ -360,7 +360,7 @@ export default function InputZakat() {
                 </Select>
               </div>
             )}
-            <ZakatDetailFields />
+            <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="panitia-edit" />
             <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
           </div>
           <AlertDialog>
