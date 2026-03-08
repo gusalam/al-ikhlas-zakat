@@ -58,6 +58,7 @@ export function useZakatStats() {
       totalMustahik: Number(d.total_mustahik) || 0,
       totalZakatCount: Number(d.total_zakat_count) || 0,
       totalMustahikCount: Number(d.total_mustahik_count) || 0,
+      totalDistribusiBeras: Number(d.total_distribusi_beras) || 0,
     });
     setLoading(false);
   }, []);
