@@ -174,6 +174,9 @@ export default function DataMustahik() {
               {KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
             </SelectContent>
           </Select>
+          {(search || filterRt !== 'all' || filterKategori !== 'all') && (
+            <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setFilterRt('all'); setFilterKategori('all'); pag.goTo(1); }}><RotateCcw className="w-4 h-4 mr-1" />Reset</Button>
+          )}
         </div>
       </div>
       <Card className="hidden md:block">
