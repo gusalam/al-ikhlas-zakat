@@ -18,28 +18,13 @@ import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/Kwita
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
+import ZakatDetailFields, { DetailForm, emptyDetail } from '@/components/ZakatDetailFields';
 
 interface MuzakkiSuggestion {
   nama_muzakki: string;
   jumlah_jiwa: number;
   rt_id: string | null;
 }
-
-const JENIS_OPTIONS = ['Zakat Fitrah', 'Zakat Mal', 'Infaq', 'Fidyah'] as const;
-
-interface DetailForm {
-  fitrah: { enabled: boolean; jumlah_jiwa: string; harga_beras: string; jumlah_uang: string; jumlah_beras: string; };
-  mal: { enabled: boolean; jumlah_uang: string; };
-  infaq: { enabled: boolean; jumlah_uang: string; };
-  fidyah: { enabled: boolean; jumlah_uang: string; jumlah_beras: string; };
-}
-
-const emptyDetail = (): DetailForm => ({
-  fitrah: { enabled: false, jumlah_jiwa: '1', harga_beras: '15000', jumlah_uang: '37500', jumlah_beras: '2.5' },
-  mal: { enabled: false, jumlah_uang: '' },
-  infaq: { enabled: false, jumlah_uang: '' },
-  fidyah: { enabled: false, jumlah_uang: '', jumlah_beras: '' },
-});
 
 const emptyForm = () => ({
   nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0],
