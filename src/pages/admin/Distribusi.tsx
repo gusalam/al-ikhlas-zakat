@@ -221,6 +221,7 @@ export default function Distribusi() {
                     const v = Math.min(Number(e.target.value), MAX_BERAS);
                     setForm({ ...form, jumlah_beras: v > 0 ? String(v) : e.target.value });
                   }} placeholder="0" />
+                  <p className="text-xs text-muted-foreground mt-1">Sisa stok beras: <span className={sisaBeras <= 0 ? 'text-destructive font-semibold' : 'font-semibold'}>{sisaBeras} Kg</span></p>
                 </div>
               )}
               <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
