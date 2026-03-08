@@ -29,11 +29,15 @@ export default function DataMustahik() {
   const [form, setForm] = useState({ ...emptyForm });
   const pag = usePagination(50);
   const [search, setSearch] = useState('');
+  const [filterRt, setFilterRt] = useState('all');
+  const [filterKategori, setFilterKategori] = useState('all');
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
     let query = supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama');
     if (debouncedSearch.trim()) query = query.ilike('nama', `%${debouncedSearch.trim()}%`);
+    if (filterRt !== 'all') query = query.eq('rt_id', filterRt);
+    if (filterKategori !== 'all') query = query.eq('kategori', filterKategori);
     const [{ data: m, count }, { data: rt }] = await Promise.all([
       query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
@@ -43,7 +47,7 @@ export default function DataMustahik() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch, filterRt, filterKategori]);
 
   const resetForm = () => { setForm({ ...emptyForm }); setEditItem(null); };
 
@@ -96,13 +100,14 @@ export default function DataMustahik() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
-        <div className="flex gap-2 flex-wrap items-center">
-          <div className="relative w-48 sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
-          </div>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
+          <div className="flex gap-2 flex-wrap items-center">
+            <div className="relative w-48 sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
+            </div>
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Mustahik — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
@@ -152,9 +157,25 @@ export default function DataMustahik() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Select value={filterRt} onValueChange={v => { setFilterRt(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua RT" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua RT</SelectItem>
+              {rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterKategori} onValueChange={v => { setFilterKategori(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Kategori</SelectItem>
+              {KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
