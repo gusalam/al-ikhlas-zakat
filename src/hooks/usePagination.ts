@@ -12,8 +12,29 @@ export function usePagination(initialPageSize = PAGE_SIZE) {
 
   const goNext = useCallback(() => setPage(p => Math.min(p + 1, totalPages - 1)), [totalPages]);
   const goPrev = useCallback(() => setPage(p => Math.max(p - 1, 0)), []);
-  const goTo = useCallback((p: number) => setPage(p), []);
+  // goTo accepts 1-indexed page number for easier use
+  const goTo = useCallback((p: number) => setPage(Math.max(0, p - 1)), []);
   const reset = useCallback(() => setPage(0), []);
 
-  return { page, totalCount, setTotalCount, totalPages, from, to, pageSize, goNext, goPrev, goTo, reset };
+  // Safe setTotalCount that also validates current page
+  const safeSetTotalCount = useCallback((count: number) => {
+    setTotalCount(count);
+    // Auto-reset to first page if current page is out of bounds
+    const maxPage = Math.max(0, Math.ceil(count / pageSize) - 1);
+    setPage(p => p > maxPage ? 0 : p);
+  }, [pageSize]);
+
+  return { 
+    page, 
+    totalCount, 
+    setTotalCount: safeSetTotalCount, 
+    totalPages, 
+    from, 
+    to, 
+    pageSize, 
+    goNext, 
+    goPrev, 
+    goTo, 
+    reset 
+  };
 }
