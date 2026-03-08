@@ -87,12 +87,20 @@ export default function InputZakat() {
                   setForm({ ...form, jumlah_jiwa: jiwa, jumlah_beras: String(beras), jumlah_uang: String(uang) });
                 } else { setForm({ ...form, jumlah_jiwa: jiwa }); }
               }} className="h-12 text-base" /></div>
+              <div><Label>Kategori</Label>
+                <RadioGroup value={form.kategori_muzakki} onValueChange={v => setForm({ ...form, kategori_muzakki: v as 'rt' | 'jamaah', rt_id: v === 'jamaah' ? '' : form.rt_id })} className="flex gap-4 mt-2">
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="rt" id="kat-rt" /><Label htmlFor="kat-rt" className="cursor-pointer">RT</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="jamaah" id="kat-jamaah" /><Label htmlFor="kat-jamaah" className="cursor-pointer">Jamaah</Label></div>
+                </RadioGroup>
+              </div>
+              {form.kategori_muzakki === 'rt' && (
               <div><Label>RT</Label>
                 <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
                   <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
                   <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              )}
               <div><Label>Jenis Zakat</Label>
                 <Select value={form.jenis_zakat} onValueChange={v => {
                   if (v === 'Zakat Fitrah') {
