@@ -110,7 +110,15 @@ export default function DataZakat() {
                   </Select>
                 </div>
                 <div><Label>Jenis Zakat</Label>
-                  <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v })}>
+                  <Select value={form.jenis_zakat} onValueChange={v => {
+                    if (v === 'Zakat Fitrah') {
+                      const beras = 2.5;
+                      const uang = beras * (Number(form.harga_beras) || 0);
+                      setForm({ ...form, jenis_zakat: v, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                    } else {
+                      setForm({ ...form, jenis_zakat: v });
+                    }
+                  }}>
                     <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
@@ -120,6 +128,20 @@ export default function DataZakat() {
                     </SelectContent>
                   </Select>
                 </div>
+                {form.jenis_zakat === 'Zakat Fitrah' && (
+                  <Card className="border-primary/20 bg-primary/5">
+                    <CardContent className="p-4 space-y-3">
+                      <p className="text-sm font-semibold text-primary">Kalkulasi Zakat Fitrah</p>
+                      <div><Label>Harga Beras per Kg (Rp)</Label><Input type="number" value={form.harga_beras} onChange={e => {
+                        const harga = e.target.value;
+                        const beras = 2.5;
+                        const uang = beras * (Number(harga) || 0);
+                        setForm({ ...form, harga_beras: harga, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                      }} className="h-12 text-base" /></div>
+                      <p className="text-xs text-muted-foreground">Rumus: 1 jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(2.5 * (Number(form.harga_beras) || 0))}</strong></p>
+                    </CardContent>
+                  </Card>
+                )}
                 <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
                 <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
                 <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
