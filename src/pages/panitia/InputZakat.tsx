@@ -125,8 +125,8 @@ export default function InputZakat() {
       const { data: inserted, error } = await supabase.from('zakat').insert({
         nama_muzakki: form.nama_muzakki.trim(), jenis_zakat: form.jenis_zakat,
         jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0,
-        rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id,
-        jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+        rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id,
+        jumlah_jiwa: Number(form.jumlah_jiwa) || 1, status_muzakki: form.status_muzakki,
       }).select('nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
 
