@@ -37,8 +37,13 @@ export default function Distribusi() {
   useEffect(() => { fetchData(); }, []);
 
   const handleSubmit = async () => {
+    const jumlah = Number(form.jumlah);
+    if (jumlah > saldoZakat) {
+      toast.error('Distribusi tidak boleh melebihi saldo zakat yang tersedia.');
+      return;
+    }
     const { error } = await supabase.from('distribusi').insert({
-      mustahik_id: form.mustahik_id, jumlah: Number(form.jumlah), tanggal: form.tanggal, created_by: user?.id,
+      mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id,
     });
     if (error) { toast.error(error.message); return; }
     toast.success('Distribusi berhasil dicatat');
