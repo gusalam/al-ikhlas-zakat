@@ -339,8 +339,14 @@ export default function Index() {
                   <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
                 ) : distribusiData.map((d: any) => (
                   <TableRow key={d.id}>
-                    <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
-                    <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
+                    <TableCell className="font-medium">
+                      {d.mustahik?.nama || '-'}
+                      {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
+                        <span className="block text-xs text-muted-foreground">
+                          {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>{d.sumber_zakat || '-'}</TableCell>
                     <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</TableCell>
                     <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
