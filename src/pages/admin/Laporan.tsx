@@ -51,6 +51,8 @@ export default function Laporan() {
   const [filterYear, setFilterYear] = useState('all');
   const [searchZakat, setSearchZakat] = useState('');
   const [searchDist, setSearchDist] = useState('');
+  const debouncedSearchZakat = useDebounce(searchZakat, 400);
+  const debouncedSearchDist = useDebounce(searchDist, 400);
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
   const yearOptions = useMemo(getYearOptions, []);
