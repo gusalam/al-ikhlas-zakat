@@ -10,6 +10,8 @@ import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
 import SplashScreen from '@/components/SplashScreen';
+import AnimatedStatCard from '@/components/AnimatedStatCard';
+import { useAnimationLoop } from '@/hooks/useAnimationLoop';
 
 const SPLASH_KEY = 'zakat-splash-shown';
 
