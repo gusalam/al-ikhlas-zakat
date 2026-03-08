@@ -183,9 +183,9 @@ export default function PanitiaLaporan() {
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-3 sm:p-4">
-              <p className="text-xs sm:text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-base sm:text-xl font-bold truncate">{s.value}</p>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">{s.label}</p>
+              <p className="text-xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
