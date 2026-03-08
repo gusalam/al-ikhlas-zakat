@@ -19,10 +19,10 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     try {
       const [rz, rd, mk, zrt] = await Promise.all([
-        supabase.from('zakat').select('nama_muzakki, jumlah_uang, jumlah_beras, jenis_zakat, tanggal, rt_id, rt(nama_rt)').order('tanggal', { ascending: false }).limit(5),
+        supabase.from('transaksi_zakat').select('nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras, jenis_zakat)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('distribusi').select('jumlah, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('mustahik').select('kategori'),
-        supabase.from('zakat').select('jumlah_uang, jumlah_beras, nama_muzakki, rt(nama_rt)'),
+        supabase.from('transaksi_zakat').select('nama_muzakki, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras)'),
       ]);
       setRecentZakat(rz.data || []);
       setRecentDistribusi(rd.data || []);
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-    const ch1 = supabase.channel('admin-dash-zakat').on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, () => fetchData()).subscribe();
+    const ch1 = supabase.channel('admin-dash-tz').on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, () => fetchData()).subscribe();
     const ch2 = supabase.channel('admin-dash-distribusi').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, () => fetchData()).subscribe();
     const ch3 = supabase.channel('admin-dash-mustahik').on('postgres_changes', { event: '*', schema: 'public', table: 'mustahik' }, () => fetchData()).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); supabase.removeChannel(ch3); };
@@ -46,17 +46,14 @@ export default function AdminDashboard() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
   const kategoriSummary = mustahikData.reduce((acc: Record<string, number>, m: any) => {
-    const k = m.kategori || 'Tidak Dikategorikan';
-    acc[k] = (acc[k] || 0) + 1;
-    return acc;
+    const k = m.kategori || 'Tidak Dikategorikan'; acc[k] = (acc[k] || 0) + 1; return acc;
   }, {});
 
-  const rtZakatSummary = zakatByRt.reduce((acc: Record<string, { uang: number; beras: number; muzakki: Set<string> }>, z: any) => {
-    const rtName = z.rt?.nama_rt || '-';
+  const rtZakatSummary = zakatByRt.reduce((acc: Record<string, { uang: number; beras: number; muzakki: Set<string> }>, t: any) => {
+    const rtName = t.rt?.nama_rt || '-';
     if (!acc[rtName]) acc[rtName] = { uang: 0, beras: 0, muzakki: new Set() };
-    acc[rtName].uang += Number(z.jumlah_uang || 0);
-    acc[rtName].beras += Number(z.jumlah_beras || 0);
-    acc[rtName].muzakki.add(z.nama_muzakki);
+    (t.detail_zakat || []).forEach((d: any) => { acc[rtName].uang += Number(d.jumlah_uang || 0); acc[rtName].beras += Number(d.jumlah_beras || 0); });
+    acc[rtName].muzakki.add(t.nama_muzakki);
     return acc;
   }, {});
 
@@ -69,7 +66,6 @@ export default function AdminDashboard() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-blue-600' },
           { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-amber-600' },
           { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-purple-600' },
-          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
@@ -79,15 +75,7 @@ export default function AdminDashboard() {
         ].map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-5 h-5" /></div>
-                </div>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="text-lg font-bold mt-1">{s.value}</p>
-              </CardContent>
-            </Card>
+            <Card key={s.label}><CardContent className="p-4"><div className="flex items-center gap-2 mb-2"><div className={`p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-5 h-5" /></div></div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-lg font-bold mt-1">{s.value}</p></CardContent></Card>
           );
         })}
       </div>
@@ -109,7 +97,6 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-primary" />Kategori Mustahik</CardTitle></CardHeader>
           <CardContent>
@@ -128,20 +115,23 @@ export default function AdminDashboard() {
           <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentZakat.map((z: any, i: number) => (
-                <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
-                  <div><p className="font-medium text-sm">{z.nama_muzakki}</p><p className="text-xs text-muted-foreground">{fmtDate(z.tanggal)} · {z.rt?.nama_rt || '-'}</p></div>
-                  <div className="text-right">
-                    {Number(z.jumlah_uang) > 0 && <p className="text-sm font-semibold">{fmt(Number(z.jumlah_uang))}</p>}
-                    {Number(z.jumlah_beras) > 0 && <p className="text-sm text-muted-foreground">{z.jumlah_beras} Kg</p>}
+              {recentZakat.map((t: any, i: number) => {
+                const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
+                const totalBeras = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
+                return (
+                  <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
+                    <div><p className="font-medium text-sm">{t.nama_muzakki}</p><p className="text-xs text-muted-foreground">{fmtDate(t.tanggal)} · {t.rt?.nama_rt || '-'}</p></div>
+                    <div className="text-right">
+                      {totalUang > 0 && <p className="text-sm font-semibold">{fmt(totalUang)}</p>}
+                      {totalBeras > 0 && <p className="text-sm text-muted-foreground">{totalBeras} Kg</p>}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {recentZakat.length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Truck className="w-4 h-4 text-primary" />Distribusi Terbaru</CardTitle></CardHeader>
           <CardContent>

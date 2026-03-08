@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +9,30 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText, Eye, Download } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
-import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
+import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/KwitansiZakat';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
+
+interface DetailForm {
+  fitrah: { enabled: boolean; jumlah_jiwa: string; harga_beras: string; jumlah_uang: string; jumlah_beras: string; };
+  mal: { enabled: boolean; jumlah_uang: string; };
+  infaq: { enabled: boolean; jumlah_uang: string; };
+  fidyah: { enabled: boolean; jumlah_uang: string; jumlah_beras: string; };
+}
+
+const emptyDetail = (): DetailForm => ({
+  fitrah: { enabled: false, jumlah_jiwa: '1', harga_beras: '15000', jumlah_uang: '37500', jumlah_beras: '2.5' },
+  mal: { enabled: false, jumlah_uang: '' },
+  infaq: { enabled: false, jumlah_uang: '' },
+  fidyah: { enabled: false, jumlah_uang: '', jumlah_beras: '' },
+});
 
 export default function DataZakat() {
   const { user } = useAuth();
@@ -25,67 +40,107 @@ export default function DataZakat() {
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT', jumlah_jiwa: '1' });
+  const [form, setForm] = useState({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' });
+  const [detail, setDetail] = useState<DetailForm>(emptyDetail());
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
 
   const fetchData = async () => {
-    const [{ data: zakat, count }, { data: rt }] = await Promise.all([
-      supabase.from('zakat').select('*, rt(nama_rt)', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
+    const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
+      supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
-    setData(zakat || []);
+    setData(transaksi || []);
     pag.setTotalCount(count || 0);
     setRtList(rt || []);
   };
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT', jumlah_jiwa: '1' });
+  const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' }); setDetail(emptyDetail()); };
+
+  const buildDetails = (): DetailZakatItem[] => {
+    const items: DetailZakatItem[] = [];
+    if (detail.fitrah.enabled) items.push({ jenis_zakat: 'Zakat Fitrah', jumlah_uang: Number(detail.fitrah.jumlah_uang) || 0, jumlah_beras: Number(detail.fitrah.jumlah_beras) || 0, jumlah_jiwa: Number(detail.fitrah.jumlah_jiwa) || 1 });
+    if (detail.mal.enabled) items.push({ jenis_zakat: 'Zakat Mal', jumlah_uang: Number(detail.mal.jumlah_uang) || 0, jumlah_beras: 0, jumlah_jiwa: 0 });
+    if (detail.infaq.enabled) items.push({ jenis_zakat: 'Infaq', jumlah_uang: Number(detail.infaq.jumlah_uang) || 0, jumlah_beras: 0, jumlah_jiwa: 0 });
+    if (detail.fidyah.enabled) items.push({ jenis_zakat: 'Fidyah', jumlah_uang: Number(detail.fidyah.jumlah_uang) || 0, jumlah_beras: Number(detail.fidyah.jumlah_beras) || 0, jumlah_jiwa: 0 });
+    return items;
+  };
 
   const handleSubmit = async () => {
-    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki, jumlah_jiwa: Number(form.jumlah_jiwa) || 1 };
+    const items = buildDetails();
+    if (!form.nama_muzakki.trim()) { toast.error('Nama muzakki wajib diisi'); return; }
+    if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
+
     if (editItem) {
-      const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
+      const { error } = await supabase.from('transaksi_zakat').update({
+        nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
+        tanggal: form.tanggal, status_muzakki: form.status_muzakki,
+      }).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
+      await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
+      await supabase.from('detail_zakat').insert(items.map(d => ({ transaksi_id: editItem.id, ...d })));
       toast.success('Data zakat berhasil diperbarui ✓');
     } else {
-      const { error } = await supabase.from('zakat').insert(payload);
+      const { data: inserted, error } = await supabase.from('transaksi_zakat').insert({
+        nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
+        tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki,
+      }).select('id, nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
+      await supabase.from('detail_zakat').insert(items.map(d => ({ transaksi_id: inserted.id, ...d })));
       toast.success('Data zakat berhasil ditambahkan ✓');
     }
     setOpen(false); resetForm(); setEditItem(null); fetchData();
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('zakat').delete().eq('id', id);
+    const { error } = await supabase.from('transaksi_zakat').delete().eq('id', id);
     if (error) toast.error(friendlyError(error));
     else { toast.success('Data zakat berhasil dihapus ✓'); fetchData(); }
   };
 
   const openEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000', status_muzakki: item.status_muzakki || 'RT', jumlah_jiwa: String(item.jumlah_jiwa || 1) });
+    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, status_muzakki: item.status_muzakki || 'RT' });
+    const d = emptyDetail();
+    (item.detail_zakat || []).forEach((det: any) => {
+      if (det.jenis_zakat === 'Zakat Fitrah') d.fitrah = { enabled: true, jumlah_jiwa: String(det.jumlah_jiwa || 1), harga_beras: '15000', jumlah_uang: String(det.jumlah_uang || 0), jumlah_beras: String(det.jumlah_beras || 0) };
+      if (det.jenis_zakat === 'Zakat Mal') d.mal = { enabled: true, jumlah_uang: String(det.jumlah_uang || 0) };
+      if (det.jenis_zakat === 'Infaq' || det.jenis_zakat === 'Shodaqoh') d.infaq = { enabled: true, jumlah_uang: String(det.jumlah_uang || 0) };
+      if (det.jenis_zakat === 'Fidyah') d.fidyah = { enabled: true, jumlah_uang: String(det.jumlah_uang || 0), jumlah_beras: String(det.jumlah_beras || 0) };
+    });
+    setDetail(d);
     setOpen(true);
   };
 
-  const toKwitansiData = (z: any) => ({
-    nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1,
-    jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0,
-    tanggal: z.tanggal, penerima: z.nama_muzakki,
+  const toKwitansiData = (t: any): KwitansiData => ({
+    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki,
+    details: (t.detail_zakat || []).map((d: any) => ({ jenis_zakat: d.jenis_zakat, jumlah_uang: Number(d.jumlah_uang) || 0, jumlah_beras: Number(d.jumlah_beras) || 0, jumlah_jiwa: Number(d.jumlah_jiwa) || 0 })),
+    tanggal: t.tanggal, penerima: t.nama_muzakki,
   });
 
-  const showKwitansi = (z: any) => {
-    setKwitansiData(toKwitansiData(z));
-    setKwitansiOpen(true);
-  };
-
-  const handleDownloadKwitansi = (z: any) => {
-    downloadKwitansiPdf(toKwitansiData(z));
-  };
+  const showKwitansi = (t: any) => { setKwitansiData(toKwitansiData(t)); setKwitansiOpen(true); };
+  const handleDownloadKwitansi = (t: any) => { downloadKwitansiPdf(toKwitansiData(t)); };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+  const getJenisLabels = (t: any) => (t.detail_zakat || []).map((d: any) => d.jenis_zakat).join(', ');
+  const getTotalUang = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
+  const getTotalBeras = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
+
+  const updateFitrah = (field: string, value: string) => {
+    setDetail(prev => {
+      const f = { ...prev.fitrah, [field]: value };
+      if (field === 'jumlah_jiwa' || field === 'harga_beras') {
+        const jiwa = Number(field === 'jumlah_jiwa' ? value : f.jumlah_jiwa) || 1;
+        const harga = Number(field === 'harga_beras' ? value : f.harga_beras) || 0;
+        f.jumlah_beras = String(jiwa * 2.5);
+        f.jumlah_uang = String(jiwa * 2.5 * harga);
+      }
+      return { ...prev, fitrah: f };
+    });
+  };
 
   const DeleteButton = ({ id }: { id: string }) => (
     <AlertDialog>
@@ -97,6 +152,41 @@ export default function DataZakat() {
     </AlertDialog>
   );
 
+  const ZakatDetailFields = () => (
+    <div className="space-y-4">
+      <Label className="text-base font-semibold">Jenis Zakat</Label>
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <Checkbox id="adm-fitrah" checked={detail.fitrah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fitrah: { ...d.fitrah, enabled: !!v } }))} />
+          <Label htmlFor="adm-fitrah" className="cursor-pointer font-medium">Zakat Fitrah</Label>
+        </div>
+        {detail.fitrah.enabled && (
+          <Card className="border-primary/20 bg-primary/5 ml-6">
+            <CardContent className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={detail.fitrah.jumlah_jiwa} onChange={e => updateFitrah('jumlah_jiwa', e.target.value)} /></div>
+                <div><Label>Harga Beras/Kg</Label><Input type="number" value={detail.fitrah.harga_beras} onChange={e => updateFitrah('harga_beras', e.target.value)} /></div>
+              </div>
+              <p className="text-xs text-muted-foreground">{Number(detail.fitrah.jumlah_jiwa)||1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.harga_beras)||0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.jumlah_uang)||0)}</strong></p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2"><Checkbox id="adm-mal" checked={detail.mal.enabled} onCheckedChange={v => setDetail(d => ({ ...d, mal: { ...d.mal, enabled: !!v } }))} /><Label htmlFor="adm-mal" className="cursor-pointer font-medium">Zakat Mal</Label></div>
+        {detail.mal.enabled && <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.mal.jumlah_uang} onChange={e => setDetail(d => ({ ...d, mal: { ...d.mal, jumlah_uang: e.target.value } }))} placeholder="0" /></div>}
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2"><Checkbox id="adm-infaq" checked={detail.infaq.enabled} onCheckedChange={v => setDetail(d => ({ ...d, infaq: { ...d.infaq, enabled: !!v } }))} /><Label htmlFor="adm-infaq" className="cursor-pointer font-medium">Infaq</Label></div>
+        {detail.infaq.enabled && <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.infaq.jumlah_uang} onChange={e => setDetail(d => ({ ...d, infaq: { ...d.infaq, jumlah_uang: e.target.value } }))} placeholder="0" /></div>}
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2"><Checkbox id="adm-fidyah" checked={detail.fidyah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, enabled: !!v } }))} /><Label htmlFor="adm-fidyah" className="cursor-pointer font-medium">Fidyah</Label></div>
+        {detail.fidyah.enabled && <div className="ml-6 grid grid-cols-2 gap-3"><div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.fidyah.jumlah_uang} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_uang: e.target.value } }))} placeholder="0" /></div><div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={detail.fidyah.jumlah_beras} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_beras: e.target.value } }))} placeholder="0" /></div></div>}
+      </div>
+    </div>
+  );
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
@@ -105,8 +195,8 @@ export default function DataZakat() {
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Zakat — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-            headers: ['No', 'Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
-            rows: data.map(z => [String(z.nomor_kwitansi || '-'), z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)), `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-', new Date(z.tanggal).toLocaleDateString('id-ID')]),
+            headers: ['No', 'Nama Muzakki', 'Jenis', 'Total Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
+            rows: data.map(t => [String(t.nomor_kwitansi || '-'), t.nama_muzakki, getJenisLabels(t), fmt(getTotalUang(t)), `${getTotalBeras(t)}`, t.rt?.nama_rt || '-', new Date(t.tanggal).toLocaleDateString('id-ID')]),
             filename: 'Data_Zakat_Al_Ikhlas.pdf',
           })}><FileText className="w-4 h-4 mr-1" />Export PDF</Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
@@ -119,10 +209,7 @@ export default function DataZakat() {
                   <Label>Status Muzakki</Label>
                   <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="RT">RT</SelectItem>
-                      <SelectItem value="Jamaah">Jamaah</SelectItem>
-                    </SelectContent>
+                    <SelectContent><SelectItem value="RT">RT</SelectItem><SelectItem value="Jamaah">Jamaah</SelectItem></SelectContent>
                   </Select>
                 </div>
                 {form.status_muzakki === 'RT' && (
@@ -133,54 +220,7 @@ export default function DataZakat() {
                     </Select>
                   </div>
                 )}
-                <div><Label>Jenis Zakat</Label>
-                  <Select value={form.jenis_zakat} onValueChange={v => {
-                    if (v === 'Zakat Fitrah') {
-                      const jiwa = Number(form.jumlah_jiwa) || 1;
-                      const beras = jiwa * 2.5;
-                      const uang = beras * (Number(form.harga_beras) || 0);
-                      setForm({ ...form, jenis_zakat: v, jumlah_beras: String(beras), jumlah_uang: String(uang) });
-                    } else {
-                      setForm({ ...form, jenis_zakat: v, jumlah_uang: '', jumlah_beras: '' });
-                    }
-                  }}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
-                      <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
-                      <SelectItem value="Infaq">Infaq</SelectItem>
-                      <SelectItem value="Fidyah">Fidyah</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {form.jenis_zakat === 'Zakat Fitrah' && (
-                  <div>
-                    <Label>Jumlah Jiwa <span className="text-destructive">*</span></Label>
-                    <Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => {
-                      const jiwa = Number(e.target.value) || 1;
-                      const beras = jiwa * 2.5;
-                      const uang = beras * (Number(form.harga_beras) || 0);
-                      setForm({ ...form, jumlah_jiwa: e.target.value, jumlah_beras: String(beras), jumlah_uang: String(uang) });
-                    }} />
-                  </div>
-                )}
-                {form.jenis_zakat === 'Zakat Fitrah' && (
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardContent className="p-4 space-y-3">
-                      <p className="text-sm font-semibold text-primary">Kalkulasi Zakat Fitrah</p>
-                      <div><Label>Harga Beras per Kg (Rp)</Label><Input type="number" value={form.harga_beras} onChange={e => {
-                        const harga = e.target.value;
-                        const jiwa = Number(form.jumlah_jiwa) || 1;
-                        const beras = jiwa * 2.5;
-                        const uang = beras * (Number(harga) || 0);
-                        setForm({ ...form, harga_beras: harga, jumlah_beras: String(beras), jumlah_uang: String(uang) });
-                      }} /></div>
-                      <p className="text-xs text-muted-foreground">Rumus: {Number(form.jumlah_jiwa) || 1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format((Number(form.jumlah_jiwa) || 1) * 2.5 * (Number(form.harga_beras) || 0))}</strong></p>
-                    </CardContent>
-                  </Card>
-                )}
-                <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} /></div>
-                <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} /></div>
+                <ZakatDetailFields />
                 <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
                 <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
               </div>
@@ -192,54 +232,54 @@ export default function DataZakat() {
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Total Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
-              {data.map(z => (
-                <TableRow key={z.id}>
-                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{z.status_muzakki || 'RT'}</span></TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{z.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+              {data.map(t => (
+                <TableRow key={t.id}>
+                  <TableCell>{t.nomor_kwitansi}</TableCell><TableCell>{t.nama_muzakki}</TableCell>
+                  <TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{t.status_muzakki || 'RT'}</span></TableCell>
+                  <TableCell>{getJenisLabels(t)}</TableCell><TableCell>{fmt(getTotalUang(t))}</TableCell><TableCell>{getTotalBeras(t)} Kg</TableCell><TableCell>{t.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(t.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDownloadKwitansi(z)} title="Download Kwitansi"><Download className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(z)} title="Edit"><Pencil className="w-4 h-4" /></Button>
-                      <DeleteButton id={z.id} />
+                      <Button variant="ghost" size="icon" onClick={() => showKwitansi(t)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDownloadKwitansi(t)} title="Download Kwitansi"><Download className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(t)} title="Edit"><Pencil className="w-4 h-4" /></Button>
+                      <DeleteButton id={t.id} />
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <div className="p-4">
-            <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
-          </div>
+          <div className="p-4"><PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} /></div>
         </CardContent>
       </Card>
 
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
-        {data.map(z => (
-          <Card key={z.id}>
+        {data.map(t => (
+          <Card key={t.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
-                  <div className="flex gap-1 mt-1">
-                    <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{z.jenis_zakat}</span>
-                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{z.status_muzakki || 'RT'}</span>
+                  <p className="font-semibold text-base">#{t.nomor_kwitansi} — {t.nama_muzakki}</p>
+                  <div className="flex gap-1 mt-1 flex-wrap">
+                    {(t.detail_zakat || []).map((d: any, i: number) => <span key={i} className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{d.jenis_zakat}</span>)}
+                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{t.status_muzakki || 'RT'}</span>
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)} title="Lihat"><Eye className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadKwitansi(z)} title="Download"><Download className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)} title="Edit"><Pencil className="w-4 h-4" /></Button>
-                  <DeleteButton id={z.id} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(t)}><Eye className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadKwitansi(t)}><Download className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(t)}><Pencil className="w-4 h-4" /></Button>
+                  <DeleteButton id={t.id} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
-                <div><span className="text-muted-foreground">Beras:</span> <span className="font-medium">{z.jumlah_beras} Kg</span></div>
-                <div><span className="text-muted-foreground">RT:</span> <span className="font-medium">{z.rt?.nama_rt || '-'}</span></div>
-                <div><span className="text-muted-foreground">Tanggal:</span> <span className="font-medium">{new Date(z.tanggal).toLocaleDateString('id-ID')}</span></div>
+                <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(getTotalUang(t))}</span></div>
+                <div><span className="text-muted-foreground">Beras:</span> <span className="font-medium">{getTotalBeras(t)} Kg</span></div>
+                <div><span className="text-muted-foreground">RT:</span> <span className="font-medium">{t.rt?.nama_rt || '-'}</span></div>
+                <div><span className="text-muted-foreground">Tanggal:</span> <span className="font-medium">{new Date(t.tanggal).toLocaleDateString('id-ID')}</span></div>
               </div>
             </CardContent>
           </Card>
