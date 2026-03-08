@@ -336,7 +336,7 @@ export default function Index() {
               <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {distribusiData.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
                 ) : distribusiData.map((d: any) => (
                   <TableRow key={d.id}>
                     <TableCell className="font-medium">
