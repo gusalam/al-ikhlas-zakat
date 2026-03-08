@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
 import { exportPdf } from '@/lib/exportPdf';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function DataMustahik() {
   const [data, setData] = useState<any[]>([]);
