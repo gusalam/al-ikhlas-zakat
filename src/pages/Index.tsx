@@ -257,11 +257,11 @@ export default function Index() {
             <CardHeader><CardTitle className="font-serif text-xl">Zakat per RT</CardTitle></CardHeader>
             <CardContent>
               {rtChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={300}>
                   <BarChart data={rtChartData}>
                     <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
                     <Tooltip formatter={(v: number) => fmt(v)} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationBegin={0} animationDuration={1500} animationEasing="ease-out">
                       {rtChartData.map((_, index) => (
                         <Cell key={index} fill={['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#84CC16', '#6366F1', '#D946EF', '#22C55E', '#EAB308', '#0EA5E9'][index % 15]} />
                       ))}

@@ -109,16 +109,16 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-emerald-600' },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-blue-600' },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-amber-600' },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-purple-600' },
-          { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
-          { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
-          { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
-          { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat, color: 'text-emerald-600' },
-          { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat, color: 'text-purple-600' },
-          { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
+          { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote, color: 'text-purple-600' },
+          { label: 'Total Muzakki', value: aTotalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
+          { label: 'Total Mustahik', value: `${aTotalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
+          { label: 'Jiwa Fitrah', value: `${aTotalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
+          { label: 'Beras Fitrah', value: `${aTotalBerasFitrah} Kg`, icon: Wheat, color: 'text-emerald-600' },
+          { label: 'Beras Fidyah', value: `${aTotalBerasFidyah} Kg`, icon: Wheat, color: 'text-purple-600' },
+          { label: 'Total Beras', value: `${aTotalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
         ].map(s => {
           const Icon = s.icon;
           return (
