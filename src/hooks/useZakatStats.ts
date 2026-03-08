@@ -15,13 +15,14 @@ export interface ZakatStats {
   totalMustahik: number;
   totalZakatCount: number;
   totalMustahikCount: number;
+  totalDistribusiBeras: number;
 }
 
 const defaultStats: ZakatStats = {
   totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0,
   totalZakat: 0, totalBerasFitrah: 0, totalBerasFidyah: 0, totalBeras: 0,
   totalJiwaFitrah: 0, totalMuzakki: 0, totalMustahik: 0,
-  totalZakatCount: 0, totalMustahikCount: 0,
+  totalZakatCount: 0, totalMustahikCount: 0, totalDistribusiBeras: 0,
 };
 
 export function useZakatStats() {
