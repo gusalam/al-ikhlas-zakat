@@ -105,6 +105,11 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       y += 10;
       doc.setFont('helvetica', 'normal'); doc.text('Nama Muzakki', labelX, y); doc.text(':', colonX, y);
       doc.setFont('helvetica', 'bold'); doc.text(data.nama_muzakki, valX, y);
+      if (data.alamat_muzakki) {
+        y += 6;
+        doc.setFont('helvetica', 'normal'); doc.text('Alamat', labelX, y); doc.text(':', colonX, y);
+        doc.setFont('helvetica', 'normal'); doc.text(data.alamat_muzakki, valX, y);
+      }
       if (totalJiwa > 0) {
         doc.setFont('helvetica', 'normal'); doc.text('Jumlah Jiwa', 145, y); doc.text(':', 175, y);
         doc.setFont('helvetica', 'bold'); doc.text(`${totalJiwa} Orang`, 180, y);
