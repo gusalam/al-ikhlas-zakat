@@ -7,8 +7,8 @@ interface UseRunningListOptions {
 }
 
 /**
- * Running list hook: advances by 1 row at a time, looping back to 0.
- * Returns current offset index for CSS translateY.
+ * Running list hook: advances offset by 1 row at a time, looping.
+ * Returns offset for the wrapper to use with translateY animation.
  */
 export function useAutoScroll({
   totalItems,
@@ -21,7 +21,6 @@ export function useAutoScroll({
 
   const paused = isPaused || isUserPaused;
 
-  // Reset when data changes
   useEffect(() => {
     setOffset(0);
   }, [totalItems]);
