@@ -30,7 +30,7 @@ export default function PanitiaDashboard() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign },
           { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign },
           { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign },
-          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: DollarSign },
+          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },

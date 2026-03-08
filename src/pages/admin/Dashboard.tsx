@@ -69,7 +69,7 @@ export default function AdminDashboard() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-blue-600' },
           { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-amber-600' },
           { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-purple-600' },
-          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: TrendingUp, color: 'text-emerald-600' },
+          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },

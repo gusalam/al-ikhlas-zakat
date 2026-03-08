@@ -198,7 +198,7 @@ export default function Laporan() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), highlight: true },
+          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (

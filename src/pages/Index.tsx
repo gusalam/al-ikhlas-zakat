@@ -92,7 +92,6 @@ export default function Index() {
             { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-secondary' },
             { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-primary' },
             { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: TrendingUp, color: 'text-primary' },
             { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-secondary' },
             { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
