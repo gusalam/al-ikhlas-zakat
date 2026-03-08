@@ -255,7 +255,7 @@ export default function Index() {
           </Card>
           <Card>
             <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Zakat per RT</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-6">
               {rtChartData.length > 0 ? (
                 <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={300}>
                   <BarChart data={rtChartData}>
