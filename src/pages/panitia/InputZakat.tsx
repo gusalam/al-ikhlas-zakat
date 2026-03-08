@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, FileText } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
@@ -21,7 +22,7 @@ export default function InputZakat() {
   const [data, setData] = useState<any[]>([]);
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '', harga_beras: '15000' });
+  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '', harga_beras: '15000', kategori_muzakki: 'rt' as 'rt' | 'jamaah' });
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
@@ -57,7 +58,7 @@ export default function InputZakat() {
     });
     setKwitansiOpen(true);
 
-    setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '', harga_beras: '15000' });
+    setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '', harga_beras: '15000', kategori_muzakki: 'rt' });
     fetchData();
   };
 
@@ -86,12 +87,20 @@ export default function InputZakat() {
                   setForm({ ...form, jumlah_jiwa: jiwa, jumlah_beras: String(beras), jumlah_uang: String(uang) });
                 } else { setForm({ ...form, jumlah_jiwa: jiwa }); }
               }} className="h-12 text-base" /></div>
+              <div><Label>Kategori</Label>
+                <RadioGroup value={form.kategori_muzakki} onValueChange={v => setForm({ ...form, kategori_muzakki: v as 'rt' | 'jamaah', rt_id: v === 'jamaah' ? '' : form.rt_id })} className="flex gap-4 mt-2">
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="rt" id="kat-rt" /><Label htmlFor="kat-rt" className="cursor-pointer">RT</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="jamaah" id="kat-jamaah" /><Label htmlFor="kat-jamaah" className="cursor-pointer">Jamaah</Label></div>
+                </RadioGroup>
+              </div>
+              {form.kategori_muzakki === 'rt' && (
               <div><Label>RT</Label>
                 <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
                   <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
                   <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              )}
               <div><Label>Jenis Zakat</Label>
                 <Select value={form.jenis_zakat} onValueChange={v => {
                   if (v === 'Zakat Fitrah') {
