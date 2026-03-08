@@ -220,7 +220,7 @@ export default function Index() {
           <CalendarDays className="w-4 h-4" /><span>Data diperbarui: {fmtDate(lastUpdated)}</span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {[
             { label: 'Zakat Fitrah', value: stats.totalFitrah, icon: Banknote, color: 'text-primary', isCurrency: true },
             { label: 'Zakat Mal', value: stats.totalMal, icon: Banknote, color: 'text-secondary', isCurrency: true },
