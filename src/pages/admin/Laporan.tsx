@@ -165,6 +165,10 @@ export default function Laporan() {
       </Card>
       <div className="md:hidden space-y-3 mb-6">
         <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
+        </div>
         {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {zakatData.map(t => (
           <Card key={t.id}><CardContent className="p-3 space-y-1">
