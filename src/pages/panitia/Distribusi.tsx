@@ -57,7 +57,7 @@ export default function PanitiaDistribusi() {
     <PanitiaLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+          <h1 className="text-xl md:text-2xl font-serif font-bold">Distribusi Zakat</h1>
           <div className="flex items-center gap-2 mt-1">
             <Wallet className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
