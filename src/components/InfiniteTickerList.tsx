@@ -17,55 +17,40 @@ export default function InfiniteTickerList({
 }: InfiniteTickerListProps) {
   const firstCopyRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [heights, setHeights] = useState<{ total: number; visible: number } | null>(null);
+  const [totalH, setTotalH] = useState(0);
+  const [visibleH, setVisibleH] = useState(0);
 
-  const measure = useCallback(() => {
+  // Use ResizeObserver to measure the first copy
+  useEffect(() => {
     const el = firstCopyRef.current;
-    if (!el) return false;
-    const children = el.children;
-    if (children.length === 0) return false;
-    let total = 0;
-    let visible = 0;
-    for (let i = 0; i < children.length; i++) {
-      const h = (children[i] as HTMLElement).offsetHeight;
-      total += h;
-      if (i < visibleCount) visible += h;
-    }
-    if (total > 0 && visible > 0) {
-      setHeights(prev => {
-        if (prev && prev.total === total && prev.visible === visible) return prev;
-        return { total, visible };
+    if (!el) return;
+
+    const doMeasure = () => {
+      const children = Array.from(el.children);
+      if (children.length === 0) return;
+      let total = 0;
+      let visible = 0;
+      children.forEach((child, i) => {
+        const h = (child as HTMLElement).getBoundingClientRect().height;
+        total += h;
+        if (i < visibleCount) visible += h;
       });
-      return true;
-    }
-    return false;
-  }, [visibleCount]);
-
-  // Reset heights when data changes, then re-measure
-  useEffect(() => {
-    setHeights(null);
-  }, [data.length]);
-
-  // Poll for measurement until successful
-  useEffect(() => {
-    if (heights !== null) return;
-    if (data.length <= visibleCount) return;
-
-    let attempts = 0;
-    const maxAttempts = 20;
-    
-    const tryMeasure = () => {
-      attempts++;
-      if (measure() || attempts >= maxAttempts) return;
-      timerId = setTimeout(tryMeasure, 100);
+      if (total > 0) {
+        setTotalH(total);
+        setVisibleH(visible);
+      }
     };
-    
-    let timerId = setTimeout(tryMeasure, 50);
-    return () => clearTimeout(timerId);
-  }, [heights, data.length, visibleCount, measure]);
+
+    const observer = new ResizeObserver(doMeasure);
+    observer.observe(el);
+    doMeasure();
+
+    return () => observer.disconnect();
+  }, [data, visibleCount]);
 
   const paused = isPaused || isHovered;
   const duration = data.length * durationPerItem;
+  const isReady = totalH > 0 && visibleH > 0 && data.length > visibleCount;
 
   const handlePause = useCallback(() => setIsHovered(true), []);
   const handleResume = useCallback(() => setIsHovered(false), []);
@@ -76,7 +61,7 @@ export default function InfiniteTickerList({
 
   if (data.length <= visibleCount) {
     return (
-      <div>
+      <div ref={firstCopyRef}>
         {data.map((item, i) => (
           <div key={i}>{renderRow(item, i)}</div>
         ))}
@@ -84,12 +69,10 @@ export default function InfiniteTickerList({
     );
   }
 
-  const isReady = heights !== null;
-
   return (
     <div
       className="overflow-hidden relative"
-      style={{ height: isReady ? heights.visible : 'auto' }}
+      style={isReady ? { height: visibleH } : undefined}
       onMouseEnter={handlePause}
       onMouseLeave={handleResume}
       onTouchStart={handlePause}
@@ -107,7 +90,7 @@ export default function InfiniteTickerList({
         style={isReady ? {
           animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
-          '--ticker-distance': `-${heights.total}px`,
+          '--ticker-distance': `-${totalH}px`,
         } as React.CSSProperties : undefined}
       >
         <div ref={firstCopyRef}>
