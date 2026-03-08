@@ -28,8 +28,16 @@ export function useZakatStats() {
   const [stats, setStats] = useState<ZakatStats>(defaultStats);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = useCallback(async () => {
-    const { data, error } = await supabase.rpc('get_zakat_stats');
+  const fetchStats = useCallback(async (startDate?: string, endDate?: string) => {
+    const params: Record<string, string> = {};
+    if (startDate) params._start_date = startDate;
+    if (endDate) params._end_date = endDate;
+
+    const hasFilter = startDate || endDate;
+    const { data, error } = hasFilter
+      ? await supabase.rpc('get_zakat_stats_filtered', params as any)
+      : await supabase.rpc('get_zakat_stats');
+
     if (error || !data) {
       console.error('Failed to fetch stats:', error);
       return;
