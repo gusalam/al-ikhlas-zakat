@@ -49,15 +49,17 @@ export default function Index() {
 
   const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalMal = zakatData.filter(z => z.jenis_zakat === 'Zakat Mal').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalShodaqoh = zakatData.filter(z => z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalZakat = totalFitrah + totalMal + totalShodaqoh;
+  const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalZakat = totalFitrah + totalMal + totalInfaq + totalFidyah;
   const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
   const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
     { name: 'Zakat Mal', value: totalMal },
-    { name: 'Shodaqoh', value: totalShodaqoh },
+    { name: 'Infaq', value: totalInfaq },
+    { name: 'Fidyah', value: totalFidyah },
   ].filter(d => d.value > 0);
 
   const rtMap: Record<string, number> = {};
