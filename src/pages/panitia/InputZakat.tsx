@@ -198,91 +198,9 @@ export default function InputZakat() {
   const getTotalUang = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
   const getTotalBeras = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
 
-  const updateFitrah = (field: string, value: string) => {
-    setDetail(prev => {
-      const f = { ...prev.fitrah, [field]: value };
-      if (field === 'jumlah_jiwa' || field === 'harga_beras') {
-        const jiwa = Number(field === 'jumlah_jiwa' ? value : f.jumlah_jiwa) || 1;
-        const harga = Number(field === 'harga_beras' ? value : f.harga_beras) || 0;
-        f.jumlah_beras = String(jiwa * 2.5);
-        f.jumlah_uang = String(jiwa * 2.5 * harga);
-      }
-      return { ...prev, fitrah: f };
-    });
-  };
-
-  const DeleteButton = ({ id }: { id: string }) => (
-    <AlertDialog>
-      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" title="Hapus"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen dan tidak dapat dikembalikan.</AlertDialogDescription></AlertDialogHeader>
-        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-
-  const ZakatDetailFields = () => (
-    <div className="space-y-4">
-      <Label className="text-base font-semibold">Jenis Zakat</Label>
-
-      {/* Zakat Fitrah */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="cb-fitrah" checked={detail.fitrah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fitrah: { ...d.fitrah, enabled: !!v } }))} />
-          <Label htmlFor="cb-fitrah" className="cursor-pointer font-medium">Zakat Fitrah</Label>
-        </div>
-        {detail.fitrah.enabled && (
-          <Card className="border-primary/20 bg-primary/5 ml-6">
-            <CardContent className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Jumlah Jiwa <span className="text-destructive">*</span></Label><Input type="number" min="1" value={detail.fitrah.jumlah_jiwa} onChange={e => updateFitrah('jumlah_jiwa', e.target.value)} /></div>
-                <div><Label>Harga Beras/Kg (Rp)</Label><Input type="number" value={detail.fitrah.harga_beras} onChange={e => updateFitrah('harga_beras', e.target.value)} /></div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {Number(detail.fitrah.jumlah_jiwa) || 1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.jumlah_uang) || 0)}</strong> | Beras: <strong>{detail.fitrah.jumlah_beras} Kg</strong>
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Zakat Mal */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="cb-mal" checked={detail.mal.enabled} onCheckedChange={v => setDetail(d => ({ ...d, mal: { ...d.mal, enabled: !!v } }))} />
-          <Label htmlFor="cb-mal" className="cursor-pointer font-medium">Zakat Mal</Label>
-        </div>
-        {detail.mal.enabled && (
-          <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.mal.jumlah_uang} onChange={e => setDetail(d => ({ ...d, mal: { ...d.mal, jumlah_uang: e.target.value } }))} placeholder="0" /></div>
-        )}
-      </div>
-
-      {/* Infaq */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="cb-infaq" checked={detail.infaq.enabled} onCheckedChange={v => setDetail(d => ({ ...d, infaq: { ...d.infaq, enabled: !!v } }))} />
-          <Label htmlFor="cb-infaq" className="cursor-pointer font-medium">Infaq</Label>
-        </div>
-        {detail.infaq.enabled && (
-          <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.infaq.jumlah_uang} onChange={e => setDetail(d => ({ ...d, infaq: { ...d.infaq, jumlah_uang: e.target.value } }))} placeholder="0" /></div>
-        )}
-      </div>
-
-      {/* Fidyah */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="cb-fidyah" checked={detail.fidyah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, enabled: !!v } }))} />
-          <Label htmlFor="cb-fidyah" className="cursor-pointer font-medium">Fidyah</Label>
-        </div>
-        {detail.fidyah.enabled && (
-          <div className="ml-6 grid grid-cols-2 gap-3">
-            <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.fidyah.jumlah_uang} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_uang: e.target.value } }))} placeholder="0" /></div>
-            <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={detail.fidyah.jumlah_beras} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_beras: e.target.value } }))} placeholder="0" /></div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const handleDetailChange = useCallback((updater: (prev: DetailForm) => DetailForm) => {
+    setDetail(updater);
+  }, []);
 
   return (
     <PanitiaLayout>
