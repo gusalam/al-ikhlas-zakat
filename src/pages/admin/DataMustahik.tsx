@@ -50,8 +50,8 @@ export default function DataMustahik() {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('mustahik').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Data dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data mustahik berhasil dihapus ✓'); fetchData(); }
   };
 
   return (

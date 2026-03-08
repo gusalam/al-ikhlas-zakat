@@ -41,8 +41,8 @@ export default function InputZakat() {
       rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id,
       jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
     }).select('nomor_kwitansi').single();
-    if (error) { toast.error(error.message); return; }
-    toast.success('Zakat berhasil dicatat');
+    if (error) { toast.error(friendlyError(error)); return; }
+    toast.success('Data zakat berhasil disimpan ✓');
     setOpen(false);
 
     setKwitansiData({

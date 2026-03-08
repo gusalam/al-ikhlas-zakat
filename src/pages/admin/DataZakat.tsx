@@ -55,8 +55,8 @@ export default function DataZakat() {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('zakat').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Data dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data zakat berhasil dihapus ✓'); fetchData(); }
   };
 
   const openEdit = (item: any) => {

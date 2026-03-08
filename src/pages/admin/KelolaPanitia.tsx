@@ -54,8 +54,8 @@ export default function KelolaPanitia() {
 
   const handleDelete = async (userId: string) => {
     const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'panitia');
-    if (error) toast.error(error.message);
-    else { toast.success('Role panitia dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Role panitia berhasil dihapus ✓'); fetchData(); }
   };
 
   return (

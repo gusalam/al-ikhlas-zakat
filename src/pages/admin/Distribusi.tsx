@@ -54,8 +54,8 @@ export default function Distribusi() {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('distribusi').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Data dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data distribusi berhasil dihapus ✓'); fetchData(); }
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);

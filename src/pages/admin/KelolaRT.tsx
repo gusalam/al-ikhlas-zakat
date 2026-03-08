@@ -40,8 +40,8 @@ export default function KelolaRT() {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('rt').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('RT dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data RT berhasil dihapus ✓'); fetchData(); }
   };
 
   return (
