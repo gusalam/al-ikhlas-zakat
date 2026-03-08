@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
+import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
 
 interface MuzakkiSuggestion {
   nama_muzakki: string;
