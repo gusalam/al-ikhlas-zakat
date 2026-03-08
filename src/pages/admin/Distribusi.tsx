@@ -52,6 +52,7 @@ export default function Distribusi() {
   const [submitting, setSubmitting] = useState(false);
   const { stats, fetchStats } = useZakatStats();
   const [distribusiPerSumber, setDistribusiPerSumber] = useState<Record<string, number>>({});
+  const [distribusiBeras, setDistribusiBeras] = useState(0);
   const pag = usePagination(50);
 
   const fetchData = async () => {
