@@ -30,7 +30,7 @@ export default function PaginationControls({ page, totalPages, totalCount, onNex
           <ChevronLeft className="w-4 h-4" />
         </Button>
         {pages.map(p => (
-          <Button key={p} variant={p === page ? 'default' : 'outline'} size="sm" className="w-9" onClick={() => onGoTo(p)}>
+          <Button key={p} variant={p === page ? 'default' : 'outline'} size="sm" className="w-9" onClick={() => onGoTo(p + 1)}>
             {p + 1}
           </Button>
         ))}
