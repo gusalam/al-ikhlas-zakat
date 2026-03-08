@@ -237,9 +237,9 @@ export default function Index() {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Card>
-            <CardHeader><CardTitle className="font-serif text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
+            <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
             <CardContent>
               {pieData.length > 0 ? (
                 <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={300}>
