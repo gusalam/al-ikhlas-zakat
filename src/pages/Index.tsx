@@ -96,7 +96,7 @@ export default function Index() {
 
     const { data, count, error } = await supabase
       .from('distribusi')
-      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, rt(nama_rt))', { count: 'exact' })
+      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, alamat, rt(nama_rt))', { count: 'exact' })
       .order('tanggal', { ascending: false })
       .ilike('mustahik.nama', search.trim() ? `%${search.trim()}%` : '%')
       .range(from, to);
