@@ -108,6 +108,7 @@ export default function DataZakat() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       {/* Desktop Table */}
       <Card className="hidden md:block">
