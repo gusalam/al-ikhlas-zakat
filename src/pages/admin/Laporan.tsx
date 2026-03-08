@@ -55,7 +55,17 @@ export default function Laporan() {
       'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-',
       'Jumlah': d.jumlah, 'Tanggal': d.tanggal,
     }));
+    const summarySheet = [
+      { Keterangan: 'Zakat Fitrah', Jumlah: totalFitrah },
+      { Keterangan: 'Zakat Mal', Jumlah: totalMal },
+      { Keterangan: 'Infaq', Jumlah: totalInfaq },
+      { Keterangan: 'Fidyah', Jumlah: totalFidyah },
+      { Keterangan: 'Total Pemasukan', Jumlah: totalPemasukan },
+      { Keterangan: 'Total Distribusi', Jumlah: totalDistribusi },
+      { Keterangan: 'Saldo Zakat', Jumlah: saldoZakat },
+    ];
     const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(zakatSheet), 'Data Zakat');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(distSheet), 'Distribusi');
     XLSX.writeFile(wb, 'Laporan_Zakat_Al_Ikhlas.xlsx');
