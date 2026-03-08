@@ -239,18 +239,26 @@ export default function Index() {
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
+            <AutoScrollTableWrapper
+              onPause={zakatScroll.pause}
+              onResume={zakatScroll.resume}
+              isScrolling={zakatScroll.isScrolling}
+              totalItems={zakatData.length}
+              scrollIndex={zakatScroll.scrollIndex}
+              visibleItems={VISIBLE_ROWS}
+            >
             <Table>
               <TableHeader><TableRow><TableHead>Nama Muzakki</TableHead><TableHead>Jenis Zakat</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {zakatData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : zakatData.map((z: any) => {
+                ) : zakatScroll.visibleData(zakatData).map((z: any) => {
                   const details = z.detail_zakat || [];
                   const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
                   const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                   const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                   return (
-                    <TableRow key={z.id}>
+                    <TableRow key={z.id} className="animate-fade-in">
                       <TableCell className="font-medium">
                         {z.nama_muzakki}
                         {(z.rt?.nama_rt || z.alamat_muzakki) && (
@@ -267,14 +275,50 @@ export default function Index() {
                 })}
               </TableBody>
             </Table>
-            <PaginationControls
-              page={zakatPage}
-              totalPages={zakatTotalPages}
-              totalCount={zakatTotal}
-              onNext={() => handleZakatPageChange(Math.min(zakatPage + 1, zakatTotalPages - 1))}
-              onPrev={() => handleZakatPageChange(Math.max(zakatPage - 1, 0))}
-              onGoTo={(p) => handleZakatPageChange(p)}
-            />
+            </AutoScrollTableWrapper>
+          </CardContent>
+        </Card>
+
+        {/* Distribusi Zakat */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
+            <div className="mt-2">
+              <SearchInput placeholder="Cari nama mustahik..." value={distSearch} onChange={handleDistSearch} />
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-auto">
+            <AutoScrollTableWrapper
+              onPause={distScroll.pause}
+              onResume={distScroll.resume}
+              isScrolling={distScroll.isScrolling}
+              totalItems={distribusiData.length}
+              scrollIndex={distScroll.scrollIndex}
+              visibleItems={VISIBLE_ROWS}
+            >
+            <Table>
+              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {distribusiData.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
+                ) : distScroll.visibleData(distribusiData).map((d: any) => (
+                  <TableRow key={d.id} className="animate-fade-in">
+                    <TableCell className="font-medium">
+                      {d.mustahik?.nama || '-'}
+                      {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
+                        <span className="block text-xs text-muted-foreground">
+                          {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>{d.sumber_zakat || '-'}</TableCell>
+                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</TableCell>
+                    <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            </AutoScrollTableWrapper>
           </CardContent>
         </Card>
 
