@@ -37,9 +37,10 @@ export default function Index() {
     distPag.setTotalCount(dRes.count || 0);
 
     const rtMap: Record<string, number> = {};
-    (rtRes.data || []).forEach((z: any) => {
-      const rtName = z.rt?.nama_rt || 'Tidak ada RT';
-      rtMap[rtName] = (rtMap[rtName] || 0) + Number(z.jumlah_uang || 0);
+    (rtRes.data || []).forEach((t: any) => {
+      const rtName = t.rt?.nama_rt || 'Tidak ada RT';
+      const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
+      rtMap[rtName] = (rtMap[rtName] || 0) + totalUang;
     });
     setRtChartData(Object.entries(rtMap).map(([name, value]) => ({ name, value })));
 
