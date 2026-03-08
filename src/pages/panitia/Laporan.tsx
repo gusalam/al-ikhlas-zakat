@@ -214,10 +214,10 @@ export default function PanitiaLaporan() {
       </div>
 
       <Card className="mb-6">
-        <CardHeader><CardTitle className="font-serif">Data Zakat</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-2 sm:p-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="min-w-[100px]">Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {zakatData.map(z => (
                 <TableRow key={z.id}><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
