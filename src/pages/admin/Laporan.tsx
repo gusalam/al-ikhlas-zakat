@@ -121,9 +121,7 @@ export default function Laporan() {
       { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal },
       { Keterangan: 'Infaq', Jumlah: stats.totalInfaq },
       { Keterangan: 'Fidyah', Jumlah: stats.totalFidyah },
-      { Keterangan: 'Total Pemasukan', Jumlah: stats.totalZakat },
-      { Keterangan: 'Total Distribusi', Jumlah: stats.totalDistribusi },
-      { Keterangan: 'Saldo Zakat', Jumlah: stats.saldoZakat },
+      { Keterangan: 'Total Terkumpul', Jumlah: stats.totalZakat },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
