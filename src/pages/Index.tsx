@@ -20,6 +20,8 @@ export default function Index() {
   const [rtChartData, setRtChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [zakatSearch, setZakatSearch] = useState('');
+  const [distSearch, setDistSearch] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
 
