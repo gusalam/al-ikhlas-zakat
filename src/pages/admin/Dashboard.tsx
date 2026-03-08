@@ -61,6 +61,10 @@ export default function AdminDashboard() {
 
       const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0);
       const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
+      const totalFitrah = z.filter(i => i.jenis_zakat === 'Zakat Fitrah').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalMal = z.filter(i => i.jenis_zakat === 'Zakat Mal').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalInfaq = z.filter(i => i.jenis_zakat === 'Infaq' || i.jenis_zakat === 'Shodaqoh').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalFidyah = z.filter(i => i.jenis_zakat === 'Fidyah').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
       setStats({
         totalZakat,
         totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
@@ -68,6 +72,7 @@ export default function AdminDashboard() {
         totalDistribusi,
         totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras || 0), 0),
         saldoZakat: totalZakat - totalDistribusi,
+        totalFitrah, totalMal, totalInfaq, totalFidyah,
       });
     };
     fetchData();
