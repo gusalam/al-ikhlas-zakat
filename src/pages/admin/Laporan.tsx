@@ -65,6 +65,33 @@ export default function Laporan() {
     const a = document.createElement('a'); a.href = url; a.download = 'laporan_zakat.csv'; a.click();
   };
 
+  const exportPdfZakat = () => {
+    exportPdf({
+      title: 'Laporan Zakat — Masjid Al-Ikhlas',
+      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      headers: ['Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
+      rows: zakatData.map(z => [
+        z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
+        `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-',
+        new Date(z.tanggal).toLocaleDateString('id-ID'),
+      ]),
+      filename: 'Laporan_Zakat_Al_Ikhlas.pdf',
+    });
+  };
+
+  const exportPdfDistribusi = () => {
+    exportPdf({
+      title: 'Laporan Distribusi Zakat — Masjid Al-Ikhlas',
+      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      headers: ['Nama Mustahik', 'RT', 'Jumlah', 'Tanggal'],
+      rows: distribusiData.map(d => [
+        d.mustahik?.nama || '-', d.mustahik?.rt?.nama_rt || '-',
+        fmt(Number(d.jumlah)), new Date(d.tanggal).toLocaleDateString('id-ID'),
+      ]),
+      filename: 'Laporan_Distribusi_Al_Ikhlas.pdf',
+    });
+  };
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
