@@ -1,4 +1,4 @@
-import { ReactNode, useRef, useState, useEffect, useCallback } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 
 interface InfiniteTickerListProps {
   data: any[];
@@ -6,6 +6,7 @@ interface InfiniteTickerListProps {
   renderRow: (item: any, index: number) => ReactNode;
   durationPerItem?: number;
   isPaused?: boolean;
+  rowHeightEstimate?: number;
 }
 
 export default function InfiniteTickerList({
@@ -14,43 +15,23 @@ export default function InfiniteTickerList({
   renderRow,
   durationPerItem = 3,
   isPaused = false,
+  rowHeightEstimate = 80,
 }: InfiniteTickerListProps) {
-  const firstCopyRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [totalH, setTotalH] = useState(0);
-  const [visibleH, setVisibleH] = useState(0);
+  const [firstCopyHeight, setFirstCopyHeight] = useState(0);
 
-  // Use ResizeObserver to measure the first copy
-  useEffect(() => {
-    const el = firstCopyRef.current;
-    if (!el) return;
-
-    const doMeasure = () => {
-      const children = Array.from(el.children);
-      if (children.length === 0) return;
-      let total = 0;
-      let visible = 0;
-      children.forEach((child, i) => {
-        const h = (child as HTMLElement).getBoundingClientRect().height;
-        total += h;
-        if (i < visibleCount) visible += h;
+  const firstCopyCallback = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      // Use rAF to ensure layout is complete
+      requestAnimationFrame(() => {
+        const h = node.scrollHeight;
+        if (h > 0) setFirstCopyHeight(h);
       });
-      if (total > 0) {
-        setTotalH(total);
-        setVisibleH(visible);
-      }
-    };
-
-    const observer = new ResizeObserver(doMeasure);
-    observer.observe(el);
-    doMeasure();
-
-    return () => observer.disconnect();
-  }, [data, visibleCount]);
+    }
+  }, [data]);
 
   const paused = isPaused || isHovered;
   const duration = data.length * durationPerItem;
-  const isReady = totalH > 0 && visibleH > 0 && data.length > visibleCount;
 
   const handlePause = useCallback(() => setIsHovered(true), []);
   const handleResume = useCallback(() => setIsHovered(false), []);
@@ -61,7 +42,7 @@ export default function InfiniteTickerList({
 
   if (data.length <= visibleCount) {
     return (
-      <div ref={firstCopyRef}>
+      <div>
         {data.map((item, i) => (
           <div key={i}>{renderRow(item, i)}</div>
         ))}
@@ -69,42 +50,39 @@ export default function InfiniteTickerList({
     );
   }
 
+  const containerHeight = visibleCount * rowHeightEstimate;
+  const scrollDistance = firstCopyHeight || (data.length * rowHeightEstimate);
+
   return (
     <div
       className="overflow-hidden relative"
-      style={isReady ? { height: visibleH } : undefined}
+      style={{ height: containerHeight }}
       onMouseEnter={handlePause}
       onMouseLeave={handleResume}
       onTouchStart={handlePause}
       onTouchEnd={handleResume}
     >
-      {isReady && (
-        <>
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
-        </>
-      )}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
 
       <div
-        className={isReady ? 'ticker-scroll' : ''}
-        style={isReady ? {
+        className="ticker-scroll"
+        style={{
           animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
-          '--ticker-distance': `-${totalH}px`,
-        } as React.CSSProperties : undefined}
+          '--ticker-distance': `-${scrollDistance}px`,
+        } as React.CSSProperties}
       >
-        <div ref={firstCopyRef}>
+        <div ref={firstCopyCallback}>
           {data.map((item, i) => (
             <div key={`a-${i}`}>{renderRow(item, i)}</div>
           ))}
         </div>
-        {isReady && (
-          <div aria-hidden="true">
-            {data.map((item, i) => (
-              <div key={`b-${i}`}>{renderRow(item, i)}</div>
-            ))}
-          </div>
-        )}
+        <div aria-hidden="true">
+          {data.map((item, i) => (
+            <div key={`b-${i}`}>{renderRow(item, i)}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
