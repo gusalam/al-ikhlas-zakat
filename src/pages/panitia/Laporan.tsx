@@ -177,6 +177,9 @@ export default function PanitiaLaporan() {
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
+          { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang` },
+          { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg` },
+          { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg` },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
