@@ -124,6 +124,7 @@ export default function InputZakat() {
         nama_muzakki: form.nama_muzakki.trim(),
         rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
         tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki,
+        alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).select('id, nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
 
