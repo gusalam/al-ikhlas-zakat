@@ -169,23 +169,22 @@ export default function PanitiaLaporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang` },
           { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg` },
           { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg` },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
-          <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+          <Card key={s.label}>
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{s.label}</p>
+              <p className="text-sm sm:text-xl font-bold truncate">{s.value}</p>
             </CardContent>
           </Card>
         ))}
