@@ -238,45 +238,37 @@ export default function Index() {
               <SearchInput placeholder="Cari nama muzakki..." value={zakatSearch} onChange={handleZakatSearch} />
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Nama Muzakki</TableHead><TableHead>Jenis Zakat</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
-            </Table>
-            {zakatData.length === 0 ? (
+          <CardContent className="overflow-x-auto">
+            <AutoScrollTableWrapper
+              data={zakatData}
+              offset={zakatScroll.offset}
+              visibleCount={VISIBLE_ROWS}
+              onPause={zakatScroll.pause}
+              onResume={zakatScroll.resume}
+              renderRow={(z: any, idx: number) => {
+                const details = z.detail_zakat || [];
+                const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
+                const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
+                const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
+                return (
+                  <div key={`z-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                    <div className="font-medium">
+                      {z.nama_muzakki}
+                      {(z.rt?.nama_rt || z.alamat_muzakki) && (
+                        <span className="block text-xs text-muted-foreground">
+                          {[z.rt?.nama_rt, z.alamat_muzakki].filter(Boolean).join(' — ')}
+                        </span>
+                      )}
+                    </div>
+                    <div>{jenisList || '-'}</div>
+                    <div>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</div>
+                    <div>{new Date(z.tanggal).toLocaleDateString('id-ID')}</div>
+                  </div>
+                );
+              }}
+            />
+            {zakatData.length === 0 && (
               <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            ) : (
-              <AutoScrollTableWrapper
-                data={zakatData}
-                offset={zakatScroll.offset}
-                visibleCount={VISIBLE_ROWS}
-                onPause={zakatScroll.pause}
-                onResume={zakatScroll.resume}
-                renderRow={(z: any) => {
-                  const details = z.detail_zakat || [];
-                  const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
-                  const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
-                  const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
-                  return (
-                    <Table>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">
-                            {z.nama_muzakki}
-                            {(z.rt?.nama_rt || z.alamat_muzakki) && (
-                              <span className="block text-xs text-muted-foreground">
-                                {[z.rt?.nama_rt, z.alamat_muzakki].filter(Boolean).join(' — ')}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell>{jenisList || '-'}</TableCell>
-                          <TableCell>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</TableCell>
-                          <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  );
-                }}
-              />
             )}
           </CardContent>
         </Card>
@@ -289,39 +281,31 @@ export default function Index() {
               <SearchInput placeholder="Cari nama mustahik..." value={distSearch} onChange={handleDistSearch} />
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
-            </Table>
-            {distribusiData.length === 0 ? (
+          <CardContent className="overflow-x-auto">
+            <AutoScrollTableWrapper
+              data={distribusiData}
+              offset={distScroll.offset}
+              visibleCount={VISIBLE_ROWS}
+              onPause={distScroll.pause}
+              onResume={distScroll.resume}
+              renderRow={(d: any, idx: number) => (
+                <div key={`d-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                  <div className="font-medium">
+                    {d.mustahik?.nama || '-'}
+                    {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
+                      <span className="block text-xs text-muted-foreground">
+                        {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
+                      </span>
+                    )}
+                  </div>
+                  <div>{d.sumber_zakat || '-'}</div>
+                  <div>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</div>
+                  <div>{new Date(d.tanggal).toLocaleDateString('id-ID')}</div>
+                </div>
+              )}
+            />
+            {distribusiData.length === 0 && (
               <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            ) : (
-              <AutoScrollTableWrapper
-                data={distribusiData}
-                offset={distScroll.offset}
-                visibleCount={VISIBLE_ROWS}
-                onPause={distScroll.pause}
-                onResume={distScroll.resume}
-                renderRow={(d: any) => (
-                  <Table>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          {d.mustahik?.nama || '-'}
-                          {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
-                            <span className="block text-xs text-muted-foreground">
-                              {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>{d.sumber_zakat || '-'}</TableCell>
-                        <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</TableCell>
-                        <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                )}
-              />
             )}
           </CardContent>
         </Card>
