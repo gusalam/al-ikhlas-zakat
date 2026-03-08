@@ -75,7 +75,7 @@ export default function PanitiaLaporan() {
       } catch (err) { toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' }); }
     };
     fetchData();
-  }, [zakatPag.page, distPag.page, startDate, endDate, searchZakat, searchDist]);
+  }, [zakatPag.page, distPag.page, startDate, endDate, debouncedSearchZakat, debouncedSearchDist]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const filterLabel = filterYear === 'all' ? 'Semua Periode' : filterMonth === 'all' ? `Tahun ${filterYear}` : `${MONTHS.find(m => m.value === filterMonth)?.label} ${filterYear}`;

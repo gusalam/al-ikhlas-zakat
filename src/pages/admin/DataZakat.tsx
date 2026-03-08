@@ -181,6 +181,7 @@ export default function DataZakat() {
             </DialogContent>
           </Dialog>
         </div>
+        </div>
       </div>
 
       <Card className="hidden md:block">
