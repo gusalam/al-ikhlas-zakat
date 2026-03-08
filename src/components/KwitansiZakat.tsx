@@ -70,79 +70,81 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
   };
 
   const handleDownloadPdf = async () => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 210] });
-    const green = [39, 103, 73] as const;
-    const lightGreen = [230, 245, 230] as const;
-
-    doc.setDrawColor(...green); doc.setLineWidth(1.5); doc.rect(5, 5, 200, 138);
-    doc.setLineWidth(0.5); doc.rect(7, 7, 196, 134);
-    doc.setFillColor(...lightGreen); doc.rect(10, 10, 40, 128, 'F');
-
     try {
-      const img = new Image(); img.crossOrigin = 'anonymous';
-      await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(); img.src = logoImg; });
-      doc.addImage(img, 'PNG', 15, 15, 30, 30);
-    } catch { /* skip */ }
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 210] });
+      const green = [39, 103, 73] as const;
+      const lightGreen = [230, 245, 230] as const;
 
-    doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...green);
-    doc.text('BADAN AMIL', 30, 55, { align: 'center' }); doc.text('ZAKAT', 30, 60, { align: 'center' });
-    doc.text('MASJID AL-IKHLAS', 30, 65, { align: 'center' }); doc.text('KEBON BARU', 30, 70, { align: 'center' });
+      doc.setDrawColor(...green); doc.setLineWidth(1.5); doc.rect(5, 5, 200, 138);
+      doc.setLineWidth(0.5); doc.rect(7, 7, 196, 134);
+      doc.setFillColor(...lightGreen); doc.rect(10, 10, 40, 128, 'F');
 
-    const contentX = 55;
-    doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(...green);
-    doc.text('KWITANSI ZAKAT', 130, 18, { align: 'center' });
-    doc.setDrawColor(...green); doc.line(80, 20, 180, 20);
+      try {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(); img.src = logoImg; });
+        doc.addImage(img, 'PNG', 15, 15, 30, 30);
+      } catch { /* skip logo */ }
 
-    doc.setFontSize(9); doc.setTextColor(0, 0, 0);
-    let y = 30;
-    const labelX = contentX, colonX = labelX + 35, valX = colonX + 5;
+      doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...green);
+      doc.text('BADAN AMIL', 30, 55, { align: 'center' }); doc.text('ZAKAT', 30, 60, { align: 'center' });
+      doc.text('MASJID AL-IKHLAS', 30, 65, { align: 'center' }); doc.text('KEBON BARU', 30, 70, { align: 'center' });
 
-    doc.setFont('helvetica', 'normal'); doc.text('Nomor', labelX, y); doc.text(':', colonX, y);
-    doc.setFont('helvetica', 'bold'); doc.text(String(data.nomor), valX, y);
+      const contentX = 55;
+      doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(...green);
+      doc.text('KWITANSI ZAKAT', 130, 18, { align: 'center' });
+      doc.setDrawColor(...green); doc.line(80, 20, 180, 20);
 
-    y += 10;
-    doc.setFont('helvetica', 'normal'); doc.text('Nama Muzakki', labelX, y); doc.text(':', colonX, y);
-    doc.setFont('helvetica', 'bold'); doc.text(data.nama_muzakki, valX, y);
-    if (totalJiwa > 0) {
-      doc.setFont('helvetica', 'normal'); doc.text('Jumlah Jiwa', 145, y); doc.text(':', 175, y);
-      doc.setFont('helvetica', 'bold'); doc.text(`${totalJiwa} Orang`, 180, y);
-    }
+      doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+      let y = 30;
+      const labelX = contentX, colonX = labelX + 35, valX = colonX + 5;
 
-    y += 10;
-    doc.setFont('helvetica', 'normal'); doc.text('Untuk Pembayaran :', labelX, y);
-    y += 7;
+      doc.setFont('helvetica', 'normal'); doc.text('Nomor', labelX, y); doc.text(':', colonX, y);
+      doc.setFont('helvetica', 'bold'); doc.text(String(data.nomor), valX, y);
 
-    payments.forEach(p => {
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${p.no}`, labelX + 3, y); doc.text(p.name, labelX + 10, y);
-      doc.text('Uang  :', labelX + 40, y);
-      if (p.uang > 0) { doc.setFont('helvetica', 'bold'); doc.text(`Rp    ${fmt(p.uang)}`, labelX + 58, y); }
-      if (p.beras > 0) { doc.setFont('helvetica', 'normal'); doc.text(`Beras : ${fmtBeras(p.beras)}`, 145, y); }
-      else if (p.no === 1) { doc.setFont('helvetica', 'normal'); doc.text('Beras :', 145, y); }
+      y += 10;
+      doc.setFont('helvetica', 'normal'); doc.text('Nama Muzakki', labelX, y); doc.text(':', colonX, y);
+      doc.setFont('helvetica', 'bold'); doc.text(data.nama_muzakki, valX, y);
+      if (totalJiwa > 0) {
+        doc.setFont('helvetica', 'normal'); doc.text('Jumlah Jiwa', 145, y); doc.text(':', 175, y);
+        doc.setFont('helvetica', 'bold'); doc.text(`${totalJiwa} Orang`, 180, y);
+      }
+
+      y += 10;
+      doc.setFont('helvetica', 'normal'); doc.text('Untuk Pembayaran :', labelX, y);
       y += 7;
-    });
 
-    y += 3;
-    doc.setFont('helvetica', 'normal'); doc.text('Jumlah Total :', labelX + 20, y);
-    doc.setFont('helvetica', 'bold'); doc.text(`Rp    ${fmt(totalUang)}`, labelX + 58, y);
-    const dateStr = new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    doc.setFont('helvetica', 'normal'); doc.text(`Jakarta,  ${dateStr}`, 145, y);
+      payments.forEach(p => {
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${p.no}`, labelX + 3, y); doc.text(p.name, labelX + 10, y);
+        doc.text('Uang  :', labelX + 40, y);
+        if (p.uang > 0) { doc.setFont('helvetica', 'bold'); doc.text(`Rp    ${fmt(p.uang)}`, labelX + 58, y); }
+        if (p.beras > 0) { doc.setFont('helvetica', 'normal'); doc.text(`Beras : ${fmtBeras(p.beras)}`, 145, y); }
+        else if (p.no === 1) { doc.setFont('helvetica', 'normal'); doc.text('Beras :', 145, y); }
+        y += 7;
+      });
 
-    y += 10;
-    doc.setFont('helvetica', 'normal'); doc.text('Terbilang :', labelX, y);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    const splitText = doc.splitTextToSize(terbilang(totalUang), 70);
-    doc.text(splitText, labelX + 25, y);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text('Penerima,', 160, y);
-    y += 15;
-    doc.setFont('helvetica', 'bold'); doc.text(data.penerima, 165, y, { align: 'center' });
+      y += 3;
+      doc.setFont('helvetica', 'normal'); doc.text('Jumlah Total :', labelX + 20, y);
+      doc.setFont('helvetica', 'bold'); doc.text(`Rp    ${fmt(totalUang)}`, labelX + 58, y);
+      const dateStr2 = new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      doc.setFont('helvetica', 'normal'); doc.text(`Jakarta,  ${dateStr2}`, 145, y);
 
-    doc.save(`kwitansi-zakat-${data.nomor}.pdf`);
-    toast.success('Kwitansi PDF berhasil diunduh ✓');
-  } catch (error) {
-    console.error('Download kwitansi error:', error);
-    toast.error('Gagal mengunduh kwitansi PDF. Silakan coba lagi.');
-  }
+      y += 10;
+      doc.setFont('helvetica', 'normal'); doc.text('Terbilang :', labelX, y);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      const splitText = doc.splitTextToSize(terbilang(totalUang), 70);
+      doc.text(splitText, labelX + 25, y);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text('Penerima,', 160, y);
+      y += 15;
+      doc.setFont('helvetica', 'bold'); doc.text(data.penerima, 165, y, { align: 'center' });
+
+      doc.save(`kwitansi-zakat-${data.nomor}.pdf`);
+      toast.success('Kwitansi PDF berhasil diunduh ✓');
+    } catch (error) {
+      console.error('Download kwitansi error:', error);
+      toast.error('Gagal mengunduh kwitansi PDF. Silakan coba lagi.');
+    }
+  };
 
   const dateStr = new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
