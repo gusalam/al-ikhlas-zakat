@@ -24,7 +24,8 @@ interface Props {
 }
 
 const fmt = (n: number) => new Intl.NumberFormat('id-ID').format(n);
-
+const kgToLiter = (kg: number) => parseFloat((kg * 1.25).toFixed(2));
+const fmtBeras = (kg: number) => `${kg} Kg / ${kgToLiter(kg)} Liter`;
 export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -147,11 +148,10 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       }
       if (p.beras > 0) {
         doc.setFont('helvetica', 'normal');
-        doc.text(`Beras : ${p.beras} Liter`, 155, y);
+        doc.text(`Beras : ${fmtBeras(p.beras)}`, 145, y);
       } else if (p.no === 1) {
         doc.setFont('helvetica', 'normal');
-        doc.text('Beras :', 155, y);
-        doc.text('Liter', 185, y);
+        doc.text('Beras :', 145, y);
       }
       y += 7;
     });
@@ -246,7 +246,7 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                           <td style={{ width: '30px', fontWeight: 'bold' }}>{p.uang > 0 ? 'Rp' : ''}</td>
                           <td style={{ width: '80px', fontWeight: 'bold' }}>{p.uang > 0 ? fmt(p.uang) : ''}</td>
                           <td style={{ width: '50px' }}>{(p.no === 1) ? 'Beras :' : ''}</td>
-                          <td>{(p.no === 1) ? (p.beras > 0 ? `${p.beras} Liter` : 'Liter') : ''}</td>
+                          <td>{(p.no === 1) ? (p.beras > 0 ? fmtBeras(p.beras) : '') : ''}</td>
                         </tr>
                       ))}
                     </tbody>
