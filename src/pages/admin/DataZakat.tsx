@@ -152,7 +152,7 @@ export default function DataZakat() {
                     </Select>
                   </div>
                 )}
-                <ZakatDetailFields />
+                <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="admin" />
                 <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
                 <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
               </div>
