@@ -28,6 +28,8 @@ export default function DataMustahik() {
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const pag = usePagination(50);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
     const [{ data: m, count }, { data: rt }] = await Promise.all([
