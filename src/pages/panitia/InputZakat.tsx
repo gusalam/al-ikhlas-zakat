@@ -29,7 +29,7 @@ const emptyForm = () => ({
   nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '',
   rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1',
   penerima: '', metode_fitrah: 'uang' as 'uang' | 'beras', alamat: '',
-  status_muzakki: 'RT',
+  status_muzakki: 'RT', harga_beras: '15000',
 });
 
 export default function InputZakat() {
