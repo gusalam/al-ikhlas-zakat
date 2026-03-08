@@ -42,14 +42,18 @@ export default function AdminDashboard() {
   const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
   const [rtData, setRtData] = useState<RtRow[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [{ data: zakat }, { data: mustahik }, { data: distribusi }, { data: rt }] = await Promise.all([
+  const fetchData = useCallback(async () => {
+    try {
+      const [{ data: zakat, error: ze }, { data: mustahik, error: me }, { data: distribusi, error: de }, { data: rt, error: re }] = await Promise.all([
         supabase.from('zakat').select('nama_muzakki, jumlah_uang, jumlah_beras, jenis_zakat, tanggal, rt_id'),
         supabase.from('mustahik').select('id, nama, kategori, rt_id'),
         supabase.from('distribusi').select('jumlah, tanggal, mustahik_id'),
         supabase.from('rt').select('id, nama_rt'),
       ]);
+      if (ze) throw ze;
+      if (me) throw me;
+      if (de) throw de;
+      if (re) throw re;
 
       const z = zakat || [];
       const m = mustahik || [];
@@ -76,9 +80,31 @@ export default function AdminDashboard() {
         saldoZakat: totalZakat - totalDistribusi,
         totalFitrah, totalMal, totalInfaq, totalFidyah,
       });
-    };
-    fetchData();
+    } catch (err) {
+      toast.error(friendlyError(err));
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+
+    // Realtime subscriptions
+    const zakatChannel = supabase.channel('admin-dash-zakat')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, () => fetchData())
+      .subscribe();
+    const distribusiChannel = supabase.channel('admin-dash-distribusi')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, () => fetchData())
+      .subscribe();
+    const mustahikChannel = supabase.channel('admin-dash-mustahik')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mustahik' }, () => fetchData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(zakatChannel);
+      supabase.removeChannel(distribusiChannel);
+      supabase.removeChannel(mustahikChannel);
+    };
+  }, [fetchData]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
