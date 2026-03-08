@@ -7,6 +7,8 @@ export interface ZakatStats {
   totalInfaq: number;
   totalFidyah: number;
   totalZakat: number;
+  totalBerasFitrah: number;
+  totalBerasFidyah: number;
   totalBeras: number;
   totalJiwaFitrah: number;
   totalMuzakki: number;
@@ -17,7 +19,8 @@ export interface ZakatStats {
 
 const defaultStats: ZakatStats = {
   totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0,
-  totalZakat: 0, totalBeras: 0, totalJiwaFitrah: 0, totalMuzakki: 0, totalMustahik: 0,
+  totalZakat: 0, totalBerasFitrah: 0, totalBerasFidyah: 0, totalBeras: 0,
+  totalJiwaFitrah: 0, totalMuzakki: 0, totalMustahik: 0,
   totalZakatCount: 0, totalMustahikCount: 0,
 };
 
@@ -46,6 +49,8 @@ export function useZakatStats() {
       totalInfaq: Number(d.total_infaq) || 0,
       totalFidyah: Number(d.total_fidyah) || 0,
       totalZakat: Number(d.total_zakat) || 0,
+      totalBerasFitrah: Number(d.total_beras_fitrah) || 0,
+      totalBerasFidyah: Number(d.total_beras_fidyah) || 0,
       totalBeras: Number(d.total_beras) || 0,
       totalJiwaFitrah: Number(d.total_jiwa_fitrah) || 0,
       totalMuzakki: Number(d.total_muzakki) || 0,

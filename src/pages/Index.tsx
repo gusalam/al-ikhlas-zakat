@@ -95,7 +95,9 @@ export default function Index() {
             { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-secondary' },
             { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-primary' },
-            { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
+            { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat, color: 'text-primary' },
+            { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat, color: 'text-secondary' },
+            { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-primary' },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
