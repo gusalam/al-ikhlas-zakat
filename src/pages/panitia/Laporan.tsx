@@ -147,15 +147,15 @@ export default function PanitiaLaporan() {
   return (
     <PanitiaLayout>
       <div className="flex flex-col gap-4 mb-6">
-        <h1 className="text-2xl font-serif font-bold">Laporan Keuangan</h1>
+        <h1 className="text-xl sm:text-2xl font-serif font-bold">Laporan Keuangan</h1>
         <div className="flex gap-2 flex-wrap items-center">
-          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Filter className="w-4 h-4 text-muted-foreground hidden sm:block" />
           <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filterYear} onValueChange={(v) => { setFilterYear(v); if (v === 'all') setFilterMonth('all'); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[120px] sm:w-[130px]"><SelectValue /></SelectTrigger>
             <SelectContent>{yearOptions.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
@@ -169,7 +169,7 @@ export default function PanitiaLaporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
@@ -183,30 +183,30 @@ export default function PanitiaLaporan() {
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-muted-foreground">{s.label}</p>
+              <p className="text-base sm:text-xl font-bold truncate">{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card>
-          <CardHeader><CardTitle className="font-serif">Grafik Jenis Zakat</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Grafik Jenis Zakat</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend /></PieChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={false}>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /></PieChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="font-serif">Zakat per RT</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Zakat per RT</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {rtChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={rtChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={rtChartData} margin={{ left: -10, right: 5 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={11} tick={{ fontSize: 10 }} /><YAxis fontSize={11} width={50} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
@@ -214,10 +214,10 @@ export default function PanitiaLaporan() {
       </div>
 
       <Card className="mb-6">
-        <CardHeader><CardTitle className="font-serif">Data Zakat</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-2 sm:p-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="min-w-[100px]">Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {zakatData.map(z => (
                 <TableRow key={z.id}><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
@@ -229,10 +229,10 @@ export default function PanitiaLaporan() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="font-serif">Data Distribusi</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-2 sm:p-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="min-w-[100px]">Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {distribusiData.map(d => (
                 <TableRow key={d.id}><TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
