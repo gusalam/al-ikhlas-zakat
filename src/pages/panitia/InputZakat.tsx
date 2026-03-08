@@ -16,6 +16,7 @@ import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/KwitansiZakat';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import PaginationControls from '@/components/PaginationControls';
 import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
 import ZakatDetailFields, { DetailForm, emptyDetail } from '@/components/ZakatDetailFields';
