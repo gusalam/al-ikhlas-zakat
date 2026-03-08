@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Wallet } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
@@ -42,10 +42,6 @@ export default function PanitiaDistribusi() {
 
   const handleSubmit = async () => {
     const jumlah = Number(form.jumlah);
-    if (jumlah > stats.saldoZakat) {
-      toast.error('Distribusi tidak boleh melebihi saldo zakat yang tersedia.');
-      return;
-    }
     const { error } = await supabase.from('distribusi').insert({ mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success('Distribusi zakat berhasil dicatat ✓');
@@ -59,11 +55,6 @@ export default function PanitiaDistribusi() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-serif font-bold">Distribusi Zakat</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Wallet className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
-            <Badge variant={stats.saldoZakat < 0 ? 'destructive' : 'secondary'} className="font-semibold">{fmt(stats.saldoZakat)}</Badge>
-          </div>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
