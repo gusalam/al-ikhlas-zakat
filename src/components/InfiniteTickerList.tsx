@@ -4,41 +4,44 @@ interface InfiniteTickerListProps {
   data: any[];
   visibleCount: number;
   renderRow: (item: any, index: number) => ReactNode;
-  rowHeight?: number;
-  durationPerItem?: number; // seconds per item scroll
+  durationPerItem?: number;
   isPaused?: boolean;
+  rowHeightEstimate?: number;
 }
 
-/**
- * Infinite vertical ticker: duplicates the list and uses CSS animation
- * to scroll continuously. When the first copy scrolls out, it loops seamlessly.
- */
 export default function InfiniteTickerList({
   data,
   visibleCount,
   renderRow,
-  rowHeight = 56,
   durationPerItem = 3,
   isPaused = false,
+  rowHeightEstimate = 80,
 }: InfiniteTickerListProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [measuredRowHeight, setMeasuredRowHeight] = useState(rowHeight);
+  const [scrollDist, setScrollDist] = useState(0);
 
-  // Measure actual row height
-  useEffect(() => {
-    if (containerRef.current) {
-      const firstRow = containerRef.current.querySelector('[data-ticker-row]') as HTMLElement;
-      if (firstRow) {
-        setMeasuredRowHeight(firstRow.offsetHeight);
-      }
-    }
-  }, [data]);
-
+  const containerHeight = visibleCount * rowHeightEstimate;
   const paused = isPaused || isHovered;
-  const totalHeight = data.length * measuredRowHeight;
   const duration = data.length * durationPerItem;
-  const containerHeight = visibleCount * measuredRowHeight;
+
+  // Measure first copy height after render
+  useEffect(() => {
+    if (!innerRef.current || data.length <= visibleCount) return;
+    const measure = () => {
+      const el = innerRef.current;
+      if (!el) return;
+      // First child div is the first copy
+      const firstCopy = el.firstElementChild as HTMLElement;
+      if (firstCopy) {
+        const h = firstCopy.scrollHeight;
+        if (h > 0) setScrollDist(h);
+      }
+    };
+    // Delay to ensure DOM is painted
+    const id = requestAnimationFrame(() => requestAnimationFrame(measure));
+    return () => cancelAnimationFrame(id);
+  }, [data, visibleCount]);
 
   const handlePause = useCallback(() => setIsHovered(true), []);
   const handleResume = useCallback(() => setIsHovered(false), []);
@@ -47,20 +50,20 @@ export default function InfiniteTickerList({
     return <p className="text-center text-muted-foreground py-8">Belum ada data</p>;
   }
 
-  // If data fits in visible area, no animation needed
   if (data.length <= visibleCount) {
     return (
       <div>
         {data.map((item, i) => (
-          <div key={i} data-ticker-row>{renderRow(item, i)}</div>
+          <div key={i}>{renderRow(item, i)}</div>
         ))}
       </div>
     );
   }
 
+  const dist = scrollDist || data.length * rowHeightEstimate;
+
   return (
     <div
-      ref={containerRef}
       className="overflow-hidden relative"
       style={{ height: containerHeight }}
       onMouseEnter={handlePause}
@@ -68,27 +71,29 @@ export default function InfiniteTickerList({
       onTouchStart={handlePause}
       onTouchEnd={handleResume}
     >
-      {/* Gradient fade top & bottom */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-4 z-10 bg-gradient-to-b from-card to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 z-10 bg-gradient-to-t from-card to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
 
       <div
+        ref={innerRef}
+        key={`ticker-${data.length}`}
         className="ticker-scroll"
         style={{
           animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
-          // We scroll by exactly totalHeight (one full copy)
-          '--ticker-distance': `-${totalHeight}px`,
+          '--ticker-distance': `-${dist}px`,
         } as React.CSSProperties}
       >
-        {/* First copy */}
-        {data.map((item, i) => (
-          <div key={`a-${i}`} data-ticker-row>{renderRow(item, i)}</div>
-        ))}
-        {/* Second copy for seamless loop */}
-        {data.map((item, i) => (
-          <div key={`b-${i}`} data-ticker-row>{renderRow(item, i)}</div>
-        ))}
+        <div>
+          {data.map((item, i) => (
+            <div key={`a-${i}`}>{renderRow(item, i)}</div>
+          ))}
+        </div>
+        <div aria-hidden="true">
+          {data.map((item, i) => (
+            <div key={`b-${i}`}>{renderRow(item, i)}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
