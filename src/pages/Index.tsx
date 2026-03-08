@@ -73,7 +73,7 @@ export default function Index() {
     // Fetch data with joins (no count overhead)
     let dataQuery = supabase
       .from('transaksi_zakat')
-      .select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
+      .select('id, nama_muzakki, alamat_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
       .order('tanggal', { ascending: false })
       .range(from, to);
 
