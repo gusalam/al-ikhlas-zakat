@@ -55,8 +55,15 @@ export default function PanitiaDistribusi() {
 
   return (
     <PanitiaLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Wallet className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
+            <Badge variant={saldoZakat < 0 ? 'destructive' : 'secondary'} className="font-semibold">{fmt(saldoZakat)}</Badge>
+          </div>
+        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>
