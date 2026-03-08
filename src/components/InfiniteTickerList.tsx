@@ -16,28 +16,31 @@ export default function InfiniteTickerList({
   isPaused = false,
 }: InfiniteTickerListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
+  const firstCopyRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [totalHeight, setTotalHeight] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(300);
+  const [measured, setMeasured] = useState<{ totalH: number; visibleH: number } | null>(null);
 
-  // Measure the actual rendered height of the first copy
   useEffect(() => {
-    if (!innerRef.current) return;
-    const rows = innerRef.current.querySelectorAll('[data-ticker-row]');
-    if (rows.length === 0) return;
+    const measure = () => {
+      if (!firstCopyRef.current) return;
+      const rows = firstCopyRef.current.children;
+      if (rows.length === 0) return;
 
-    // First half of rows = original data
-    const halfCount = Math.min(data.length, rows.length);
-    let total = 0;
-    let visibleH = 0;
-    for (let i = 0; i < halfCount; i++) {
-      const h = (rows[i] as HTMLElement).offsetHeight;
-      total += h;
-      if (i < visibleCount) visibleH += h;
-    }
-    setTotalHeight(total);
-    setContainerHeight(visibleH);
+      let totalH = 0;
+      let visibleH = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const h = (rows[i] as HTMLElement).getBoundingClientRect().height;
+        totalH += h;
+        if (i < visibleCount) visibleH += h;
+      }
+      setMeasured({ totalH, visibleH });
+    };
+
+    // Measure after a frame to ensure layout is complete
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(measure);
+    });
+    return () => cancelAnimationFrame(raf);
   }, [data, visibleCount]);
 
   const paused = isPaused || isHovered;
@@ -54,40 +57,52 @@ export default function InfiniteTickerList({
     return (
       <div>
         {data.map((item, i) => (
-          <div key={i} data-ticker-row>{renderRow(item, i)}</div>
+          <div key={i}>{renderRow(item, i)}</div>
         ))}
       </div>
     );
   }
 
+  const containerHeight = measured?.visibleH;
+  const totalHeight = measured?.totalH || 0;
+
   return (
     <div
       ref={containerRef}
       className="overflow-hidden relative"
-      style={{ height: containerHeight || 'auto' }}
+      style={{ height: containerHeight ? containerHeight : 'auto' }}
       onMouseEnter={handlePause}
       onMouseLeave={handleResume}
       onTouchStart={handlePause}
       onTouchEnd={handleResume}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
+      {measured && (
+        <>
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-3 z-10 bg-gradient-to-b from-card to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 z-10 bg-gradient-to-t from-card to-transparent" />
+        </>
+      )}
 
       <div
-        ref={innerRef}
-        className="ticker-scroll"
-        style={{
+        className={measured ? 'ticker-scroll' : ''}
+        style={measured ? {
           animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
           '--ticker-distance': `-${totalHeight}px`,
-        } as React.CSSProperties}
+        } as React.CSSProperties : undefined}
       >
-        {data.map((item, i) => (
-          <div key={`a-${i}`} data-ticker-row>{renderRow(item, i)}</div>
-        ))}
-        {data.map((item, i) => (
-          <div key={`b-${i}`} data-ticker-row>{renderRow(item, i)}</div>
-        ))}
+        <div ref={firstCopyRef}>
+          {data.map((item, i) => (
+            <div key={`a-${i}`}>{renderRow(item, i)}</div>
+          ))}
+        </div>
+        {measured && (
+          <div>
+            {data.map((item, i) => (
+              <div key={`b-${i}`}>{renderRow(item, i)}</div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
