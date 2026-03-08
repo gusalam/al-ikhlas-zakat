@@ -34,7 +34,7 @@ interface RtRow {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0 });
+  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0, totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0 });
   const [zakatData, setZakatData] = useState<ZakatRow[]>([]);
   const [mustahikData, setMustahikData] = useState<MustahikRow[]>([]);
   const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
