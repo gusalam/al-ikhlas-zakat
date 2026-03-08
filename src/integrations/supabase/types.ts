@@ -51,25 +51,31 @@ export type Database = {
       }
       mustahik: {
         Row: {
+          alamat: string | null
           created_at: string | null
           id: string
           kategori: string | null
           nama: string
           rt_id: string | null
+          status: string | null
         }
         Insert: {
+          alamat?: string | null
           created_at?: string | null
           id?: string
           kategori?: string | null
           nama: string
           rt_id?: string | null
+          status?: string | null
         }
         Update: {
+          alamat?: string | null
           created_at?: string | null
           id?: string
           kategori?: string | null
           nama?: string
           rt_id?: string | null
+          status?: string | null
         }
         Relationships: [
           {
