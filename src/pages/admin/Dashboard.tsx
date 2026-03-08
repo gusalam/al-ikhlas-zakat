@@ -73,8 +73,6 @@ export default function AdminDashboard() {
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
-          { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck, color: 'text-red-600' },
-          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: DollarSign, color: stats.saldoZakat >= 0 ? 'text-emerald-600' : 'text-red-600' },
         ].map(s => {
           const Icon = s.icon;
           return (

@@ -198,14 +198,14 @@ export default function Laporan() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          { label: 'Total Pemasukan', value: fmt(stats.totalZakat), highlight: true },
-          { label: 'Total Distribusi', value: fmt(stats.totalDistribusi) },
-          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), highlight: true, isSaldo: true },
+          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), highlight: true },
+          { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
+          { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className={`text-xl font-bold ${(s as any).isSaldo ? (stats.saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
+              <p className="text-xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
