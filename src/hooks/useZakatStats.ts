@@ -15,7 +15,10 @@ export interface ZakatStats {
   totalMustahik: number;
   totalZakatCount: number;
   totalMustahikCount: number;
+  totalDistribusiUang: number;
   totalDistribusiBeras: number;
+  sisaUang: number;
+  sisaBeras: number;
 }
 
 const defaultStats: ZakatStats = {
