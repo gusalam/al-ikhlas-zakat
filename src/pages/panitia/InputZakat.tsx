@@ -47,8 +47,8 @@ export default function InputZakat() {
 
   return (
     <PanitiaLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Input Zakat</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Input Zakat</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>
@@ -79,7 +79,8 @@ export default function InputZakat() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      {/* Desktop Table */}
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
@@ -97,6 +98,26 @@ export default function InputZakat() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
+        {data.map(z => (
+          <Card key={z.id}>
+            <CardContent className="p-4 space-y-2">
+              <div>
+                <p className="font-semibold text-base">{z.nama_muzakki}</p>
+                <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
+                <div><span className="text-muted-foreground">Beras:</span> <span className="font-medium">{z.jumlah_beras} Kg</span></div>
+                <div><span className="text-muted-foreground">Tanggal:</span> <span className="font-medium">{new Date(z.tanggal).toLocaleDateString('id-ID')}</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </PanitiaLayout>
   );
 }

@@ -57,7 +57,7 @@ export default function PanitiaDistribusi() {
     <PanitiaLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+          <h1 className="text-xl md:text-2xl font-serif font-bold">Distribusi Zakat</h1>
           <div className="flex items-center gap-2 mt-1">
             <Wallet className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
@@ -88,7 +88,8 @@ export default function PanitiaDistribusi() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      {/* Desktop Table */}
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
@@ -105,6 +106,23 @@ export default function PanitiaDistribusi() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data distribusi</p>}
+        {data.map(d => (
+          <Card key={d.id}>
+            <CardContent className="p-4 space-y-1">
+              <p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span>
+                <span><span className="text-muted-foreground">Jumlah:</span> {fmt(Number(d.jumlah))}</span>
+                <span><span className="text-muted-foreground">Tanggal:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </PanitiaLayout>
   );
 }

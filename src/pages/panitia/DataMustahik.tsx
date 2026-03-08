@@ -37,8 +37,8 @@ export default function PanitiaMustahik() {
 
   return (
     <PanitiaLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Data Mustahik</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>
@@ -57,7 +57,8 @@ export default function PanitiaMustahik() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      {/* Desktop Table */}
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead></TableRow></TableHeader>
@@ -73,6 +74,22 @@ export default function PanitiaMustahik() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data mustahik</p>}
+        {data.map(m => (
+          <Card key={m.id}>
+            <CardContent className="p-4 space-y-1">
+              <p className="font-semibold text-base">{m.nama}</p>
+              <div className="flex gap-4 text-sm">
+                <span><span className="text-muted-foreground">RT:</span> {m.rt?.nama_rt || '-'}</span>
+                <span><span className="text-muted-foreground">Kategori:</span> {m.kategori || '-'}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </PanitiaLayout>
   );
 }
