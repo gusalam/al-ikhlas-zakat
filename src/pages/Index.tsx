@@ -168,15 +168,16 @@ export default function Index() {
           <CardHeader><CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle></CardHeader>
           <CardContent className="overflow-auto">
             <Table>
-              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {distribusiData.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
                 ) : distribusiData.map((d: any) => (
                   <TableRow key={d.id}>
                     <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
                     <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
-                    <TableCell>{fmt(Number(d.jumlah))}</TableCell>
+                    <TableCell>{d.sumber_zakat || '-'}</TableCell>
+                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</TableCell>
                     <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   </TableRow>
                 ))}
