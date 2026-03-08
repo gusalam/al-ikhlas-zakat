@@ -165,6 +165,7 @@ export default function InputZakat() {
       nama_muzakki: form.nama_muzakki.trim(),
       rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
       tanggal: form.tanggal, status_muzakki: form.status_muzakki,
+      alamat_muzakki: form.alamat_muzakki.trim() || null,
     }).eq('id', editItem.id);
     if (error) { toast.error(friendlyError(error)); return; }
 
