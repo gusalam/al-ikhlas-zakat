@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText, Eye, Download } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
@@ -19,20 +18,7 @@ import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/Kwita
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
-
-interface DetailForm {
-  fitrah: { enabled: boolean; jumlah_jiwa: string; harga_beras: string; jumlah_uang: string; jumlah_beras: string; };
-  mal: { enabled: boolean; jumlah_uang: string; };
-  infaq: { enabled: boolean; jumlah_uang: string; };
-  fidyah: { enabled: boolean; jumlah_uang: string; jumlah_beras: string; };
-}
-
-const emptyDetail = (): DetailForm => ({
-  fitrah: { enabled: false, jumlah_jiwa: '1', harga_beras: '15000', jumlah_uang: '37500', jumlah_beras: '2.5' },
-  mal: { enabled: false, jumlah_uang: '' },
-  infaq: { enabled: false, jumlah_uang: '' },
-  fidyah: { enabled: false, jumlah_uang: '', jumlah_beras: '' },
-});
+import ZakatDetailFields, { DetailForm, emptyDetail } from '@/components/ZakatDetailFields';
 
 export default function DataZakat() {
   const { user } = useAuth();
