@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     try {
       const [rz, rd, mk, zrt] = await Promise.all([
         supabase.from('transaksi_zakat').select('nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras, jenis_zakat)').order('tanggal', { ascending: false }).limit(5),
-        supabase.from('distribusi').select('jumlah, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
+        supabase.from('distribusi').select('jumlah, jumlah_beras, jenis_bantuan, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('mustahik').select('kategori'),
         supabase.from('transaksi_zakat').select('nama_muzakki, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras)'),
       ]);
@@ -139,7 +139,10 @@ export default function AdminDashboard() {
               {recentDistribusi.map((d: any, i: number) => (
                 <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
                   <div><p className="font-medium text-sm">{d.mustahik?.nama || '-'}</p><p className="text-xs text-muted-foreground">{fmtDate(d.tanggal)}</p></div>
-                  <p className="text-sm font-semibold">{fmt(d.jumlah)}</p>
+                  {d.jenis_bantuan === 'Beras'
+                    ? <p className="text-sm font-semibold">{Number(d.jumlah_beras) || 0} Kg</p>
+                    : <p className="text-sm font-semibold">{fmt(d.jumlah)}</p>
+                  }
                 </div>
               ))}
               {recentDistribusi.length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}

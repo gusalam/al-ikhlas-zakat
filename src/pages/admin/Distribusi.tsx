@@ -38,6 +38,10 @@ function getAvailableFund(stats: any, sumber: string): number {
   return map[sumber] || 0;
 }
 
+function getAvailableBeras(stats: any): number {
+  return stats.totalBeras || 0;
+}
+
 export default function Distribusi() {
   const { user } = useAuth();
   const [data, setData] = useState<any[]>([]);
@@ -48,6 +52,7 @@ export default function Distribusi() {
   const [submitting, setSubmitting] = useState(false);
   const { stats, fetchStats } = useZakatStats();
   const [distribusiPerSumber, setDistribusiPerSumber] = useState<Record<string, number>>({});
+  const [distribusiBeras, setDistribusiBeras] = useState(0);
   const pag = usePagination(50);
 
   const fetchData = async () => {
@@ -60,13 +65,16 @@ export default function Distribusi() {
     setMustahikList(mustahik || []);
     await fetchStats();
 
-    const { data: allDist } = await supabase.from('distribusi').select('sumber_zakat, jumlah');
+    const { data: allDist } = await supabase.from('distribusi').select('sumber_zakat, jumlah, jumlah_beras, jenis_bantuan');
     const totals: Record<string, number> = {};
+    let totalBerasDist = 0;
     (allDist || []).forEach((d: any) => {
       const s = d.sumber_zakat || 'Zakat Fitrah';
       totals[s] = (totals[s] || 0) + Number(d.jumlah || 0);
+      if (d.jenis_bantuan === 'Beras') totalBerasDist += Number(d.jumlah_beras || 0);
     });
     setDistribusiPerSumber(totals);
+    setDistribusiBeras(totalBerasDist);
   };
 
   useEffect(() => { fetchData(); }, [pag.page]);
@@ -87,6 +95,13 @@ export default function Distribusi() {
       const sisaDana = totalDana - sudahDisalurkan;
       if (jumlahUang > sisaDana) {
         toast.error(`Jumlah distribusi melebihi dana ${form.sumber_zakat} yang tersedia. Sisa dana: ${fmt(sisaDana)}`);
+        return;
+      }
+    }
+    if (!editItem && form.jenis_bantuan === 'Beras') {
+      const sisaBeras = getAvailableBeras(stats) - distribusiBeras;
+      if (Number(form.jumlah_beras) > sisaBeras) {
+        toast.error(`Jumlah beras melebihi stok tersedia. Sisa beras: ${sisaBeras} Kg`);
         return;
       }
     }
@@ -150,6 +165,7 @@ export default function Distribusi() {
   const totalDana = getAvailableFund(stats, form.sumber_zakat);
   const sudahDisalurkan = distribusiPerSumber[form.sumber_zakat] || 0;
   const sisaDana = totalDana - sudahDisalurkan;
+  const sisaBeras = getAvailableBeras(stats) - distribusiBeras;
 
   const DeleteButton = ({ id }: { id: string }) => (
     <AlertDialog>
@@ -205,6 +221,7 @@ export default function Distribusi() {
                     const v = Math.min(Number(e.target.value), MAX_BERAS);
                     setForm({ ...form, jumlah_beras: v > 0 ? String(v) : e.target.value });
                   }} placeholder="0" />
+                  <p className="text-xs text-muted-foreground mt-1">Sisa stok beras: <span className={sisaBeras <= 0 ? 'text-destructive font-semibold' : 'font-semibold'}>{sisaBeras} Kg</span></p>
                 </div>
               )}
               <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
