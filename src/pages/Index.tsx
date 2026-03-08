@@ -253,7 +253,7 @@ export default function Index() {
                 const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                 const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                 return (
-                  <div key={`z-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                  <div key={`z-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                     <div className="font-medium">
                       {z.nama_muzakki}
                       {(z.rt?.nama_rt || z.alamat_muzakki) && (
