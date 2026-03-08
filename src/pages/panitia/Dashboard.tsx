@@ -39,6 +39,7 @@ export default function PanitiaDashboard() {
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users },
           { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck },
+          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: Wallet },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },
         ].map(s => {
           const Icon = s.icon;

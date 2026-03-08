@@ -105,7 +105,7 @@ export default function AdminDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {[
           { label: 'Total Zakat Uang', value: fmt(stats.totalZakat), icon: DollarSign, color: 'text-emerald-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
