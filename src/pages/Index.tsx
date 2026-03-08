@@ -22,8 +22,21 @@ export default function Index() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [zakatSearch, setZakatSearch] = useState('');
   const [distSearch, setDistSearch] = useState('');
+  const [debouncedZakatSearch, setDebouncedZakatSearch] = useState('');
+  const [debouncedDistSearch, setDebouncedDistSearch] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
+
+  // Debounce search inputs
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedZakatSearch(zakatSearch); zakatPag.reset(); }, 400);
+    return () => clearTimeout(t);
+  }, [zakatSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedDistSearch(distSearch); distPag.reset(); }, 400);
+    return () => clearTimeout(t);
+  }, [distSearch]);
 
   const fetchData = async () => {
     await fetchStats();
