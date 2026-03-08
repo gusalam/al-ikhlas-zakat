@@ -231,14 +231,13 @@ export default function Index() {
 
         {/* Transparansi Zakat */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
-            <div className="mt-2">
-              <SearchInput placeholder="Cari nama muzakki..." value={zakatSearch} onChange={handleZakatSearch} />
-            </div>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="font-serif text-xl sm:text-2xl mb-3">Transparansi Zakat</CardTitle>
+            <SearchInput placeholder="Cari nama muzakki..." value={zakatSearch} onChange={handleZakatSearch} />
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <CardContent className="p-0">
+            {/* Desktop Table Header - hidden on mobile */}
+            <div className="hidden md:grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 px-4 sm:px-6 py-3 border-b-2 border-border text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Muzakki</div><div>Jenis Zakat</div><div>Jumlah</div><div>Tanggal</div>
             </div>
             <InfiniteTickerList
@@ -251,19 +250,34 @@ export default function Index() {
                 const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                 const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                 return (
-                  <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
-                    <div className="font-medium">
-                      {z.nama_muzakki}
+                  <>
+                    {/* Mobile Card Layout */}
+                    <div className="md:hidden px-4 py-4 border-b border-border space-y-2">
+                      <div className="font-semibold text-base leading-relaxed break-words">{z.nama_muzakki}</div>
                       {(z.rt?.nama_rt || z.alamat_muzakki) && (
-                        <span className="block text-xs text-muted-foreground">
+                        <div className="text-sm text-muted-foreground break-words">
                           {[z.rt?.nama_rt, z.alamat_muzakki].filter(Boolean).join(' — ')}
-                        </span>
+                        </div>
                       )}
+                      <div className="text-base"><span className="text-muted-foreground text-sm">Jenis Zakat:</span> {jenisList || '-'}</div>
+                      <div className="text-base font-medium"><span className="text-muted-foreground text-sm font-normal">Jumlah:</span> {totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</div>
+                      <div className="text-sm text-muted-foreground">Tanggal: {new Date(z.tanggal).toLocaleDateString('id-ID')}</div>
                     </div>
-                    <div>{jenisList || '-'}</div>
-                    <div>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</div>
-                    <div>{new Date(z.tanggal).toLocaleDateString('id-ID')}</div>
-                  </div>
+                    {/* Desktop Table Layout */}
+                    <div className="hidden md:grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 px-4 sm:px-6 py-3 border-b border-border text-base leading-relaxed">
+                      <div className="font-medium break-words">
+                        {z.nama_muzakki}
+                        {(z.rt?.nama_rt || z.alamat_muzakki) && (
+                          <span className="block text-sm text-muted-foreground mt-0.5 break-words">
+                            {[z.rt?.nama_rt, z.alamat_muzakki].filter(Boolean).join(' — ')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="break-words">{jenisList || '-'}</div>
+                      <div className="break-words">{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</div>
+                      <div>{new Date(z.tanggal).toLocaleDateString('id-ID')}</div>
+                    </div>
+                  </>
                 );
               }}
             />
