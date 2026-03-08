@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, FileText, Eye, Download } from 'lucide-react';
+import { Plus, Trash2, Pencil, FileText, Eye, Download, Search } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
@@ -31,10 +32,14 @@ export default function DataZakat() {
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
+    let query = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
+    if (debouncedSearch.trim()) query = query.ilike('nama_muzakki', `%${debouncedSearch.trim()}%`);
     const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
-      supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
+      query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(transaksi || []);
@@ -42,7 +47,7 @@ export default function DataZakat() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
 
   const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' }); setDetail(emptyDetail()); };
 
@@ -134,6 +139,11 @@ export default function DataZakat() {
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="text-xl md:text-2xl font-serif font-bold">Data Zakat</h1>
+        <div className="flex gap-2 flex-wrap items-center">
+          <div className="relative w-48 sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama muzakki..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
+          </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Zakat — Masjid Al-Ikhlas',
@@ -170,6 +180,7 @@ export default function DataZakat() {
               </div>
             </DialogContent>
           </Dialog>
+        </div>
         </div>
       </div>
 

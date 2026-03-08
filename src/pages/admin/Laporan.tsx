@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +51,8 @@ export default function Laporan() {
   const [filterYear, setFilterYear] = useState('all');
   const [searchZakat, setSearchZakat] = useState('');
   const [searchDist, setSearchDist] = useState('');
+  const debouncedSearchZakat = useDebounce(searchZakat, 400);
+  const debouncedSearchDist = useDebounce(searchDist, 400);
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
   const yearOptions = useMemo(getYearOptions, []);
@@ -63,8 +66,8 @@ export default function Laporan() {
         let dq = supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
         if (startDate) { zq = zq.gte('tanggal', startDate); dq = dq.gte('tanggal', startDate); }
         if (endDate) { zq = zq.lte('tanggal', endDate); dq = dq.lte('tanggal', endDate); }
-        if (searchZakat.trim()) zq = zq.ilike('nama_muzakki', `%${searchZakat.trim()}%`);
-        if (searchDist.trim()) dq = dq.ilike('mustahik.nama', `%${searchDist.trim()}%`);
+        if (debouncedSearchZakat.trim()) zq = zq.ilike('nama_muzakki', `%${debouncedSearchZakat.trim()}%`);
+        if (debouncedSearchDist.trim()) dq = dq.ilike('mustahik.nama', `%${debouncedSearchDist.trim()}%`);
         const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([zq.range(zakatPag.from, zakatPag.to), dq.range(distPag.from, distPag.to)]);
         if (ze) throw ze; if (de) throw de;
         setZakatData(z || []); zakatPag.setTotalCount(zc || 0);
@@ -72,7 +75,7 @@ export default function Laporan() {
       } catch (err) { toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' }); }
     };
     fetchData();
-  }, [zakatPag.page, distPag.page, startDate, endDate, searchZakat, searchDist]);
+  }, [zakatPag.page, distPag.page, startDate, endDate, debouncedSearchZakat, debouncedSearchDist]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const filterLabel = filterYear === 'all' ? 'Semua Periode' : filterMonth === 'all' ? `Tahun ${filterYear}` : `${MONTHS.find(m => m.value === filterMonth)?.label} ${filterYear}`;

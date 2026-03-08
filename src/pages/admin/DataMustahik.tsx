@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
+import { Plus, Trash2, Pencil, FileText, Search } from 'lucide-react';
 import { exportPdf } from '@/lib/exportPdf';
 import { friendlyError } from '@/lib/errorHandler';
 import { usePagination } from '@/hooks/usePagination';
@@ -27,10 +28,14 @@ export default function DataMustahik() {
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const pag = usePagination(50);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
+    let query = supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama');
+    if (debouncedSearch.trim()) query = query.ilike('nama', `%${debouncedSearch.trim()}%`);
     const [{ data: m, count }, { data: rt }] = await Promise.all([
-      supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama').range(pag.from, pag.to),
+      query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(m || []);
@@ -38,7 +43,7 @@ export default function DataMustahik() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
 
   const resetForm = () => { setForm({ ...emptyForm }); setEditItem(null); };
 
@@ -93,7 +98,11 @@ export default function DataMustahik() {
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          <div className="relative w-48 sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
+          </div>
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Mustahik — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
