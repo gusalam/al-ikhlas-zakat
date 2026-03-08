@@ -144,18 +144,34 @@ export default function PanitiaMustahik() {
 
   return (
     <PanitiaLayout>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
-        <div className="flex gap-2 flex-wrap items-center">
-          <div className="relative w-48 sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <h1 className="text-xl md:text-2xl font-serif font-bold">Data Mustahik</h1>
+          <div className="flex gap-2 flex-wrap items-center">
+            <div className="relative w-48 sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Cari nama mustahik..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
+            </div>
+            <FormDialog />
           </div>
-          <FormDialog />
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Select value={filterRt} onValueChange={v => { setFilterRt(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua RT" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua RT</SelectItem>
+              {rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterKategori} onValueChange={v => { setFilterKategori(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Kategori</SelectItem>
+              {KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-
-      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Alamat</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
