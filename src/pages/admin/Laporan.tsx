@@ -68,10 +68,12 @@ export default function Laporan() {
         if (endDate) { zq = zq.lte('tanggal', endDate); dq = dq.lte('tanggal', endDate); }
         if (debouncedSearchZakat.trim()) zq = zq.ilike('nama_muzakki', `%${debouncedSearchZakat.trim()}%`);
         if (debouncedSearchDist.trim()) dq = dq.ilike('mustahik.nama', `%${debouncedSearchDist.trim()}%`);
-        const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([zq.range(zakatPag.from, zakatPag.to), dq.range(distPag.from, distPag.to)]);
-        if (ze) throw ze; if (de) throw de;
-        setZakatData(z || []); zakatPag.setTotalCount(zc || 0);
-        setDistribusiData(d || []); distPag.setTotalCount(dc || 0);
+        const [zResult, dResult] = await Promise.all([zq.range(zakatPag.from, zakatPag.to), dq.range(distPag.from, distPag.to)]);
+        if (zResult.error?.message?.includes('range not satisfiable')) { zakatPag.goTo(1); return; }
+        if (dResult.error?.message?.includes('range not satisfiable')) { distPag.goTo(1); return; }
+        if (zResult.error) throw zResult.error; if (dResult.error) throw dResult.error;
+        setZakatData(zResult.data || []); zakatPag.setTotalCount(zResult.count || 0);
+        setDistribusiData(dResult.data || []); distPag.setTotalCount(dResult.count || 0);
       } catch (err) { toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' }); }
     };
     fetchData();
