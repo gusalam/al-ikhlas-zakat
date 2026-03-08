@@ -57,8 +57,8 @@ export default function Distribusi() {
 
   const fetchData = async () => {
     const [{ data: dist, count }, { data: mustahik }] = await Promise.all([
-      supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
-      supabase.from('mustahik').select('id, nama'),
+      supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
+      supabase.from('mustahik').select('id, nama, alamat'),
     ]);
     setData(dist || []);
     pag.setTotalCount(count || 0);
