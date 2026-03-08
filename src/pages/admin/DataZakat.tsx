@@ -32,6 +32,8 @@ export default function DataZakat() {
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
     const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
