@@ -160,6 +160,7 @@ export default function InputZakat() {
       metode_fitrah: Number(item.jumlah_beras) > 0 ? 'beras' : 'uang',
       alamat: '',
       status_muzakki: item.status_muzakki || 'RT',
+      harga_beras: '15000',
     });
     setEditOpen(true);
   };
