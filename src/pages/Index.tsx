@@ -33,26 +33,17 @@ export default function Index() {
   const [zakatSearch, setZakatSearch] = useState('');
   const [distSearch, setDistSearch] = useState('');
 
-  // Pagination state (0-indexed)
-  const [zakatPage, setZakatPage] = useState(0);
-  const [zakatTotal, setZakatTotal] = useState(0);
-  const [distPage, setDistPage] = useState(0);
-  const [distTotal, setDistTotal] = useState(0);
-
-  const zakatTotalPages = Math.max(1, Math.ceil(zakatTotal / PAGE_SIZE));
-  const distTotalPages = Math.max(1, Math.ceil(distTotal / PAGE_SIZE));
-
   // Refs for latest values (avoid stale closures in realtime callbacks)
   const zakatSearchRef = useRef('');
   const distSearchRef = useRef('');
-  const zakatPageRef = useRef(0);
-  const distPageRef = useRef(0);
 
   // Sync refs
   zakatSearchRef.current = zakatSearch;
   distSearchRef.current = distSearch;
-  zakatPageRef.current = zakatPage;
-  distPageRef.current = distPage;
+
+  // Auto-scroll hooks
+  const zakatScroll = useAutoScroll({ totalItems: zakatData.length, visibleItems: VISIBLE_ROWS, intervalMs: 3000, isPaused: !!zakatSearch });
+  const distScroll = useAutoScroll({ totalItems: distribusiData.length, visibleItems: VISIBLE_ROWS, intervalMs: 3000, isPaused: !!distSearch });
 
   // Debounce timer refs
   const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
