@@ -115,6 +115,7 @@ export default function InputZakat() {
   const handleSubmit = async () => {
     if (submitting) return;
     if (!form.nama_muzakki.trim()) { toast.error('Nama muzakki wajib diisi'); return; }
+    if (!form.alamat_muzakki.trim()) { toast.error('Alamat muzakki wajib diisi untuk transparansi data.'); return; }
     const items = buildDetails();
     if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
 
