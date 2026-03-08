@@ -112,12 +112,14 @@ export default function AdminDashboard() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Total Zakat Uang', value: fmt(stats.totalZakat), icon: DollarSign, color: 'text-emerald-600' },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-purple-600' },
+          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: TrendingUp, color: 'text-emerald-600' },
+          { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
+          { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
-          { label: 'Jumlah Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
-          { label: 'Jumlah Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
-          { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck, color: 'text-rose-600' },
-          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: Wallet, color: stats.saldoZakat < 0 ? 'text-destructive' : 'text-emerald-600' },
         ].map(s => {
           const Icon = s.icon;
           return (
