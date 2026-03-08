@@ -241,19 +241,17 @@ export default function Index() {
             <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Muzakki</div><div>Jenis Zakat</div><div>Jumlah</div><div>Tanggal</div>
             </div>
-            <AutoScrollTableWrapper
+            <InfiniteTickerList
               data={zakatData}
-              offset={zakatScroll.offset}
               visibleCount={VISIBLE_ROWS}
-              onPause={zakatScroll.pause}
-              onResume={zakatScroll.resume}
+              isPaused={zakatTickerPaused}
               renderRow={(z: any, idx: number) => {
                 const details = z.detail_zakat || [];
                 const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
                 const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
                 const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                 return (
-                  <div key={`z-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
+                  <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                     <div className="font-medium">
                       {z.nama_muzakki}
                       {(z.rt?.nama_rt || z.alamat_muzakki) && (
@@ -269,9 +267,6 @@ export default function Index() {
                 );
               }}
             />
-            {zakatData.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            )}
           </CardContent>
         </Card>
 
