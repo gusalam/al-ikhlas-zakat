@@ -39,6 +39,8 @@ function getDateRange(month: string, year: string) {
   return { startDate: new Date(y, m - 1, 1).toISOString().slice(0, 10), endDate: new Date(y, m, 0).toISOString().slice(0, 10) };
 }
 
+const getAlamatLabel = (rt?: string, alamat?: string) => [rt, alamat].filter(Boolean).join(' — ');
+
 export default function Laporan() {
   const { stats, fetchStats } = useZakatStats();
   const [zakatData, setZakatData] = useState<any[]>([]);
@@ -55,7 +57,7 @@ export default function Laporan() {
       try {
         await fetchStats(startDate, endDate);
         let zq = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
-        let dq = supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
+        let dq = supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
         if (startDate) { zq = zq.gte('tanggal', startDate); dq = dq.gte('tanggal', startDate); }
         if (endDate) { zq = zq.lte('tanggal', endDate); dq = dq.lte('tanggal', endDate); }
         const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([zq.range(zakatPag.from, zakatPag.to), dq.range(distPag.from, distPag.to)]);
@@ -84,8 +86,8 @@ export default function Laporan() {
   const rtChartData = Object.entries(rtMap).map(([name, value]) => ({ name, value }));
 
   const exportExcel = () => {
-    const zakatSheet = zakatData.map(t => ({ 'Nama Muzakki': t.nama_muzakki, 'Jenis': getJenis(t), 'Jumlah Uang': getUang(t), 'Jumlah Beras': getBeras(t), 'RT': t.rt?.nama_rt || '-', 'Tanggal': t.tanggal }));
-    const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-', 'Jenis': d.jenis_bantuan || 'Uang', 'Jumlah Uang': d.jenis_bantuan === 'Beras' ? 0 : Number(d.jumlah), 'Jumlah Beras (Kg)': d.jenis_bantuan === 'Beras' ? Number(d.jumlah_beras) : 0, 'Tanggal': d.tanggal }));
+    const zakatSheet = zakatData.map(t => ({ 'Nama Muzakki': t.nama_muzakki, 'Alamat': getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki) || '-', 'Jenis': getJenis(t), 'Jumlah Uang': getUang(t), 'Jumlah Beras': getBeras(t), 'Tanggal': t.tanggal }));
+    const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'Alamat': getAlamatLabel(d.mustahik?.rt?.nama_rt, d.mustahik?.alamat) || '-', 'Jenis': d.jenis_bantuan || 'Uang', 'Jumlah Uang': d.jenis_bantuan === 'Beras' ? 0 : Number(d.jumlah), 'Jumlah Beras (Kg)': d.jenis_bantuan === 'Beras' ? Number(d.jumlah_beras) : 0, 'Tanggal': d.tanggal }));
     const summarySheet = [{ Keterangan: 'Periode', Jumlah: filterLabel }, { Keterangan: 'Zakat Fitrah', Jumlah: stats.totalFitrah }, { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal }, { Keterangan: 'Infaq', Jumlah: stats.totalInfaq }, { Keterangan: 'Fidyah', Jumlah: stats.totalFidyah }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
@@ -95,8 +97,8 @@ export default function Laporan() {
   };
 
   const exportCSV = () => {
-    const rows = zakatData.map(t => `${t.nama_muzakki},${getJenis(t)},${getUang(t)},${getBeras(t)},${t.rt?.nama_rt || '-'},${t.tanggal}`);
-    const csv = 'Nama,Jenis,Uang,Beras,RT,Tanggal\n' + rows.join('\n');
+    const rows = zakatData.map(t => `"${t.nama_muzakki}","${getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki) || '-'}","${getJenis(t)}",${getUang(t)},${getBeras(t)},"${t.tanggal}"`);
+    const csv = 'Nama,Alamat,Jenis,Uang,Beras,Tanggal\n' + rows.join('\n');
     const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `laporan_zakat_${filterLabel.replace(/\s/g, '_')}.csv`; a.click();
   };
@@ -113,8 +115,8 @@ export default function Laporan() {
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={exportCSV}><Download className="w-4 h-4 mr-1" />CSV</Button>
           <Button variant="outline" size="sm" onClick={exportExcel}><Download className="w-4 h-4 mr-1" />Excel</Button>
-          <Button variant="outline" size="sm" onClick={() => exportPdf({ title: 'Laporan Zakat — Masjid Al-Ikhlas', subtitle: `Periode: ${filterLabel}`, headers: ['Nama', 'Jenis', 'Uang', 'Beras', 'RT', 'Tanggal'], rows: zakatData.map(t => [t.nama_muzakki, getJenis(t), fmt(getUang(t)), `${getBeras(t)}`, t.rt?.nama_rt || '-', new Date(t.tanggal).toLocaleDateString('id-ID')]), filename: `Laporan_Zakat_${filterLabel.replace(/\s/g, '_')}.pdf` })}><FileText className="w-4 h-4 mr-1" />PDF Zakat</Button>
-          <Button size="sm" onClick={() => exportPdf({ title: 'Laporan Distribusi — Masjid Al-Ikhlas', subtitle: `Periode: ${filterLabel}`, headers: ['Mustahik', 'RT', 'Jenis', 'Jumlah', 'Tanggal'], rows: distribusiData.map(d => [d.mustahik?.nama || '-', d.mustahik?.rt?.nama_rt || '-', d.jenis_bantuan || 'Uang', d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah)), new Date(d.tanggal).toLocaleDateString('id-ID')]), filename: `Laporan_Distribusi_${filterLabel.replace(/\s/g, '_')}.pdf` })}><FileText className="w-4 h-4 mr-1" />PDF Distribusi</Button>
+          <Button variant="outline" size="sm" onClick={() => exportPdf({ title: 'Laporan Zakat — Masjid Al-Ikhlas', subtitle: `Periode: ${filterLabel}`, headers: ['Nama', 'Alamat', 'Jenis', 'Uang', 'Beras', 'Tanggal'], rows: zakatData.map(t => [t.nama_muzakki, getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki) || '-', getJenis(t), fmt(getUang(t)), `${getBeras(t)}`, new Date(t.tanggal).toLocaleDateString('id-ID')]), filename: `Laporan_Zakat_${filterLabel.replace(/\s/g, '_')}.pdf`, orientation: 'landscape' })}><FileText className="w-4 h-4 mr-1" />PDF Zakat</Button>
+          <Button size="sm" onClick={() => exportPdf({ title: 'Laporan Distribusi — Masjid Al-Ikhlas', subtitle: `Periode: ${filterLabel}`, headers: ['Mustahik', 'Alamat', 'Jenis', 'Jumlah', 'Tanggal'], rows: distribusiData.map(d => [d.mustahik?.nama || '-', getAlamatLabel(d.mustahik?.rt?.nama_rt, d.mustahik?.alamat) || '-', d.jenis_bantuan || 'Uang', d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah)), new Date(d.tanggal).toLocaleDateString('id-ID')]), filename: `Laporan_Distribusi_${filterLabel.replace(/\s/g, '_')}.pdf` })}><FileText className="w-4 h-4 mr-1" />PDF Distribusi</Button>
         </div>
       </div>
 
@@ -135,8 +137,17 @@ export default function Laporan() {
         <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Zakat</CardTitle></CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
-            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
-            <TableBody>{zakatData.map(t => <TableRow key={t.id}><TableCell>{t.nama_muzakki}</TableCell><TableCell>{getJenis(t)}</TableCell><TableCell>{fmt(getUang(t))}</TableCell><TableCell>{getBeras(t)} Kg</TableCell><TableCell>{new Date(t.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>)}</TableBody>
+            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableBody>{zakatData.map(t => (
+              <TableRow key={t.id}>
+                <TableCell className="font-medium">{t.nama_muzakki}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki) || '-'}</TableCell>
+                <TableCell>{getJenis(t)}</TableCell>
+                <TableCell>{fmt(getUang(t))}</TableCell>
+                <TableCell>{getBeras(t)} Kg</TableCell>
+                <TableCell>{new Date(t.tanggal).toLocaleDateString('id-ID')}</TableCell>
+              </TableRow>
+            ))}</TableBody>
           </Table>
           <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
         </CardContent>
@@ -144,15 +155,53 @@ export default function Laporan() {
       <div className="md:hidden space-y-3 mb-6">
         <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
         {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
-        {zakatData.map(t => <Card key={t.id}><CardContent className="p-3 space-y-1"><p className="font-semibold text-sm">{t.nama_muzakki}</p><div className="grid grid-cols-2 gap-1 text-xs"><span><span className="text-muted-foreground">Jenis:</span> {getJenis(t)}</span><span><span className="text-muted-foreground">Uang:</span> {fmt(getUang(t))}</span><span><span className="text-muted-foreground">Beras:</span> {getBeras(t)} Kg</span><span><span className="text-muted-foreground">Tgl:</span> {new Date(t.tanggal).toLocaleDateString('id-ID')}</span></div></CardContent></Card>)}
+        {zakatData.map(t => (
+          <Card key={t.id}><CardContent className="p-3 space-y-1">
+            <p className="font-semibold text-sm">{t.nama_muzakki}</p>
+            {getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki) && <p className="text-xs text-muted-foreground">{getAlamatLabel(t.rt?.nama_rt, t.alamat_muzakki)}</p>}
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              <span><span className="text-muted-foreground">Jenis:</span> {getJenis(t)}</span>
+              <span><span className="text-muted-foreground">Uang:</span> {fmt(getUang(t))}</span>
+              <span><span className="text-muted-foreground">Beras:</span> {getBeras(t)} Kg</span>
+              <span><span className="text-muted-foreground">Tgl:</span> {new Date(t.tanggal).toLocaleDateString('id-ID')}</span>
+            </div>
+          </CardContent></Card>
+        ))}
         <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
       </div>
 
-      <Card className="hidden md:block"><CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader><CardContent className="overflow-auto p-4"><Table><TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jenis</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader><TableBody>{distribusiData.map(d => <TableRow key={d.id}><TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{d.jenis_bantuan || 'Uang'}</TableCell><TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>)}</TableBody></Table><PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} /></CardContent></Card>
+      <Card className="mb-6 hidden md:block">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-4">
+          <Table>
+            <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableBody>{distribusiData.map(d => (
+              <TableRow key={d.id}>
+                <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{getAlamatLabel(d.mustahik?.rt?.nama_rt, d.mustahik?.alamat) || '-'}</TableCell>
+                <TableCell>{d.jenis_bantuan || 'Uang'}</TableCell>
+                <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</TableCell>
+                <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
+              </TableRow>
+            ))}</TableBody>
+          </Table>
+          <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
+        </CardContent>
+      </Card>
       <div className="md:hidden space-y-3">
         <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
         {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
-        {distribusiData.map(d => <Card key={d.id}><CardContent className="p-3 space-y-1"><p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p><div className="grid grid-cols-2 gap-1 text-xs"><span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span><span><span className="text-muted-foreground">Jenis:</span> {d.jenis_bantuan || 'Uang'}</span><span><span className="text-muted-foreground">Jumlah:</span> {d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</span><span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span></div></CardContent></Card>)}
+        {distribusiData.map(d => (
+          <Card key={d.id}><CardContent className="p-3 space-y-1">
+            <p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p>
+            {getAlamatLabel(d.mustahik?.rt?.nama_rt, d.mustahik?.alamat) && <p className="text-xs text-muted-foreground">{getAlamatLabel(d.mustahik?.rt?.nama_rt, d.mustahik?.alamat)}</p>}
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              <span><span className="text-muted-foreground">Jenis:</span> {d.jenis_bantuan || 'Uang'}</span>
+              <span><span className="text-muted-foreground">Jumlah:</span> {d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</span>
+              <span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span>
+            </div>
+          </CardContent></Card>
+        ))}
         <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
       </div>
     </AdminLayout>
