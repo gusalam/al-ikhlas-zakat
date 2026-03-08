@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
+import SplashScreen from '@/components/SplashScreen';
+
+const SPLASH_KEY = 'zakat-splash-shown';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 const PAGE_SIZE = 20;
