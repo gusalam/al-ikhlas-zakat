@@ -10,8 +10,8 @@ interface RunningListWrapperProps {
 }
 
 /**
- * Displays `visibleCount` rows starting from `offset`, wrapping around.
- * Uses CSS transition for smooth slide effect.
+ * Running list: shows `visibleCount` rows starting from `offset`, wrapping around.
+ * Each row fades in smoothly when it appears.
  */
 export default function AutoScrollTableWrapper({
   data,
@@ -21,7 +21,6 @@ export default function AutoScrollTableWrapper({
   onResume,
   renderRow,
 }: RunningListWrapperProps) {
-  // Build the visible window with wrap-around
   const visibleRows = useMemo(() => {
     if (data.length === 0) return [];
     const rows: { item: any; originalIndex: number }[] = [];
@@ -41,15 +40,7 @@ export default function AutoScrollTableWrapper({
       onTouchEnd={onResume}
       className="select-none"
     >
-      {visibleRows.map(({ item, originalIndex }) => (
-        <div
-          key={`row-${originalIndex}`}
-          className="animate-fade-in"
-          style={{ animationDuration: '0.6s' }}
-        >
-          {renderRow(item, originalIndex)}
-        </div>
-      ))}
+      {visibleRows.map(({ item, originalIndex }) => renderRow(item, originalIndex))}
     </div>
   );
 }
