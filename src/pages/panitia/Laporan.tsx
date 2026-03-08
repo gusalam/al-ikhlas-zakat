@@ -169,7 +169,7 @@ export default function PanitiaLaporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
@@ -183,9 +183,9 @@ export default function PanitiaLaporan() {
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
           <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-3 sm:p-4">
-              <p className="text-xs sm:text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-base sm:text-xl font-bold truncate">{s.value}</p>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">{s.label}</p>
+              <p className="text-xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
