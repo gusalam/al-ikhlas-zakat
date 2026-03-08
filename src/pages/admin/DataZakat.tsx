@@ -33,6 +33,7 @@ export default function DataZakat() {
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
   const [search, setSearch] = useState('');
+  const [filterRt, setFilterRt] = useState('all');
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
