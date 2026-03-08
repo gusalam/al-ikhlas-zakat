@@ -282,14 +282,12 @@ export default function Index() {
             <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Mustahik</div><div>Sumber Zakat</div><div>Jumlah Bantuan</div><div>Tanggal</div>
             </div>
-            <AutoScrollTableWrapper
+            <InfiniteTickerList
               data={distribusiData}
-              offset={distScroll.offset}
               visibleCount={VISIBLE_ROWS}
-              onPause={distScroll.pause}
-              onResume={distScroll.resume}
+              isPaused={distTickerPaused}
               renderRow={(d: any, idx: number) => (
-                <div key={`d-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
+                <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                   <div className="font-medium">
                     {d.mustahik?.nama || '-'}
                     {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
@@ -304,9 +302,6 @@ export default function Index() {
                 </div>
               )}
             />
-            {distribusiData.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">Belum ada data</p>
-            )}
           </CardContent>
         </Card>
       </main>
