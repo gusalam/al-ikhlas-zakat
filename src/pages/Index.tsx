@@ -184,7 +184,7 @@ export default function Index() {
                     <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
                     <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
                     <TableCell>{d.sumber_zakat || '-'}</TableCell>
-                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</TableCell>
+                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</TableCell>
                     <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   </TableRow>
                 ))}
