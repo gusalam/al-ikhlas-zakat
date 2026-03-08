@@ -61,7 +61,7 @@ export default function DataZakat() {
 
   const openEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal });
+    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000' });
     setOpen(true);
   };
 
