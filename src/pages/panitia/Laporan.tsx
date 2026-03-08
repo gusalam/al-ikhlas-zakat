@@ -190,23 +190,23 @@ export default function PanitiaLaporan() {
           </Card>
         ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card>
-          <CardHeader><CardTitle className="font-serif">Grafik Jenis Zakat</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Grafik Jenis Zakat</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend /></PieChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart><Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={false}>{pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip formatter={(v: number) => fmt(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /></PieChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="font-serif">Zakat per RT</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Zakat per RT</CardTitle></CardHeader>
+          <CardContent className="p-2 sm:p-6">
             {rtChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={rtChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={rtChartData} margin={{ left: -10, right: 5 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={11} tick={{ fontSize: 10 }} /><YAxis fontSize={11} width={50} /><Tooltip formatter={(v: number) => fmt(v)} /><Bar dataKey="value" fill="hsl(152, 55%, 28%)" radius={[4,4,0,0]} /></BarChart>
               </ResponsiveContainer>
             ) : <p className="text-center py-12 text-muted-foreground">Belum ada data</p>}
           </CardContent>
