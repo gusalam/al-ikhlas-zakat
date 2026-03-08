@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function PanitiaMustahik() {
   const [data, setData] = useState<any[]>([]);
@@ -30,8 +31,8 @@ export default function PanitiaMustahik() {
 
   const handleSubmit = async () => {
     const { error } = await supabase.from('mustahik').insert({ nama: form.nama, rt_id: form.rt_id || null, kategori: form.kategori || null });
-    if (error) { toast.error(error.message); return; }
-    toast.success('Mustahik ditambahkan');
+    if (error) { toast.error(friendlyError(error)); return; }
+    toast.success('Data mustahik berhasil ditambahkan ✓');
     setOpen(false); setForm({ nama: '', rt_id: '', kategori: '' }); fetchData();
   };
 

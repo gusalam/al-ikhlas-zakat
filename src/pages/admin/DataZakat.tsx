@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
@@ -42,20 +43,20 @@ export default function DataZakat() {
     const payload = { ...form, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, created_by: user?.id };
     if (editItem) {
       const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data zakat diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data zakat berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('zakat').insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data zakat ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data zakat berhasil ditambahkan ✓');
     }
     setOpen(false); resetForm(); setEditItem(null); fetchData();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('zakat').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Data dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data zakat berhasil dihapus ✓'); fetchData(); }
   };
 
   const openEdit = (item: any) => {

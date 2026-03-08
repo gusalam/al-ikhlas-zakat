@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Plus, Wallet } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 
@@ -46,8 +47,8 @@ export default function PanitiaDistribusi() {
     const { error } = await supabase.from('distribusi').insert({
       mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id,
     });
-    if (error) { toast.error(error.message); return; }
-    toast.success('Distribusi dicatat');
+    if (error) { toast.error(friendlyError(error)); return; }
+    toast.success('Distribusi zakat berhasil dicatat ✓');
     setOpen(false); setForm({ mustahik_id: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0] }); fetchData();
   };
 

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/errorHandler';
 import logo from '@/assets/logo.png';
 
 export default function Login() {
@@ -28,7 +29,7 @@ export default function Login() {
     setSubmitting(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error('Login gagal: ' + error.message);
+      toast.error(friendlyError(error));
       setSubmitting(false);
     }
     // Redirect handled by AuthContext state change

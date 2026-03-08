@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
 import { exportPdf } from '@/lib/exportPdf';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function DataMustahik() {
   const [data, setData] = useState<any[]>([]);
@@ -37,20 +38,20 @@ export default function DataMustahik() {
     const payload = { nama: form.nama, rt_id: form.rt_id || null, kategori: form.kategori || null };
     if (editItem) {
       const { error } = await supabase.from('mustahik').update(payload).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data mustahik berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('mustahik').insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data mustahik berhasil ditambahkan ✓');
     }
     setOpen(false); resetForm(); setEditItem(null); fetchData();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('mustahik').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Data dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data mustahik berhasil dihapus ✓'); fetchData(); }
   };
 
   return (

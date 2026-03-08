@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function KelolaRT() {
   const [data, setData] = useState<any[]>([]);
@@ -27,20 +28,20 @@ export default function KelolaRT() {
   const handleSubmit = async () => {
     if (editItem) {
       const { error } = await supabase.from('rt').update({ nama_rt: namaRt }).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('RT diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data RT berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('rt').insert({ nama_rt: namaRt });
-      if (error) { toast.error(error.message); return; }
-      toast.success('RT ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data RT berhasil ditambahkan ✓');
     }
     setOpen(false); setNamaRt(''); setEditItem(null); fetchData();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('rt').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('RT dihapus'); fetchData(); }
+    if (error) toast.error(friendlyError(error));
+    else { toast.success('Data RT berhasil dihapus ✓'); fetchData(); }
   };
 
   return (
