@@ -279,9 +279,8 @@ export default function Index() {
         <Card>
           <CardHeader>
             <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
-            <div className="relative mt-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => handleZakatSearch(e.target.value)} className="pl-9" />
+            <div className="mt-2">
+              <SearchInput placeholder="Cari nama muzakki..." value={zakatSearch} onChange={handleZakatSearch} />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
