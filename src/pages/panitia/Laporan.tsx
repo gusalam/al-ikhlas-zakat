@@ -147,11 +147,11 @@ export default function PanitiaLaporan() {
   return (
     <PanitiaLayout>
       <div className="flex flex-col gap-4 mb-6">
-        <h1 className="text-2xl font-serif font-bold">Laporan Keuangan</h1>
+        <h1 className="text-xl sm:text-2xl font-serif font-bold">Laporan Keuangan</h1>
         <div className="flex gap-2 flex-wrap items-center">
-          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Filter className="w-4 h-4 text-muted-foreground hidden sm:block" />
           <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filterYear} onValueChange={(v) => { setFilterYear(v); if (v === 'all') setFilterMonth('all'); zakatPag.goTo(1); distPag.goTo(1); }}>
