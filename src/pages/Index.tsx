@@ -32,9 +32,7 @@ export default function Index() {
     if (zakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${zakatSearch.trim()}%`);
     zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
 
-    let distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
-    if (distSearch.trim()) distQuery = distQuery.ilike('mustahik.nama', `%${distSearch.trim()}%`);
-    distQuery = distQuery.range(distPag.from, distPag.to);
+    const distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to);
 
     const [zRes, dRes, rtRes] = await Promise.all([
       zakatQuery,
