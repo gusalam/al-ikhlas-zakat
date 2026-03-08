@@ -29,11 +29,15 @@ export default function DataMustahik() {
   const [form, setForm] = useState({ ...emptyForm });
   const pag = usePagination(50);
   const [search, setSearch] = useState('');
+  const [filterRt, setFilterRt] = useState('all');
+  const [filterKategori, setFilterKategori] = useState('all');
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
     let query = supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama');
     if (debouncedSearch.trim()) query = query.ilike('nama', `%${debouncedSearch.trim()}%`);
+    if (filterRt !== 'all') query = query.eq('rt_id', filterRt);
+    if (filterKategori !== 'all') query = query.eq('kategori', filterKategori);
     const [{ data: m, count }, { data: rt }] = await Promise.all([
       query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
