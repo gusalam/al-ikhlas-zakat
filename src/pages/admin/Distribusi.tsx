@@ -98,6 +98,13 @@ export default function Distribusi() {
         return;
       }
     }
+    if (!editItem && form.jenis_bantuan === 'Beras') {
+      const sisaBeras = getAvailableBeras(stats) - distribusiBeras;
+      if (Number(form.jumlah_beras) > sisaBeras) {
+        toast.error(`Jumlah beras melebihi stok tersedia. Sisa beras: ${sisaBeras} Kg`);
+        return;
+      }
+    }
 
     setSubmitting(true);
     try {
