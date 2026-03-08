@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { DollarSign, Users, Package, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
+import { DollarSign, Users, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
@@ -49,15 +49,17 @@ export default function Index() {
 
   const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalMal = zakatData.filter(z => z.jenis_zakat === 'Zakat Mal').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalShodaqoh = zakatData.filter(z => z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalZakat = totalFitrah + totalMal + totalShodaqoh;
+  const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalZakat = totalFitrah + totalMal + totalInfaq + totalFidyah;
   const totalBeras = zakatData.reduce((s, z) => s + Number(z.jumlah_beras), 0);
   const totalMuzakki = new Set(zakatData.map(z => z.nama_muzakki)).size;
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
     { name: 'Zakat Mal', value: totalMal },
-    { name: 'Shodaqoh', value: totalShodaqoh },
+    { name: 'Infaq', value: totalInfaq },
+    { name: 'Fidyah', value: totalFidyah },
   ].filter(d => d.value > 0);
 
   const rtMap: Record<string, number> = {};
@@ -102,11 +104,11 @@ export default function Index() {
           {[
             { label: 'Zakat Fitrah', value: fmt(totalFitrah), icon: DollarSign, color: 'text-primary' },
             { label: 'Zakat Mal', value: fmt(totalMal), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Shodaqoh', value: fmt(totalShodaqoh), icon: DollarSign, color: 'text-primary' },
+            { label: 'Infaq', value: fmt(totalInfaq), icon: DollarSign, color: 'text-primary' },
+            { label: 'Fidyah', value: fmt(totalFidyah), icon: DollarSign, color: 'text-secondary' },
             { label: 'Total Terkumpul', value: fmt(totalZakat), icon: TrendingUp, color: 'text-primary' },
             { label: 'Total Muzakki', value: totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: mustahikCount.toString(), icon: Users, color: 'text-secondary' },
-            { label: 'KK Penerima', value: mustahikCount.toString(), icon: Package, color: 'text-primary' },
             { label: 'Beras (Kg)', value: `${totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
             const Icon = stat.icon;

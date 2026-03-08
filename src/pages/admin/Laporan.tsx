@@ -8,7 +8,7 @@ import { Download, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 
-const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)'];
+const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function Laporan() {
   const [zakatData, setZakatData] = useState<any[]>([]);
@@ -28,14 +28,16 @@ export default function Laporan() {
 
   const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalMal = zakatData.filter(z => z.jenis_zakat === 'Zakat Mal').reduce((s, z) => s + Number(z.jumlah_uang), 0);
-  const totalShodaqoh = zakatData.filter(z => z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
+  const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: totalFitrah },
     { name: 'Zakat Mal', value: totalMal },
-    { name: 'Shodaqoh', value: totalShodaqoh },
+    { name: 'Infaq', value: totalInfaq },
+    { name: 'Fidyah', value: totalFidyah },
   ].filter(d => d.value > 0);
 
   const rtMap: Record<string, number> = {};
@@ -107,7 +109,8 @@ export default function Laporan() {
         {[
           { label: 'Zakat Fitrah', value: fmt(totalFitrah) },
           { label: 'Zakat Mal', value: fmt(totalMal) },
-          { label: 'Shodaqoh', value: fmt(totalShodaqoh) },
+          { label: 'Infaq', value: fmt(totalInfaq) },
+          { label: 'Fidyah', value: fmt(totalFidyah) },
           { label: 'Total Distribusi', value: fmt(totalDistribusi) },
         ].map(s => (
           <Card key={s.label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>

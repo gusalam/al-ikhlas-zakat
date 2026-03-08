@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Truck, Wheat, TrendingUp, Wallet } from 'lucide-react';
+import { DollarSign, Users, Wheat, TrendingUp, Truck } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 
@@ -34,7 +34,7 @@ interface RtRow {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0 });
+  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0, totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0 });
   const [zakatData, setZakatData] = useState<ZakatRow[]>([]);
   const [mustahikData, setMustahikData] = useState<MustahikRow[]>([]);
   const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
@@ -61,6 +61,10 @@ export default function AdminDashboard() {
 
       const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0);
       const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
+      const totalFitrah = z.filter(i => i.jenis_zakat === 'Zakat Fitrah').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalMal = z.filter(i => i.jenis_zakat === 'Zakat Mal').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalInfaq = z.filter(i => i.jenis_zakat === 'Infaq' || i.jenis_zakat === 'Shodaqoh').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
+      const totalFidyah = z.filter(i => i.jenis_zakat === 'Fidyah').reduce((s, i) => s + Number(i.jumlah_uang || 0), 0);
       setStats({
         totalZakat,
         totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
@@ -68,6 +72,7 @@ export default function AdminDashboard() {
         totalDistribusi,
         totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras || 0), 0),
         saldoZakat: totalZakat - totalDistribusi,
+        totalFitrah, totalMal, totalInfaq, totalFidyah,
       });
     };
     fetchData();
@@ -105,14 +110,16 @@ export default function AdminDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Total Zakat Uang', value: fmt(stats.totalZakat), icon: DollarSign, color: 'text-emerald-600' },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-purple-600' },
+          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), icon: TrendingUp, color: 'text-emerald-600' },
+          { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
+          { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
-          { label: 'Jumlah Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
-          { label: 'Jumlah Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
-          { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck, color: 'text-rose-600' },
-          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: Wallet, color: stats.saldoZakat < 0 ? 'text-destructive' : 'text-emerald-600' },
         ].map(s => {
           const Icon = s.icon;
           return (

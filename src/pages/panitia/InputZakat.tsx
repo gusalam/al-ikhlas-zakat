@@ -100,7 +100,7 @@ export default function InputZakat() {
                   <SelectContent>
                     <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
                     <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
-                    <SelectItem value="Shodaqoh">Infaq / Shodaqoh</SelectItem>
+                    <SelectItem value="Infaq">Infaq</SelectItem>
                     <SelectItem value="Fidyah">Fidyah</SelectItem>
                   </SelectContent>
                 </Select>
