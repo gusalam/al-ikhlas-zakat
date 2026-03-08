@@ -262,7 +262,7 @@ export default function InputZakat() {
               </div>
             )}
 
-            <ZakatDetailFields />
+            <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="panitia" />
 
             <div><Label>Tanggal Transaksi</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
 
