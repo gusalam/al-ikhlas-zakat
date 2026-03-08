@@ -45,7 +45,7 @@ export default function DataZakat() {
   const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT' });
 
   const handleSubmit = async () => {
-    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id };
+    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki };
     if (editItem) {
       const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
