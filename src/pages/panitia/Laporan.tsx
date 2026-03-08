@@ -229,10 +229,10 @@ export default function PanitiaLaporan() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="font-serif">Data Distribusi</CardTitle></CardHeader>
-        <CardContent className="overflow-auto">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-2 sm:p-6">
           <Table>
-            <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="min-w-[100px]">Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {distribusiData.map(d => (
                 <TableRow key={d.id}><TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
