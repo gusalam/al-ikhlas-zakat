@@ -31,6 +31,8 @@ export default function Laporan() {
   const totalInfaq = zakatData.filter(z => z.jenis_zakat === 'Infaq' || z.jenis_zakat === 'Shodaqoh').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalFidyah = zakatData.filter(z => z.jenis_zakat === 'Fidyah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
   const totalDistribusi = distribusiData.reduce((s, d) => s + Number(d.jumlah), 0);
+  const totalPemasukan = totalFitrah + totalMal + totalInfaq + totalFidyah;
+  const saldoZakat = totalPemasukan - totalDistribusi;
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
   const pieData = [
