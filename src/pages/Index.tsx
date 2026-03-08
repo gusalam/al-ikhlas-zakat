@@ -56,11 +56,11 @@ export default function Index() {
     setZakatData(zRes.data || []);
     zakatPag.setTotalCount(zRes.count || 0);
 
-    const distFiltered = distSearch.trim()
-      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(distSearch.trim().toLowerCase()))
+    const distFiltered = debouncedDistSearch.trim()
+      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(debouncedDistSearch.trim().toLowerCase()))
       : (dRes.data || []);
     setDistribusiData(distFiltered);
-    distPag.setTotalCount(distSearch.trim() ? distFiltered.length : (dRes.count || 0));
+    distPag.setTotalCount(debouncedDistSearch.trim() ? distFiltered.length : (dRes.count || 0));
 
     const rtMap: Record<string, number> = {};
     (rtRes.data || []).forEach((t: any) => {
