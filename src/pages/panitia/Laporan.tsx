@@ -177,7 +177,13 @@ export default function PanitiaLaporan() {
       </div>
 
       <Card className="mb-6 hidden md:block">
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <CardTitle className="font-serif text-lg">Data Distribusi</CardTitle>
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
+          </div>
+        </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
