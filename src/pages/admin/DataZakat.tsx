@@ -72,7 +72,7 @@ export default function DataZakat() {
     } else {
       const { data: inserted, error } = await supabase.from('transaksi_zakat').insert({
         nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
-        tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki,
+        tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).select('id, nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
       await supabase.from('detail_zakat').insert(items.map(d => ({ transaksi_id: inserted.id, ...d })));
