@@ -77,7 +77,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold mb-4 sm:mb-6">Dashboard Admin</h1>
       {/* Stok Zakat Audit */}
       <Card className="mb-8 border-primary/20">
         <CardHeader className="pb-3">
