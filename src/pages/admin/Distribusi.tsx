@@ -189,7 +189,7 @@ export default function Distribusi() {
               <div><Label>Mustahik <span className="text-destructive">*</span></Label>
                 <Select value={form.mustahik_id} onValueChange={v => setForm({ ...form, mustahik_id: v })}>
                   <SelectTrigger><SelectValue placeholder="Pilih Mustahik" /></SelectTrigger>
-                  <SelectContent>{mustahikList.map(m => <SelectItem key={m.id} value={m.id}>{m.nama}</SelectItem>)}</SelectContent>
+                  <SelectContent>{mustahikList.map(m => <SelectItem key={m.id} value={m.id}>{m.nama}{m.alamat ? ` — ${m.alamat}` : ''}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>Sumber Zakat <span className="text-destructive">*</span></Label>
