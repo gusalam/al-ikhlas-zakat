@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
 
@@ -34,6 +34,8 @@ export default function PanitiaDashboard() {
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
           { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users },
+          { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat },
+          { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },
         ].map(s => {
           const Icon = s.icon;
