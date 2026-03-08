@@ -141,9 +141,19 @@ export default function InputZakat() {
     }
   };
 
+  const toKwitansiData = (z: any) => ({
+    nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1,
+    jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0,
+    tanggal: z.tanggal, penerima: z.nama_muzakki,
+  });
+
   const showKwitansi = (z: any) => {
-    setKwitansiData({ nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1, jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0, tanggal: z.tanggal, penerima: z.nama_muzakki });
+    setKwitansiData(toKwitansiData(z));
     setKwitansiOpen(true);
+  };
+
+  const handleDownloadKwitansi = (z: any) => {
+    downloadKwitansiPdf(toKwitansiData(z));
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
