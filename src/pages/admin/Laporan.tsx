@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Download, FileText, Filter } from 'lucide-react';
+import { Download, FileText, Filter, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 import { useZakatStats } from '@/hooks/useZakatStats';
@@ -47,6 +48,8 @@ export default function Laporan() {
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
   const [filterMonth, setFilterMonth] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
+  const [searchZakat, setSearchZakat] = useState('');
+  const [searchDist, setSearchDist] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
   const yearOptions = useMemo(getYearOptions, []);
@@ -60,6 +63,8 @@ export default function Laporan() {
         let dq = supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
         if (startDate) { zq = zq.gte('tanggal', startDate); dq = dq.gte('tanggal', startDate); }
         if (endDate) { zq = zq.lte('tanggal', endDate); dq = dq.lte('tanggal', endDate); }
+        if (searchZakat.trim()) zq = zq.ilike('nama_muzakki', `%${searchZakat.trim()}%`);
+        if (searchDist.trim()) dq = dq.ilike('mustahik.nama', `%${searchDist.trim()}%`);
         const [{ data: z, count: zc, error: ze }, { data: d, count: dc, error: de }] = await Promise.all([zq.range(zakatPag.from, zakatPag.to), dq.range(distPag.from, distPag.to)]);
         if (ze) throw ze; if (de) throw de;
         setZakatData(z || []); zakatPag.setTotalCount(zc || 0);
@@ -67,7 +72,7 @@ export default function Laporan() {
       } catch (err) { toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' }); }
     };
     fetchData();
-  }, [zakatPag.page, distPag.page, startDate, endDate]);
+  }, [zakatPag.page, distPag.page, startDate, endDate, searchZakat, searchDist]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const filterLabel = filterYear === 'all' ? 'Semua Periode' : filterMonth === 'all' ? `Tahun ${filterYear}` : `${MONTHS.find(m => m.value === filterMonth)?.label} ${filterYear}`;
@@ -134,7 +139,13 @@ export default function Laporan() {
       </div>
 
       <Card className="mb-6 hidden md:block">
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <CardTitle className="font-serif text-lg">Data Zakat</CardTitle>
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
+          </div>
+        </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
@@ -154,6 +165,10 @@ export default function Laporan() {
       </Card>
       <div className="md:hidden space-y-3 mb-6">
         <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Cari nama muzakki..." value={searchZakat} onChange={e => { setSearchZakat(e.target.value); zakatPag.goTo(1); }} className="pl-9 h-9" />
+        </div>
         {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {zakatData.map(t => (
           <Card key={t.id}><CardContent className="p-3 space-y-1">
@@ -171,7 +186,13 @@ export default function Laporan() {
       </div>
 
       <Card className="mb-6 hidden md:block">
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <CardTitle className="font-serif text-lg">Data Distribusi</CardTitle>
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
+          </div>
+        </CardHeader>
         <CardContent className="overflow-auto p-4">
           <Table>
             <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>Alamat</TableHead><TableHead>Jenis</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
@@ -190,6 +211,10 @@ export default function Laporan() {
       </Card>
       <div className="md:hidden space-y-3">
         <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Cari nama mustahik..." value={searchDist} onChange={e => { setSearchDist(e.target.value); distPag.goTo(1); }} className="pl-9 h-9" />
+        </div>
         {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
         {distribusiData.map(d => (
           <Card key={d.id}><CardContent className="p-3 space-y-1">
