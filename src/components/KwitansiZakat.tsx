@@ -17,6 +17,7 @@ export interface DetailZakatItem {
 export interface KwitansiData {
   nomor: number;
   nama_muzakki: string;
+  alamat_muzakki?: string;
   details: DetailZakatItem[];
   tanggal: string;
   penerima: string;
