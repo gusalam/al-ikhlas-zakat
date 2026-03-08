@@ -55,19 +55,31 @@ export default function Index() {
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    let query = supabase
+    // Fetch count separately (lightweight, no joins)
+    let countQuery = supabase
       .from('transaksi_zakat')
-      .select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' })
-      .order('tanggal', { ascending: false });
+      .select('id', { count: 'exact', head: true });
 
     if (search.trim()) {
-      query = query.ilike('nama_muzakki', `%${search.trim()}%`);
+      countQuery = countQuery.ilike('nama_muzakki', `%${search.trim()}%`);
     }
 
-    const { data, count, error } = await query.range(from, to);
-    if (!error) {
-      setZakatData(data || []);
-      setZakatTotal(count || 0);
+    // Fetch data with joins (no count overhead)
+    let dataQuery = supabase
+      .from('transaksi_zakat')
+      .select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
+      .order('tanggal', { ascending: false })
+      .range(from, to);
+
+    if (search.trim()) {
+      dataQuery = dataQuery.ilike('nama_muzakki', `%${search.trim()}%`);
+    }
+
+    const [countResult, dataResult] = await Promise.all([countQuery, dataQuery]);
+
+    if (!dataResult.error) {
+      setZakatData(dataResult.data || []);
+      setZakatTotal(countResult.count || 0);
     }
   }, []);
 
