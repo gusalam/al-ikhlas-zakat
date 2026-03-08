@@ -169,7 +169,7 @@ export default function PanitiaLaporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
