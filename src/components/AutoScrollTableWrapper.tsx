@@ -1,57 +1,60 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 
-interface AutoScrollTableWrapperProps {
+interface RunningListWrapperProps {
+  /** All rendered row elements (full dataset) */
   children: ReactNode;
+  /** All data items for building the visible window */
+  data: any[];
+  /** Current offset from useAutoScroll */
+  offset: number;
+  /** How many rows to show */
+  visibleCount: number;
   onPause: () => void;
   onResume: () => void;
-  isScrolling: boolean;
-  totalItems: number;
-  scrollIndex: number;
-  visibleItems: number;
+  renderRow: (item: any, index: number) => ReactNode;
 }
 
+/**
+ * Displays `visibleCount` rows starting from `offset`, wrapping around.
+ * Uses CSS transition for smooth slide effect.
+ */
 export default function AutoScrollTableWrapper({
-  children,
+  data,
+  offset,
+  visibleCount,
   onPause,
   onResume,
-  isScrolling,
-  totalItems,
-  scrollIndex,
-  visibleItems,
-}: AutoScrollTableWrapperProps) {
-  const maxIndex = Math.max(0, totalItems - visibleItems);
-  const progress = maxIndex > 0 ? (scrollIndex / maxIndex) * 100 : 0;
+  renderRow,
+}: RunningListWrapperProps) {
+  // Build the visible window with wrap-around
+  const visibleRows = useMemo(() => {
+    if (data.length === 0) return [];
+    const rows: { item: any; originalIndex: number }[] = [];
+    for (let i = 0; i < Math.min(visibleCount, data.length); i++) {
+      const idx = (offset + i) % data.length;
+      rows.push({ item: data[idx], originalIndex: idx });
+    }
+    return rows;
+  }, [data, offset, visibleCount]);
 
   return (
-    <div className="relative">
-      {/* Touch/mouse pause area */}
-      <div
-        onMouseDown={onPause}
-        onMouseUp={onResume}
-        onMouseLeave={onResume}
-        onTouchStart={onPause}
-        onTouchEnd={onResume}
-        className="select-none"
-      >
-        <div className="transition-all duration-700 ease-in-out">
-          {children}
+    <div
+      onMouseDown={onPause}
+      onMouseUp={onResume}
+      onMouseLeave={onResume}
+      onTouchStart={onPause}
+      onTouchEnd={onResume}
+      className="select-none"
+    >
+      {visibleRows.map(({ item, originalIndex }) => (
+        <div
+          key={`row-${originalIndex}`}
+          className="animate-fade-in"
+          style={{ animationDuration: '0.6s' }}
+        >
+          {renderRow(item, originalIndex)}
         </div>
-      </div>
-
-      {/* Scroll indicator */}
-      {totalItems > visibleItems && (
-        <div className="flex items-center gap-2 mt-2 px-1">
-          <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary/40 rounded-full transition-all duration-700 ease-in-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-            {isScrolling ? '▶ Auto' : '⏸ Pause'} · {scrollIndex + 1}–{Math.min(scrollIndex + visibleItems, totalItems)}/{totalItems}
-          </span>
-        </div>
-      )}
+      ))}
     </div>
   );
 }
