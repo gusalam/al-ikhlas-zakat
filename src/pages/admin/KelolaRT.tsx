@@ -28,12 +28,12 @@ export default function KelolaRT() {
   const handleSubmit = async () => {
     if (editItem) {
       const { error } = await supabase.from('rt').update({ nama_rt: namaRt }).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('RT diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data RT berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('rt').insert({ nama_rt: namaRt });
-      if (error) { toast.error(error.message); return; }
-      toast.success('RT ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data RT berhasil ditambahkan ✓');
     }
     setOpen(false); setNamaRt(''); setEditItem(null); fetchData();
   };
