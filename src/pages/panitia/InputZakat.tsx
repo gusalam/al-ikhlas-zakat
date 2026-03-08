@@ -202,6 +202,16 @@ export default function InputZakat() {
     setDetail(updater);
   }, []);
 
+  const DeleteButton = ({ id }: { id: string }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" title="Hapus"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen dan tidak dapat dikembalikan.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <PanitiaLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
