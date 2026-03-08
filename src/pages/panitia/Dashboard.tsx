@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
