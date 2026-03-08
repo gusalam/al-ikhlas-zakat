@@ -40,8 +40,9 @@ export default function Index() {
   distSearchRef.current = distSearch;
 
   // Auto-scroll hooks
-  const zakatScroll = useAutoScroll({ totalItems: zakatData.length, intervalMs: 3000, isPaused: !!zakatSearch });
-  const distScroll = useAutoScroll({ totalItems: distribusiData.length, intervalMs: 3000, isPaused: !!distSearch });
+  // Search-based pause for ticker
+  const zakatTickerPaused = !!zakatSearch;
+  const distTickerPaused = !!distSearch;
 
   // Debounce timer refs
   const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
