@@ -138,7 +138,11 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
     doc.setFont('helvetica', 'bold'); doc.text(data.penerima, 165, y, { align: 'center' });
 
     doc.save(`kwitansi-zakat-${data.nomor}.pdf`);
-  };
+    toast.success('Kwitansi PDF berhasil diunduh ✓');
+  } catch (error) {
+    console.error('Download kwitansi error:', error);
+    toast.error('Gagal mengunduh kwitansi PDF. Silakan coba lagi.');
+  }
 
   const dateStr = new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
