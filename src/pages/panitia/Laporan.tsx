@@ -169,23 +169,22 @@ export default function PanitiaLaporan() {
         <p className="text-sm text-muted-foreground mb-4">Menampilkan data periode: <span className="font-medium text-foreground">{filterLabel}</span></p>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah) },
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
           { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang` },
           { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg` },
           { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg` },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
-          <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+          <Card key={s.label}>
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{s.label}</p>
+              <p className="text-sm sm:text-xl font-bold truncate">{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -213,11 +212,12 @@ export default function PanitiaLaporan() {
         </Card>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Zakat</CardTitle></CardHeader>
-        <CardContent className="overflow-auto p-2 sm:p-6">
+      {/* Data Zakat - Desktop table */}
+      <Card className="mb-6 hidden md:block">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Zakat</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-4">
           <Table>
-            <TableHeader><TableRow><TableHead className="min-w-[100px]">Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {zakatData.map(z => (
                 <TableRow key={z.id}><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
@@ -227,12 +227,32 @@ export default function PanitiaLaporan() {
           <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
         </CardContent>
       </Card>
+      {/* Data Zakat - Mobile cards */}
+      <div className="md:hidden space-y-3 mb-6">
+        <h2 className="font-serif font-semibold text-base">Data Zakat</h2>
+        {zakatData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
+        {zakatData.map(z => (
+          <Card key={z.id}>
+            <CardContent className="p-3 space-y-1">
+              <p className="font-semibold text-sm">{z.nama_muzakki}</p>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <span><span className="text-muted-foreground">Jenis:</span> {z.jenis_zakat}</span>
+                <span><span className="text-muted-foreground">Uang:</span> {fmt(Number(z.jumlah_uang))}</span>
+                <span><span className="text-muted-foreground">Beras:</span> {z.jumlah_beras} Kg</span>
+                <span><span className="text-muted-foreground">Tgl:</span> {new Date(z.tanggal).toLocaleDateString('id-ID')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
+      </div>
 
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Data Distribusi</CardTitle></CardHeader>
-        <CardContent className="overflow-auto p-2 sm:p-6">
+      {/* Data Distribusi - Desktop table */}
+      <Card className="hidden md:block">
+        <CardHeader className="pb-2"><CardTitle className="font-serif text-lg">Data Distribusi</CardTitle></CardHeader>
+        <CardContent className="overflow-auto p-4">
           <Table>
-            <TableHeader><TableRow><TableHead className="min-w-[100px]">Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
             <TableBody>
               {distribusiData.map(d => (
                 <TableRow key={d.id}><TableCell>{d.mustahik?.nama || '-'}</TableCell><TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell><TableCell>{fmt(Number(d.jumlah))}</TableCell><TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell></TableRow>
@@ -242,6 +262,24 @@ export default function PanitiaLaporan() {
           <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
         </CardContent>
       </Card>
+      {/* Data Distribusi - Mobile cards */}
+      <div className="md:hidden space-y-3">
+        <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
+        {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
+        {distribusiData.map(d => (
+          <Card key={d.id}>
+            <CardContent className="p-3 space-y-1">
+              <p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span>
+                <span><span className="text-muted-foreground">Jumlah:</span> {fmt(Number(d.jumlah))}</span>
+                <span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
+      </div>
     </PanitiaLayout>
   );
 }
