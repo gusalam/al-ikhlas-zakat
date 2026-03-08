@@ -58,6 +58,7 @@ export default function DataZakat() {
   const handleSubmit = async () => {
     const items = buildDetails();
     if (!form.nama_muzakki.trim()) { toast.error('Nama muzakki wajib diisi'); return; }
+    if (!form.alamat_muzakki.trim()) { toast.error('Alamat muzakki wajib diisi untuk transparansi data.'); return; }
     if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
 
     if (editItem) {
@@ -147,7 +148,7 @@ export default function DataZakat() {
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
-                <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
+                <div><Label>Alamat Muzakki <span className="text-destructive">*</span></Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Contoh: Gang Melati, Jakarta" required /></div>
                 <div>
                   <Label>Status Muzakki</Label>
                   <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>

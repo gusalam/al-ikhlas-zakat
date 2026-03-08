@@ -115,6 +115,7 @@ export default function InputZakat() {
   const handleSubmit = async () => {
     if (submitting) return;
     if (!form.nama_muzakki.trim()) { toast.error('Nama muzakki wajib diisi'); return; }
+    if (!form.alamat_muzakki.trim()) { toast.error('Alamat muzakki wajib diisi untuk transparansi data.'); return; }
     const items = buildDetails();
     if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
 
@@ -158,6 +159,7 @@ export default function InputZakat() {
 
   const handleUpdate = async () => {
     if (!editItem) return;
+    if (!form.alamat_muzakki.trim()) { toast.error('Alamat muzakki wajib diisi untuk transparansi data.'); return; }
     const items = buildDetails();
     if (items.length === 0) { toast.error('Pilih minimal satu jenis zakat'); return; }
 
@@ -264,7 +266,7 @@ export default function InputZakat() {
               </div>
             )}
 
-            <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
+            <div><Label>Alamat Muzakki <span className="text-destructive">*</span></Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Contoh: Gang Melati, Jakarta" required /></div>
 
             <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="panitia" />
 
