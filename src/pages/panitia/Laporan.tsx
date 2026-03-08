@@ -48,6 +48,8 @@ export default function PanitiaLaporan() {
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
   const [filterMonth, setFilterMonth] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
+  const [searchZakat, setSearchZakat] = useState('');
+  const [searchDist, setSearchDist] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
   const yearOptions = useMemo(getYearOptions, []);
