@@ -29,6 +29,7 @@ const emptyForm = () => ({
   nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '',
   rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1',
   penerima: '', metode_fitrah: 'uang' as 'uang' | 'beras', alamat: '',
+  status_muzakki: 'RT',
 });
 
 export default function InputZakat() {
@@ -124,8 +125,8 @@ export default function InputZakat() {
       const { data: inserted, error } = await supabase.from('zakat').insert({
         nama_muzakki: form.nama_muzakki.trim(), jenis_zakat: form.jenis_zakat,
         jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0,
-        rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id,
-        jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+        rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id,
+        jumlah_jiwa: Number(form.jumlah_jiwa) || 1, status_muzakki: form.status_muzakki,
       }).select('nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
 
@@ -158,6 +159,7 @@ export default function InputZakat() {
       penerima: '',
       metode_fitrah: Number(item.jumlah_beras) > 0 ? 'beras' : 'uang',
       alamat: '',
+      status_muzakki: item.status_muzakki || 'RT',
     });
     setEditOpen(true);
   };
@@ -169,9 +171,10 @@ export default function InputZakat() {
       jenis_zakat: form.jenis_zakat,
       jumlah_uang: Number(form.jumlah_uang) || 0,
       jumlah_beras: Number(form.jumlah_beras) || 0,
-      rt_id: form.rt_id || null,
+      rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
       tanggal: form.tanggal,
       jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+      status_muzakki: form.status_muzakki,
     }).eq('id', editItem.id);
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success('Data zakat berhasil diperbarui ✓');
@@ -225,14 +228,26 @@ export default function InputZakat() {
   const EditFormFields = () => (
     <div className="space-y-4">
       <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+      <div>
+        <Label>Status Muzakki</Label>
+        <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="RT">RT</SelectItem>
+            <SelectItem value="Jamaah">Jamaah</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label>RT</Label>
-          <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-            <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-            <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
+        {form.status_muzakki === 'RT' && (
+          <div>
+            <Label>RT</Label>
+            <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+              <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+              <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        )}
         <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} /></div>
       </div>
       <div>
@@ -308,15 +323,29 @@ export default function InputZakat() {
               <Input value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Alamat muzakki" />
             </div>
 
+            {/* Status Muzakki */}
+            <div>
+              <Label>Status Muzakki</Label>
+              <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="RT">RT</SelectItem>
+                  <SelectItem value="Jamaah">Jamaah</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* RT & Jumlah Jiwa */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>RT</Label>
-                <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                  <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+              {form.status_muzakki === 'RT' && (
+                <div>
+                  <Label>RT</Label>
+                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>Jumlah Jiwa</Label>
                 <Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} />
@@ -383,11 +412,11 @@ export default function InputZakat() {
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(z => (
                 <TableRow key={z.id}>
-                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{z.status_muzakki || 'RT'}</span></TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
@@ -413,7 +442,7 @@ export default function InputZakat() {
           <Card key={z.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div><p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p><span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span></div>
+                <div><p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p><div className="flex gap-1 mt-1"><span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{z.jenis_zakat}</span><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{z.status_muzakki || 'RT'}</span></div></div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)} title="Lihat"><Eye className="w-4 h-4" /></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadKwitansi(z)} title="Download"><Download className="w-4 h-4" /></Button>

@@ -165,6 +165,7 @@ export type Database = {
           nama_muzakki: string
           nomor_kwitansi: number
           rt_id: string | null
+          status_muzakki: string | null
           tanggal: string
         }
         Insert: {
@@ -178,6 +179,7 @@ export type Database = {
           nama_muzakki: string
           nomor_kwitansi?: number
           rt_id?: string | null
+          status_muzakki?: string | null
           tanggal?: string
         }
         Update: {
@@ -191,6 +193,7 @@ export type Database = {
           nama_muzakki?: string
           nomor_kwitansi?: number
           rt_id?: string | null
+          status_muzakki?: string | null
           tanggal?: string
         }
         Relationships: [

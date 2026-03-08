@@ -25,7 +25,7 @@ export default function DataZakat() {
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000' });
+  const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT' });
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
@@ -42,10 +42,10 @@ export default function DataZakat() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000' });
+  const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000', status_muzakki: 'RT' });
 
   const handleSubmit = async () => {
-    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id };
+    const payload = { nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null, tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki };
     if (editItem) {
       const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
@@ -66,7 +66,7 @@ export default function DataZakat() {
 
   const openEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000' });
+    setForm({ nama_muzakki: item.nama_muzakki, jenis_zakat: item.jenis_zakat, jumlah_uang: String(item.jumlah_uang), jumlah_beras: String(item.jumlah_beras), rt_id: item.rt_id || '', tanggal: item.tanggal, harga_beras: '15000', status_muzakki: item.status_muzakki || 'RT' });
     setOpen(true);
   };
 
@@ -115,12 +115,24 @@ export default function DataZakat() {
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
-                <div><Label>RT</Label>
-                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                <div>
+                  <Label>Status Muzakki</Label>
+                  <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RT">RT</SelectItem>
+                      <SelectItem value="Jamaah">Jamaah</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
+                {form.status_muzakki === 'RT' && (
+                  <div><Label>RT</Label>
+                    <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                      <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div><Label>Jenis Zakat</Label>
                   <Select value={form.jenis_zakat} onValueChange={v => {
                     if (v === 'Zakat Fitrah') {
@@ -167,11 +179,11 @@ export default function DataZakat() {
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(z => (
                 <TableRow key={z.id}>
-                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{z.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{z.status_muzakki || 'RT'}</span></TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{z.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
@@ -198,7 +210,10 @@ export default function DataZakat() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
-                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
+                  <div className="flex gap-1 mt-1">
+                    <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{z.jenis_zakat}</span>
+                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${z.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{z.status_muzakki || 'RT'}</span>
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)} title="Lihat"><Eye className="w-4 h-4" /></Button>
