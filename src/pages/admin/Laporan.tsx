@@ -85,7 +85,7 @@ export default function Laporan() {
 
   const exportExcel = () => {
     const zakatSheet = zakatData.map(t => ({ 'Nama Muzakki': t.nama_muzakki, 'Jenis': getJenis(t), 'Jumlah Uang': getUang(t), 'Jumlah Beras': getBeras(t), 'RT': t.rt?.nama_rt || '-', 'Tanggal': t.tanggal }));
-    const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-', 'Jumlah': d.jumlah, 'Tanggal': d.tanggal }));
+    const distSheet = distribusiData.map(d => ({ 'Nama Mustahik': d.mustahik?.nama || '-', 'RT': d.mustahik?.rt?.nama_rt || '-', 'Jenis': d.jenis_bantuan || 'Uang', 'Jumlah Uang': d.jenis_bantuan === 'Beras' ? 0 : Number(d.jumlah), 'Jumlah Beras (Kg)': d.jenis_bantuan === 'Beras' ? Number(d.jumlah_beras) : 0, 'Tanggal': d.tanggal }));
     const summarySheet = [{ Keterangan: 'Periode', Jumlah: filterLabel }, { Keterangan: 'Zakat Fitrah', Jumlah: stats.totalFitrah }, { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal }, { Keterangan: 'Infaq', Jumlah: stats.totalInfaq }, { Keterangan: 'Fidyah', Jumlah: stats.totalFidyah }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
