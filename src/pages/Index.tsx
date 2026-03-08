@@ -17,7 +17,8 @@ import AutoScrollTableWrapper from '@/components/AutoScrollTableWrapper';
 const SPLASH_KEY = 'zakat-splash-shown';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100; // fetch more for auto-scroll
+const VISIBLE_ROWS = 10;
 
 export default function Index() {
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
