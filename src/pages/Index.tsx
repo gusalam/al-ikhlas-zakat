@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { Banknote, Users, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
+import { Banknote, Users, Wheat, TrendingUp, CalendarDays, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { usePagination } from '@/hooks/usePagination';
@@ -19,22 +20,34 @@ export default function Index() {
   const [rtChartData, setRtChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [zakatSearch, setZakatSearch] = useState('');
+  const [distSearch, setDistSearch] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
 
   const fetchData = async () => {
     await fetchStats();
 
+    let zakatQuery = supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false });
+    if (zakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${zakatSearch.trim()}%`);
+    zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
+
+    const distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to);
+
     const [zRes, dRes, rtRes] = await Promise.all([
-      supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
-      supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
+      zakatQuery,
+      distQuery,
       supabase.from('transaksi_zakat').select('rt(nama_rt), detail_zakat(jumlah_uang)'),
     ]);
 
     setZakatData(zRes.data || []);
     zakatPag.setTotalCount(zRes.count || 0);
-    setDistribusiData(dRes.data || []);
-    distPag.setTotalCount(dRes.count || 0);
+
+    const distFiltered = distSearch.trim()
+      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(distSearch.trim().toLowerCase()))
+      : (dRes.data || []);
+    setDistribusiData(distFiltered);
+    distPag.setTotalCount(distSearch.trim() ? distFiltered.length : (dRes.count || 0));
 
     const rtMap: Record<string, number> = {};
     (rtRes.data || []).forEach((t: any) => {
@@ -50,10 +63,10 @@ export default function Index() {
 
   useEffect(() => {
     fetchData();
-    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, fetchData).subscribe();
+    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, fetchData).subscribe();
     const ch2 = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [zakatPag.page, distPag.page]);
+  }, [zakatPag.page, distPag.page, zakatSearch, distSearch]);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
@@ -144,7 +157,13 @@ export default function Index() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
+            <div className="relative mt-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => { setZakatSearch(e.target.value); zakatPag.goTo(1); }} className="pl-9" />
+            </div>
+          </CardHeader>
           <CardContent className="overflow-auto">
             <Table>
               <TableHeader><TableRow><TableHead>Nama Muzakki</TableHead><TableHead>Jenis Zakat</TableHead><TableHead>Jumlah</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
@@ -172,7 +191,13 @@ export default function Index() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
+            <div className="relative mt-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => { setDistSearch(e.target.value); distPag.goTo(1); }} className="pl-9" />
+            </div>
+          </CardHeader>
           <CardContent className="overflow-auto">
             <Table>
               <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
