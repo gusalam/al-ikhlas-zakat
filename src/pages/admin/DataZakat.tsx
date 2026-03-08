@@ -47,7 +47,7 @@ export default function DataZakat() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
 
   const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' }); setDetail(emptyDetail()); };
 
