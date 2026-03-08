@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Banknote, Users, Wheat, TrendingUp, Truck } from 'lucide-react';
+import { Banknote, Users, Wheat, TrendingUp, Truck, Package, ArrowDownCircle, ArrowUpCircle, BarChart3 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { friendlyError } from '@/lib/errorHandler';
