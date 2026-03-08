@@ -36,7 +36,15 @@ export function exportPdf({ title, subtitle, headers, rows, filename, orientatio
       alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
-    doc.save(filename);
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
     toast.success('PDF berhasil diunduh ✓');
   } catch (error) {
     console.error('Export PDF error:', error);
