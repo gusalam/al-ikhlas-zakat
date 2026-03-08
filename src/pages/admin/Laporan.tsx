@@ -8,7 +8,7 @@ import { Download, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
 
-const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)'];
+const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function Laporan() {
   const [zakatData, setZakatData] = useState<any[]>([]);
