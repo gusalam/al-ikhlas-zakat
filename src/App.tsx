@@ -22,6 +22,7 @@ import PanitiaDashboard from "./pages/panitia/Dashboard";
 import InputZakat from "./pages/panitia/InputZakat";
 import PanitiaMustahik from "./pages/panitia/DataMustahik";
 import PanitiaDistribusi from "./pages/panitia/Distribusi";
+import PanitiaLaporan from "./pages/panitia/Laporan";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/panitia/zakat" element={<ProtectedRoute allowedRoles={['panitia']}><InputZakat /></ProtectedRoute>} />
             <Route path="/panitia/mustahik" element={<ProtectedRoute allowedRoles={['panitia']}><PanitiaMustahik /></ProtectedRoute>} />
             <Route path="/panitia/distribusi" element={<ProtectedRoute allowedRoles={['panitia']}><PanitiaDistribusi /></ProtectedRoute>} />
+            <Route path="/panitia/laporan" element={<ProtectedRoute allowedRoles={['panitia']}><PanitiaLaporan /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

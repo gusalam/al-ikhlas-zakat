@@ -1,29 +1,37 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import AdminLayout from '@/components/layouts/AdminLayout';
+import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Download, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { exportPdf } from '@/lib/exportPdf';
+import { friendlyError } from '@/lib/errorHandler';
+import { toast } from '@/hooks/use-toast';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
 
-export default function Laporan() {
+export default function PanitiaLaporan() {
   const [zakatData, setZakatData] = useState<any[]>([]);
   const [distribusiData, setDistribusiData] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const [{ data: z }, { data: d }] = await Promise.all([
-        supabase.from('zakat').select('*, rt(nama_rt)'),
-        supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))'),
-      ]);
-      setZakatData(z || []);
-      setDistribusiData(d || []);
+    const fetchData = async () => {
+      try {
+        const [{ data: z, error: ze }, { data: d, error: de }] = await Promise.all([
+          supabase.from('zakat').select('*, rt(nama_rt)'),
+          supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))'),
+        ]);
+        if (ze) throw ze;
+        if (de) throw de;
+        setZakatData(z || []);
+        setDistribusiData(d || []);
+      } catch (err) {
+        toast({ title: 'Gagal memuat data', description: friendlyError(err), variant: 'destructive' });
+      }
     };
-    fetch();
+    fetchData();
   }, []);
 
   const totalFitrah = zakatData.filter(z => z.jenis_zakat === 'Zakat Fitrah').reduce((s, z) => s + Number(z.jumlah_uang), 0);
@@ -71,50 +79,31 @@ export default function Laporan() {
     XLSX.writeFile(wb, 'Laporan_Zakat_Al_Ikhlas.xlsx');
   };
 
-  const exportCSV = () => {
-    const rows = zakatData.map(z => `${z.nama_muzakki},${z.jenis_zakat},${z.jumlah_uang},${z.jumlah_beras},${z.rt?.nama_rt || '-'},${z.tanggal}`);
-    const csv = 'Nama,Jenis,Uang,Beras,RT,Tanggal\n' + rows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'laporan_zakat.csv'; a.click();
-  };
-
-  const exportPdfZakat = () => {
+  const exportPdfLaporan = () => {
     exportPdf({
-      title: 'Laporan Zakat — Masjid Al-Ikhlas',
+      title: 'Laporan Keuangan Zakat — Masjid Al-Ikhlas',
       subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-      headers: ['Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
-      rows: zakatData.map(z => [
-        z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
-        `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-',
-        new Date(z.tanggal).toLocaleDateString('id-ID'),
-      ]),
-      filename: 'Laporan_Zakat_Al_Ikhlas.pdf',
-    });
-  };
-
-  const exportPdfDistribusi = () => {
-    exportPdf({
-      title: 'Laporan Distribusi Zakat — Masjid Al-Ikhlas',
-      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-      headers: ['Nama Mustahik', 'RT', 'Jumlah', 'Tanggal'],
-      rows: distribusiData.map(d => [
-        d.mustahik?.nama || '-', d.mustahik?.rt?.nama_rt || '-',
-        fmt(Number(d.jumlah)), new Date(d.tanggal).toLocaleDateString('id-ID'),
-      ]),
-      filename: 'Laporan_Distribusi_Al_Ikhlas.pdf',
+      headers: ['Keterangan', 'Jumlah'],
+      rows: [
+        ['Zakat Fitrah', fmt(totalFitrah)],
+        ['Zakat Mal', fmt(totalMal)],
+        ['Infaq', fmt(totalInfaq)],
+        ['Fidyah', fmt(totalFidyah)],
+        ['Total Pemasukan', fmt(totalPemasukan)],
+        ['Total Distribusi', fmt(totalDistribusi)],
+        ['Saldo Zakat', fmt(saldoZakat)],
+      ],
+      filename: 'Laporan_Keuangan_Zakat_Al_Ikhlas.pdf',
     });
   };
 
   return (
-    <AdminLayout>
+    <PanitiaLayout>
       <div className="flex flex-col gap-4 mb-6">
-        <h1 className="text-2xl font-serif font-bold">Laporan</h1>
+        <h1 className="text-2xl font-serif font-bold">Laporan Keuangan</h1>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="w-4 h-4 mr-1" />CSV</Button>
           <Button variant="outline" size="sm" onClick={exportExcel}><Download className="w-4 h-4 mr-1" />Excel</Button>
-          <Button variant="outline" size="sm" onClick={exportPdfZakat}><FileText className="w-4 h-4 mr-1" />PDF Zakat</Button>
-          <Button size="sm" onClick={exportPdfDistribusi}><FileText className="w-4 h-4 mr-1" />PDF Distribusi</Button>
+          <Button size="sm" onClick={exportPdfLaporan}><FileText className="w-4 h-4 mr-1" />PDF Laporan</Button>
         </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -127,10 +116,10 @@ export default function Laporan() {
           { label: 'Total Distribusi', value: fmt(totalDistribusi) },
           { label: 'Saldo Zakat', value: fmt(saldoZakat), highlight: true, isSaldo: true },
         ].map(s => (
-          <Card key={s.label} className={s.highlight ? 'border-primary/30 bg-primary/5' : ''}>
+          <Card key={s.label} className={(s as any).highlight ? 'border-primary/30 bg-primary/5' : ''}>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className={`text-xl font-bold ${s.isSaldo ? (saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
+              <p className={`text-xl font-bold ${(s as any).isSaldo ? (saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -157,6 +146,6 @@ export default function Laporan() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </PanitiaLayout>
   );
 }

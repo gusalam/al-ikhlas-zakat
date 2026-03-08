@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, FileText, Users, Truck, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Truck, BarChart3, LogOut, Menu } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -11,6 +11,7 @@ const menuItems = [
   { path: '/panitia/zakat', label: 'Input Zakat', icon: FileText },
   { path: '/panitia/mustahik', label: 'Data Mustahik', icon: Users },
   { path: '/panitia/distribusi', label: 'Distribusi', icon: Truck },
+  { path: '/panitia/laporan', label: 'Laporan', icon: BarChart3 },
 ];
 
 export default function PanitiaLayout({ children }: { children: React.ReactNode }) {
