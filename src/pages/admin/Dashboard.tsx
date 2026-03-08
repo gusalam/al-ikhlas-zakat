@@ -99,8 +99,8 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader><TableRow><TableHead>RT</TableHead><TableHead className="text-right">Muzakki</TableHead><TableHead className="text-right">Uang</TableHead><TableHead className="text-right">Beras (Kg)</TableHead></TableRow></TableHeader>
                 <TableBody>
-                  {Object.entries(rtZakatSummary).map(([rt, data]) => (
-                    <TableRow key={rt}><TableCell className="font-medium">{rt}</TableCell><TableCell className="text-right">{data.muzakki.size}</TableCell><TableCell className="text-right">{fmt(data.uang)}</TableCell><TableCell className="text-right">{data.beras}</TableCell></TableRow>
+                  {Object.entries(rtZakatSummary).map(([rt, d]: [string, any]) => (
+                    <TableRow key={rt}><TableCell className="font-medium">{rt}</TableCell><TableCell className="text-right">{d.muzakki.size}</TableCell><TableCell className="text-right">{fmt(d.uang)}</TableCell><TableCell className="text-right">{d.beras}</TableCell></TableRow>
                   ))}
                   {Object.keys(rtZakatSummary).length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>}
                 </TableBody>
