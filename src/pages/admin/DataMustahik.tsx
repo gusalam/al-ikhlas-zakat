@@ -38,12 +38,12 @@ export default function DataMustahik() {
     const payload = { nama: form.nama, rt_id: form.rt_id || null, kategori: form.kategori || null };
     if (editItem) {
       const { error } = await supabase.from('mustahik').update(payload).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data mustahik berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('mustahik').insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data mustahik berhasil ditambahkan ✓');
     }
     setOpen(false); resetForm(); setEditItem(null); fetchData();
   };
