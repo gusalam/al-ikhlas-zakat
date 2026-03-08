@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,14 +22,27 @@ export default function Index() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [zakatSearch, setZakatSearch] = useState('');
   const [distSearch, setDistSearch] = useState('');
+  const [debouncedZakatSearch, setDebouncedZakatSearch] = useState('');
+  const [debouncedDistSearch, setDebouncedDistSearch] = useState('');
   const zakatPag = usePagination(50);
   const distPag = usePagination(50);
+
+  // Debounce search inputs
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedZakatSearch(zakatSearch); zakatPag.reset(); }, 400);
+    return () => clearTimeout(t);
+  }, [zakatSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedDistSearch(distSearch); distPag.reset(); }, 400);
+    return () => clearTimeout(t);
+  }, [distSearch]);
 
   const fetchData = async () => {
     await fetchStats();
 
     let zakatQuery = supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false });
-    if (zakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${zakatSearch.trim()}%`);
+    if (debouncedZakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${debouncedZakatSearch.trim()}%`);
     zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
 
     const distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to);
@@ -43,11 +56,11 @@ export default function Index() {
     setZakatData(zRes.data || []);
     zakatPag.setTotalCount(zRes.count || 0);
 
-    const distFiltered = distSearch.trim()
-      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(distSearch.trim().toLowerCase()))
+    const distFiltered = debouncedDistSearch.trim()
+      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(debouncedDistSearch.trim().toLowerCase()))
       : (dRes.data || []);
     setDistribusiData(distFiltered);
-    distPag.setTotalCount(distSearch.trim() ? distFiltered.length : (dRes.count || 0));
+    distPag.setTotalCount(debouncedDistSearch.trim() ? distFiltered.length : (dRes.count || 0));
 
     const rtMap: Record<string, number> = {};
     (rtRes.data || []).forEach((t: any) => {
@@ -63,10 +76,13 @@ export default function Index() {
 
   useEffect(() => {
     fetchData();
+  }, [zakatPag.page, distPag.page, debouncedZakatSearch, debouncedDistSearch]);
+
+  useEffect(() => {
     const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, fetchData).subscribe();
     const ch2 = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [zakatPag.page, distPag.page, zakatSearch, distSearch]);
+  }, []);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
@@ -161,7 +177,7 @@ export default function Index() {
             <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => { setZakatSearch(e.target.value); zakatPag.goTo(1); }} className="pl-9" />
+              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => setZakatSearch(e.target.value)} className="pl-9" />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
@@ -195,7 +211,7 @@ export default function Index() {
             <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => { setDistSearch(e.target.value); distPag.goTo(1); }} className="pl-9" />
+              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => setDistSearch(e.target.value)} className="pl-9" />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
