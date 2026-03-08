@@ -63,7 +63,7 @@ export default function DataZakat() {
     if (editItem) {
       const { error } = await supabase.from('transaksi_zakat').update({
         nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
-        tanggal: form.tanggal, status_muzakki: form.status_muzakki,
+        tanggal: form.tanggal, status_muzakki: form.status_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
       await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
