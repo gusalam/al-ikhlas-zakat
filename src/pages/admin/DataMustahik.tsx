@@ -16,12 +16,16 @@ import { friendlyError } from '@/lib/errorHandler';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 
+const KATEGORI_OPTIONS = ['Fakir', 'Miskin', 'Gharimin', 'Muallaf', 'Sabilillah', 'Amil', 'Riqab', 'Ibnu Sabil'];
+
+const emptyForm = { nama: '', rt_id: '', kategori: '', alamat: '', status: 'RT' };
+
 export default function DataMustahik() {
   const [data, setData] = useState<any[]>([]);
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama: '', rt_id: '', kategori: '' });
+  const [form, setForm] = useState({ ...emptyForm });
   const pag = usePagination(50);
 
   const fetchData = async () => {
@@ -36,10 +40,21 @@ export default function DataMustahik() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => setForm({ nama: '', rt_id: '', kategori: '' });
+  const resetForm = () => setForm({ ...emptyForm });
 
   const handleSubmit = async () => {
-    const payload = { nama: form.nama, rt_id: form.rt_id || null, kategori: form.kategori || null };
+    if (!form.nama.trim()) { toast.error('Nama wajib diisi'); return; }
+    if (!form.kategori) { toast.error('Kategori wajib dipilih'); return; }
+    if (form.status === 'RT' && !form.rt_id) { toast.error('RT wajib dipilih jika status RT'); return; }
+
+    const payload: any = {
+      nama: form.nama.trim(),
+      rt_id: form.rt_id || null,
+      kategori: form.kategori || null,
+      alamat: form.alamat.trim() || null,
+      status: form.status,
+    };
+
     if (editItem) {
       const { error } = await supabase.from('mustahik').update(payload).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
@@ -66,8 +81,8 @@ export default function DataMustahik() {
           <Button variant="outline" onClick={() => exportPdf({
             title: 'Data Mustahik — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-            headers: ['No', 'Nama', 'RT', 'Kategori'],
-            rows: data.map((m, i) => [String(i + 1), m.nama, m.rt?.nama_rt || '-', m.kategori || '-']),
+            headers: ['No', 'Nama', 'Status', 'RT', 'Kategori', 'Alamat'],
+            rows: data.map((m, i) => [String(i + 1), m.nama, m.status || '-', m.rt?.nama_rt || '-', m.kategori || '-', m.alamat || '-']),
             filename: 'Data_Mustahik_Al_Ikhlas.pdf',
           })}><FileText className="w-4 h-4 mr-2" />Export PDF</Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
@@ -76,13 +91,38 @@ export default function DataMustahik() {
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Mustahik</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nama</Label><Input value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} className="h-12 text-base" /></div>
-                <div><Label>RT</Label>
-                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                <div><Label>Alamat</Label><Input value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Alamat mustahik" className="h-12 text-base" /></div>
+                <div><Label>Status Penerima</Label>
+                  <Select value={form.status} onValueChange={v => setForm({ ...form, status: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
+                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RT">RT</SelectItem>
+                      <SelectItem value="Jamaah">Jamaah</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
-                <div><Label>Kategori</Label><Input value={form.kategori} onChange={e => setForm({ ...form, kategori: e.target.value })} placeholder="Fakir, Miskin, dll" className="h-12 text-base" /></div>
+                {form.status === 'RT' && (
+                  <div><Label>RT <span className="text-destructive">*</span></Label>
+                    <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                      <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                      <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {form.status === 'Jamaah' && (
+                  <div><Label>RT (opsional)</Label>
+                    <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                      <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT (opsional)" /></SelectTrigger>
+                      <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div><Label>Kategori <span className="text-destructive">*</span></Label>
+                  <Select value={form.kategori} onValueChange={v => setForm({ ...form, kategori: v })}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                    <SelectContent>{KATEGORI_OPTIONS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
                 <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan' : 'Tambah'}</Button>
               </div>
             </DialogContent>
@@ -92,14 +132,18 @@ export default function DataMustahik() {
       <Card>
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Alamat</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(m => (
                 <TableRow key={m.id}>
-                  <TableCell>{m.nama}</TableCell><TableCell>{m.rt?.nama_rt || '-'}</TableCell><TableCell>{m.kategori || '-'}</TableCell>
+                  <TableCell>{m.nama}</TableCell>
+                  <TableCell>{m.status || '-'}</TableCell>
+                  <TableCell>{m.rt?.nama_rt || '-'}</TableCell>
+                  <TableCell>{m.kategori || '-'}</TableCell>
+                  <TableCell>{m.alamat || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(m); setForm({ nama: m.nama, rt_id: m.rt_id || '', kategori: m.kategori || '' }); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => { setEditItem(m); setForm({ nama: m.nama, rt_id: m.rt_id || '', kategori: m.kategori || '', alamat: m.alamat || '', status: m.status || 'RT' }); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
                         <AlertDialogContent>
