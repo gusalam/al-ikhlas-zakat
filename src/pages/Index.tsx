@@ -28,9 +28,17 @@ export default function Index() {
   const fetchData = async () => {
     await fetchStats();
 
+    let zakatQuery = supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false });
+    if (zakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${zakatSearch.trim()}%`);
+    zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
+
+    let distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false });
+    if (distSearch.trim()) distQuery = distQuery.ilike('mustahik.nama', `%${distSearch.trim()}%`);
+    distQuery = distQuery.range(distPag.from, distPag.to);
+
     const [zRes, dRes, rtRes] = await Promise.all([
-      supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
-      supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
+      zakatQuery,
+      distQuery,
       supabase.from('transaksi_zakat').select('rt(nama_rt), detail_zakat(jumlah_uang)'),
     ]);
 
