@@ -333,7 +333,7 @@ export default function Index() {
           </CardHeader>
           <CardContent className="overflow-auto">
             <Table>
-              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {distribusiData.length === 0 ? (
                   <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
