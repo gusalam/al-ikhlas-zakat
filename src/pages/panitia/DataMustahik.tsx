@@ -31,8 +31,10 @@ export default function PanitiaMustahik() {
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
+    let query = supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama');
+    if (debouncedSearch.trim()) query = query.ilike('nama', `%${debouncedSearch.trim()}%`);
     const [{ data: m, count }, { data: rt }] = await Promise.all([
-      supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama').range(pag.from, pag.to),
+      query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(m || []);
