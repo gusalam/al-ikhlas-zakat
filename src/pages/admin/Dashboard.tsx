@@ -88,12 +88,12 @@ export default function AdminDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { label: 'Uang Masuk', value: fmt(stats.totalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Uang Didistribusikan', value: fmt(stats.totalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
-              { label: 'Sisa Uang', value: fmt(stats.sisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
-              { label: 'Beras Masuk', value: `${stats.totalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Beras Didistribusikan', value: `${stats.totalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
-              { label: 'Sisa Beras', value: `${stats.sisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
+              { label: 'Uang Masuk', value: fmt(aTotalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Uang Didistribusikan', value: fmt(aTotalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Uang', value: fmt(aSisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
+              { label: 'Beras Masuk', value: `${aTotalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Beras Didistribusikan', value: `${aTotalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Beras', value: `${aSisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
             ].map(s => {
               const Icon = s.icon;
               return (
