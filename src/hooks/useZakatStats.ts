@@ -17,8 +17,7 @@ export interface ZakatStats {
 const defaultStats: ZakatStats = {
   totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0,
   totalZakat: 0, totalBeras: 0, totalMuzakki: 0, totalMustahik: 0,
-  totalDistribusi: 0, saldoZakat: 0, totalZakatCount: 0,
-  totalDistribusiCount: 0, totalMustahikCount: 0,
+  totalZakatCount: 0, totalMustahikCount: 0,
 };
 
 export function useZakatStats() {
