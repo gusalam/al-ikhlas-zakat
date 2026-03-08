@@ -155,7 +155,7 @@ export default function PanitiaLaporan() {
             <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filterYear} onValueChange={(v) => { setFilterYear(v); if (v === 'all') setFilterMonth('all'); zakatPag.goTo(1); distPag.goTo(1); }}>
-            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[120px] sm:w-[130px]"><SelectValue /></SelectTrigger>
             <SelectContent>{yearOptions.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
