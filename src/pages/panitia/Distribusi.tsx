@@ -165,6 +165,7 @@ export default function PanitiaDistribusi() {
   const totalDana = getAvailableFund(stats, form.sumber_zakat);
   const sudahDisalurkan = distribusiPerSumber[form.sumber_zakat] || 0;
   const sisaDana = totalDana - sudahDisalurkan;
+  const sisaBeras = getAvailableBeras(stats) - distribusiBeras;
 
   const DeleteButton = ({ id }: { id: string }) => (
     <AlertDialog>
