@@ -34,19 +34,18 @@ export default function InputZakat() {
   useEffect(() => { fetchData(); }, []);
 
   const handleSubmit = async () => {
-    const { error } = await supabase.from('zakat').insert({
+    const { data: inserted, error } = await supabase.from('zakat').insert({
       nama_muzakki: form.nama_muzakki, jenis_zakat: form.jenis_zakat,
       jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0,
       rt_id: form.rt_id || null, tanggal: form.tanggal, created_by: user?.id,
-    });
+      jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+    }).select('nomor_kwitansi').single();
     if (error) { toast.error(error.message); return; }
     toast.success('Zakat berhasil dicatat');
     setOpen(false);
 
-    // Show kwitansi
-    const newCount = data.length + 1;
     setKwitansiData({
-      nomor: newCount,
+      nomor: inserted?.nomor_kwitansi || 0,
       nama_muzakki: form.nama_muzakki,
       jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
       jenis_zakat: form.jenis_zakat,
@@ -61,11 +60,11 @@ export default function InputZakat() {
     fetchData();
   };
 
-  const showKwitansi = (z: any, index: number) => {
+  const showKwitansi = (z: any) => {
     setKwitansiData({
-      nomor: index + 1,
+      nomor: z.nomor_kwitansi || 0,
       nama_muzakki: z.nama_muzakki,
-      jumlah_jiwa: 1,
+      jumlah_jiwa: z.jumlah_jiwa || 1,
       jenis_zakat: z.jenis_zakat,
       jumlah_uang: Number(z.jumlah_uang) || 0,
       jumlah_beras: Number(z.jumlah_beras) || 0,
@@ -121,19 +120,20 @@ export default function InputZakat() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
+                <TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((z, i) => (
+              {data.map(z => (
                 <TableRow key={z.id}>
+                  <TableCell>{z.nomor_kwitansi}</TableCell>
                   <TableCell>{z.nama_muzakki}</TableCell>
                   <TableCell>{z.jenis_zakat}</TableCell>
                   <TableCell>{fmt(Number(z.jumlah_uang))}</TableCell>
                   <TableCell>{z.jumlah_beras} Kg</TableCell>
                   <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" onClick={() => showKwitansi(z, i)}>
+                    <Button size="sm" variant="outline" onClick={() => showKwitansi(z)}>
                       <FileText className="w-4 h-4 mr-1" />Kwitansi
                     </Button>
                   </TableCell>
@@ -147,15 +147,15 @@ export default function InputZakat() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
-        {data.map((z, i) => (
+        {data.map(z => (
           <Card key={z.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-base">{z.nama_muzakki}</p>
+                  <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
                   <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => showKwitansi(z, i)}>
+                <Button size="sm" variant="outline" onClick={() => showKwitansi(z)}>
                   <FileText className="w-4 h-4" />
                 </Button>
               </div>

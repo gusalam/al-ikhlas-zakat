@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
+import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
 
 export default function DataZakat() {
   const { user } = useAuth();
@@ -21,6 +22,8 @@ export default function DataZakat() {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0] });
+  const [kwitansiOpen, setKwitansiOpen] = useState(false);
+  const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
 
   const fetchData = async () => {
     const [{ data: zakat }, { data: rt }] = await Promise.all([
@@ -61,68 +64,84 @@ export default function DataZakat() {
     setOpen(true);
   };
 
+  const showKwitansi = (z: any) => {
+    setKwitansiData({
+      nomor: z.nomor_kwitansi || 0,
+      nama_muzakki: z.nama_muzakki,
+      jumlah_jiwa: z.jumlah_jiwa || 1,
+      jenis_zakat: z.jenis_zakat,
+      jumlah_uang: Number(z.jumlah_uang) || 0,
+      jumlah_beras: Number(z.jumlah_beras) || 0,
+      tanggal: z.tanggal,
+      penerima: z.nama_muzakki,
+    });
+    setKwitansiOpen(true);
+  };
+
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-2xl font-serif font-bold">Data Zakat</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => exportPdf({
+        <h1 className="text-xl md:text-2xl font-serif font-bold">Data Zakat</h1>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Zakat — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-            headers: ['Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
+            headers: ['No', 'Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
             rows: data.map(z => [
-              z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
+              String(z.nomor_kwitansi || '-'), z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
               `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-',
               new Date(z.tanggal).toLocaleDateString('id-ID'),
             ]),
             filename: 'Data_Zakat_Al_Ikhlas.pdf',
-          })}><FileText className="w-4 h-4 mr-2" />Export PDF</Button>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>RT</Label>
-                <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                  <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                  <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
-                </Select>
+          })}><FileText className="w-4 h-4 mr-1" />Export PDF</Button>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
+            <DialogTrigger asChild><Button size="sm"><Plus className="w-4 h-4 mr-1" />Tambah</Button></DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>RT</Label>
+                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Jenis Zakat</Label>
+                  <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v })}>
+                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
+                      <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
+                      <SelectItem value="Infaq">Infaq</SelectItem>
+                      <SelectItem value="Fidyah">Fidyah</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
+                <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
               </div>
-              <div><Label>Jenis Zakat</Label>
-                <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v })}>
-                  <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
-                    <SelectItem value="Zakat Mal">Zakat Mal</SelectItem>
-                    <SelectItem value="Infaq">Infaq</SelectItem>
-                    <SelectItem value="Fidyah">Fidyah</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={form.jumlah_uang} onChange={e => setForm({ ...form, jumlah_uang: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
-              <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
+
       {/* Desktop Table */}
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
+                <TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map(z => (
                 <TableRow key={z.id}>
+                  <TableCell>{z.nomor_kwitansi}</TableCell>
                   <TableCell>{z.nama_muzakki}</TableCell>
                   <TableCell>{z.jenis_zakat}</TableCell>
                   <TableCell>{fmt(Number(z.jumlah_uang))}</TableCell>
@@ -131,6 +150,7 @@ export default function DataZakat() {
                   <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Kwitansi"><FileText className="w-4 h-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
@@ -156,10 +176,11 @@ export default function DataZakat() {
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-base">{z.nama_muzakki}</p>
+                  <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
                   <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
                 </div>
                 <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
@@ -180,6 +201,8 @@ export default function DataZakat() {
           </Card>
         ))}
       </div>
+
+      <KwitansiZakat open={kwitansiOpen} onOpenChange={setKwitansiOpen} data={kwitansiData} />
     </AdminLayout>
   );
 }
