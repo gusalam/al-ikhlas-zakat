@@ -48,10 +48,7 @@ export function useZakatStats() {
       totalBeras: Number(d.total_beras) || 0,
       totalMuzakki: Number(d.total_muzakki) || 0,
       totalMustahik: Number(d.total_mustahik) || 0,
-      totalDistribusi: Number(d.total_distribusi) || 0,
-      saldoZakat: Number(d.total_zakat) - Number(d.total_distribusi),
       totalZakatCount: Number(d.total_zakat_count) || 0,
-      totalDistribusiCount: Number(d.total_distribusi_count) || 0,
       totalMustahikCount: Number(d.total_mustahik_count) || 0,
     });
     setLoading(false);
