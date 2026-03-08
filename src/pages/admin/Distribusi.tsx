@@ -62,7 +62,6 @@ export default function Distribusi() {
         <div>
           <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
         </div>
-        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>
