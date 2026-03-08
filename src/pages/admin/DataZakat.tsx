@@ -43,12 +43,12 @@ export default function DataZakat() {
     const payload = { ...form, jumlah_uang: Number(form.jumlah_uang) || 0, jumlah_beras: Number(form.jumlah_beras) || 0, rt_id: form.rt_id || null, created_by: user?.id };
     if (editItem) {
       const { error } = await supabase.from('zakat').update(payload).eq('id', editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data zakat diperbarui');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data zakat berhasil diperbarui ✓');
     } else {
       const { error } = await supabase.from('zakat').insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success('Data zakat ditambahkan');
+      if (error) { toast.error(friendlyError(error)); return; }
+      toast.success('Data zakat berhasil ditambahkan ✓');
     }
     setOpen(false); resetForm(); setEditItem(null); fetchData();
   };
