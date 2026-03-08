@@ -24,7 +24,8 @@ interface Props {
 }
 
 const fmt = (n: number) => new Intl.NumberFormat('id-ID').format(n);
-
+const kgToLiter = (kg: number) => parseFloat((kg * 1.25).toFixed(2));
+const fmtBeras = (kg: number) => `${kg} Kg / ${kgToLiter(kg)} Liter`;
 export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
 
