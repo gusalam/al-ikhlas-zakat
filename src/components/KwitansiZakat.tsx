@@ -189,6 +189,9 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                     <tr><td style={{ padding: '3px 0' }}>Nama Muzakki</td><td>:</td><td><strong>{data.nama_muzakki}</strong></td>
                       {totalJiwa > 0 && <td style={{ textAlign: 'right' }}>Jumlah Jiwa : <strong style={{ border: '1px solid #ccc', padding: '1px 8px' }}>{totalJiwa}</strong> Orang</td>}
                     </tr>
+                    {data.alamat_muzakki && (
+                      <tr><td style={{ padding: '3px 0' }}>Alamat</td><td>:</td><td colSpan={2}>{data.alamat_muzakki}</td></tr>
+                    )}
                   </tbody>
                 </table>
                 <div style={{ marginTop: '10px' }}>

@@ -207,6 +207,7 @@ export default function DataZakat() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-base">#{t.nomor_kwitansi} — {t.nama_muzakki}</p>
+                  {t.alamat_muzakki && <p className="text-xs text-muted-foreground">{t.alamat_muzakki}</p>}
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {(t.detail_zakat || []).map((d: any, i: number) => <span key={i} className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{d.jenis_zakat}</span>)}
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{t.status_muzakki || 'RT'}</span>
