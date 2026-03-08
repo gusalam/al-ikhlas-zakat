@@ -138,8 +138,7 @@ export default function PanitiaLaporan() {
       rows: [
         ['Zakat Fitrah', fmt(stats.totalFitrah)], ['Zakat Mal', fmt(stats.totalMal)],
         ['Infaq', fmt(stats.totalInfaq)], ['Fidyah', fmt(stats.totalFidyah)],
-        ['Total Pemasukan', fmt(stats.totalZakat)], ['Total Distribusi', fmt(stats.totalDistribusi)],
-        ['Saldo Zakat', fmt(stats.saldoZakat)],
+        ['Total Terkumpul', fmt(stats.totalZakat)],
       ],
       filename: `Laporan_Keuangan_${filterLabel.replace(/\s/g, '_')}.pdf`,
     });
