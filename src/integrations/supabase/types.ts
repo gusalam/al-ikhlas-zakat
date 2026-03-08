@@ -145,8 +145,10 @@ export type Database = {
           id: string
           jenis_zakat: string
           jumlah_beras: number | null
+          jumlah_jiwa: number
           jumlah_uang: number | null
           nama_muzakki: string
+          nomor_kwitansi: number
           rt_id: string | null
           tanggal: string
         }
@@ -156,8 +158,10 @@ export type Database = {
           id?: string
           jenis_zakat: string
           jumlah_beras?: number | null
+          jumlah_jiwa?: number
           jumlah_uang?: number | null
           nama_muzakki: string
+          nomor_kwitansi?: number
           rt_id?: string | null
           tanggal?: string
         }
@@ -167,8 +171,10 @@ export type Database = {
           id?: string
           jenis_zakat?: string
           jumlah_beras?: number | null
+          jumlah_jiwa?: number
           jumlah_uang?: number | null
           nama_muzakki?: string
+          nomor_kwitansi?: number
           rt_id?: string | null
           tanggal?: string
         }
