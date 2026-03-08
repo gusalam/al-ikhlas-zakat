@@ -215,7 +215,7 @@ export default function Index() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-6 sm:space-y-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="w-4 h-4" /><span>Data diperbarui: {fmtDate(lastUpdated)}</span>
         </div>
