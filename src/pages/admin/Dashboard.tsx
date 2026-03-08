@@ -122,7 +122,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><DollarSign className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentZakat.map((z: any, i: number) => (
