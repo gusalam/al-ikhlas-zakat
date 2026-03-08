@@ -103,7 +103,7 @@ export default function Laporan() {
           <Button size="sm" onClick={exportPdfDistribusi}><FileText className="w-4 h-4 mr-1" />PDF Distribusi</Button>
         </div>
       </div>
-      <div className="grid md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Zakat Fitrah', value: fmt(totalFitrah) },
           { label: 'Zakat Mal', value: fmt(totalMal) },
