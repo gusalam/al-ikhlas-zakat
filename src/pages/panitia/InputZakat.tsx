@@ -66,7 +66,7 @@ export default function InputZakat() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedListSearch]);
 
   const searchMuzakki = useCallback(async (query: string) => {
     if (query.length < 2) { setSuggestions([]); return; }
