@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText } from 'lucide-react';
 import { exportPdf } from '@/lib/exportPdf';
 import { friendlyError } from '@/lib/errorHandler';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function DataMustahik() {
   const [data, setData] = useState<any[]>([]);
@@ -20,17 +22,19 @@ export default function DataMustahik() {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ nama: '', rt_id: '', kategori: '' });
+  const pag = usePagination(50);
 
   const fetchData = async () => {
-    const [{ data: m }, { data: rt }] = await Promise.all([
-      supabase.from('mustahik').select('*, rt(nama_rt)').order('nama'),
+    const [{ data: m, count }, { data: rt }] = await Promise.all([
+      supabase.from('mustahik').select('*, rt(nama_rt)', { count: 'exact' }).order('nama').range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(m || []);
+    pag.setTotalCount(count || 0);
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [pag.page]);
 
   const resetForm = () => setForm({ nama: '', rt_id: '', kategori: '' });
 
@@ -66,37 +70,33 @@ export default function DataMustahik() {
             rows: data.map((m, i) => [String(i + 1), m.nama, m.rt?.nama_rt || '-', m.kategori || '-']),
             filename: 'Data_Mustahik_Al_Ikhlas.pdf',
           })}><FileText className="w-4 h-4 mr-2" />Export PDF</Button>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Mustahik</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div><Label>Nama</Label><Input value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} className="h-12 text-base" /></div>
-              <div><Label>RT</Label>
-                <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
-                  <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
-                  <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
-                </Select>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Mustahik</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nama</Label><Input value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>RT</Label>
+                  <Select value={form.rt_id} onValueChange={v => setForm({ ...form, rt_id: v })}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Pilih RT" /></SelectTrigger>
+                    <SelectContent>{rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Kategori</Label><Input value={form.kategori} onChange={e => setForm({ ...form, kategori: e.target.value })} placeholder="Fakir, Miskin, dll" className="h-12 text-base" /></div>
+                <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan' : 'Tambah'}</Button>
               </div>
-              <div><Label>Kategori</Label><Input value={form.kategori} onChange={e => setForm({ ...form, kategori: e.target.value })} placeholder="Fakir, Miskin, dll" className="h-12 text-base" /></div>
-              <Button onClick={handleSubmit} className="w-full h-12">{editItem ? 'Simpan' : 'Tambah'}</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <Card>
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader>
-              <TableRow><TableHead>Nama</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Aksi</TableHead></TableRow>
-            </TableHeader>
+            <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(m => (
                 <TableRow key={m.id}>
-                  <TableCell>{m.nama}</TableCell>
-                  <TableCell>{m.rt?.nama_rt || '-'}</TableCell>
-                  <TableCell>{m.kategori || '-'}</TableCell>
+                  <TableCell>{m.nama}</TableCell><TableCell>{m.rt?.nama_rt || '-'}</TableCell><TableCell>{m.kategori || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => { setEditItem(m); setForm({ nama: m.nama, rt_id: m.rt_id || '', kategori: m.kategori || '' }); setOpen(true); }}><Pencil className="w-4 h-4" /></Button>
@@ -113,6 +113,9 @@ export default function DataMustahik() {
               ))}
             </TableBody>
           </Table>
+          <div className="p-4">
+            <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
+          </div>
         </CardContent>
       </Card>
     </AdminLayout>

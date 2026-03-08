@@ -15,6 +15,8 @@ import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function DataZakat() {
   const { user } = useAuth();
@@ -25,17 +27,19 @@ export default function DataZakat() {
   const [form, setForm] = useState({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000' });
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
+  const pag = usePagination(50);
 
   const fetchData = async () => {
-    const [{ data: zakat }, { data: rt }] = await Promise.all([
-      supabase.from('zakat').select('*, rt(nama_rt)').order('tanggal', { ascending: false }),
+    const [{ data: zakat, count }, { data: rt }] = await Promise.all([
+      supabase.from('zakat').select('*, rt(nama_rt)', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(zakat || []);
+    pag.setTotalCount(count || 0);
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [pag.page]);
 
   const resetForm = () => setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], harga_beras: '15000' });
 
@@ -66,16 +70,7 @@ export default function DataZakat() {
   };
 
   const showKwitansi = (z: any) => {
-    setKwitansiData({
-      nomor: z.nomor_kwitansi || 0,
-      nama_muzakki: z.nama_muzakki,
-      jumlah_jiwa: z.jumlah_jiwa || 1,
-      jenis_zakat: z.jenis_zakat,
-      jumlah_uang: Number(z.jumlah_uang) || 0,
-      jumlah_beras: Number(z.jumlah_beras) || 0,
-      tanggal: z.tanggal,
-      penerima: z.nama_muzakki,
-    });
+    setKwitansiData({ nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1, jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0, tanggal: z.tanggal, penerima: z.nama_muzakki });
     setKwitansiOpen(true);
   };
 
@@ -90,11 +85,7 @@ export default function DataZakat() {
             title: 'Data Zakat — Masjid Al-Ikhlas',
             subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
             headers: ['No', 'Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
-            rows: data.map(z => [
-              String(z.nomor_kwitansi || '-'), z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
-              `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-',
-              new Date(z.tanggal).toLocaleDateString('id-ID'),
-            ]),
+            rows: data.map(z => [String(z.nomor_kwitansi || '-'), z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)), `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-', new Date(z.tanggal).toLocaleDateString('id-ID')]),
             filename: 'Data_Zakat_Al_Ikhlas.pdf',
           })}><FileText className="w-4 h-4 mr-1" />Export PDF</Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
@@ -152,25 +143,14 @@ export default function DataZakat() {
         </div>
       </div>
 
-      {/* Desktop Table */}
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
+            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Jenis</TableHead><TableHead>Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(z => (
                 <TableRow key={z.id}>
-                  <TableCell>{z.nomor_kwitansi}</TableCell>
-                  <TableCell>{z.nama_muzakki}</TableCell>
-                  <TableCell>{z.jenis_zakat}</TableCell>
-                  <TableCell>{fmt(Number(z.jumlah_uang))}</TableCell>
-                  <TableCell>{z.jumlah_beras} Kg</TableCell>
-                  <TableCell>{z.rt?.nama_rt || '-'}</TableCell>
-                  <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                  <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{z.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Kwitansi"><FileText className="w-4 h-4" /></Button>
@@ -188,31 +168,20 @@ export default function DataZakat() {
               ))}
             </TableBody>
           </Table>
+          <div className="p-4">
+            <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
+          </div>
         </CardContent>
       </Card>
 
-      {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
         {data.map(z => (
           <Card key={z.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p>
-                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(z)}><Pencil className="w-4 h-4" /></Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader><AlertDialogTitle>Hapus data zakat?</AlertDialogTitle><AlertDialogDescription>Data ini akan dihapus permanen.</AlertDialogDescription></AlertDialogHeader>
-                      <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(z.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                <div><p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p><span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span></div>
+                <Button size="sm" variant="outline" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
@@ -223,6 +192,7 @@ export default function DataZakat() {
             </CardContent>
           </Card>
         ))}
+        <PaginationControls page={pag.page} totalPages={pag.totalPages} totalCount={pag.totalCount} onNext={pag.goNext} onPrev={pag.goPrev} onGoTo={pag.goTo} />
       </div>
 
       <KwitansiZakat open={kwitansiOpen} onOpenChange={setKwitansiOpen} data={kwitansiData} />
