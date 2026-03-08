@@ -65,10 +65,10 @@ export default function AdminDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-emerald-600' },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-blue-600' },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-amber-600' },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-purple-600' },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-purple-600' },
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
