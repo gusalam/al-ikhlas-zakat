@@ -189,7 +189,13 @@ export default function Index() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
+            <div className="relative mt-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => { setDistSearch(e.target.value); distPag.goTo(1); }} className="pl-9" />
+            </div>
+          </CardHeader>
           <CardContent className="overflow-auto">
             <Table>
               <TableHeader><TableRow><TableHead>Nama Mustahik</TableHead><TableHead>RT</TableHead><TableHead>Sumber Zakat</TableHead><TableHead>Jumlah Bantuan</TableHead><TableHead>Tanggal</TableHead></TableRow></TableHeader>
