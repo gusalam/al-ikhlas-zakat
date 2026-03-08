@@ -349,6 +349,7 @@ export default function InputZakat() {
           <DialogHeader><DialogTitle>Edit Data Zakat</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+            <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
             <div>
               <Label>Status Muzakki</Label>
               <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
