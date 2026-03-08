@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, FileText, Eye, Download } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
@@ -19,20 +18,7 @@ import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/Kwita
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
-
-interface DetailForm {
-  fitrah: { enabled: boolean; jumlah_jiwa: string; harga_beras: string; jumlah_uang: string; jumlah_beras: string; };
-  mal: { enabled: boolean; jumlah_uang: string; };
-  infaq: { enabled: boolean; jumlah_uang: string; };
-  fidyah: { enabled: boolean; jumlah_uang: string; jumlah_beras: string; };
-}
-
-const emptyDetail = (): DetailForm => ({
-  fitrah: { enabled: false, jumlah_jiwa: '1', harga_beras: '15000', jumlah_uang: '37500', jumlah_beras: '2.5' },
-  mal: { enabled: false, jumlah_uang: '' },
-  infaq: { enabled: false, jumlah_uang: '' },
-  fidyah: { enabled: false, jumlah_uang: '', jumlah_beras: '' },
-});
+import ZakatDetailFields, { DetailForm, emptyDetail } from '@/components/ZakatDetailFields';
 
 export default function DataZakat() {
   const { user } = useAuth();
@@ -129,18 +115,9 @@ export default function DataZakat() {
   const getTotalUang = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
   const getTotalBeras = (t: any) => (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
 
-  const updateFitrah = (field: string, value: string) => {
-    setDetail(prev => {
-      const f = { ...prev.fitrah, [field]: value };
-      if (field === 'jumlah_jiwa' || field === 'harga_beras') {
-        const jiwa = Number(field === 'jumlah_jiwa' ? value : f.jumlah_jiwa) || 1;
-        const harga = Number(field === 'harga_beras' ? value : f.harga_beras) || 0;
-        f.jumlah_beras = String(jiwa * 2.5);
-        f.jumlah_uang = String(jiwa * 2.5 * harga);
-      }
-      return { ...prev, fitrah: f };
-    });
-  };
+  const handleDetailChange = useCallback((updater: (prev: DetailForm) => DetailForm) => {
+    setDetail(updater);
+  }, []);
 
   const DeleteButton = ({ id }: { id: string }) => (
     <AlertDialog>
@@ -150,41 +127,6 @@ export default function DataZakat() {
         <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(id)}>Hapus</AlertDialogAction></AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
-
-  const ZakatDetailFields = () => (
-    <div className="space-y-4">
-      <Label className="text-base font-semibold">Jenis Zakat</Label>
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="adm-fitrah" checked={detail.fitrah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fitrah: { ...d.fitrah, enabled: !!v } }))} />
-          <Label htmlFor="adm-fitrah" className="cursor-pointer font-medium">Zakat Fitrah</Label>
-        </div>
-        {detail.fitrah.enabled && (
-          <Card className="border-primary/20 bg-primary/5 ml-6">
-            <CardContent className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={detail.fitrah.jumlah_jiwa} onChange={e => updateFitrah('jumlah_jiwa', e.target.value)} /></div>
-                <div><Label>Harga Beras/Kg</Label><Input type="number" value={detail.fitrah.harga_beras} onChange={e => updateFitrah('harga_beras', e.target.value)} /></div>
-              </div>
-              <p className="text-xs text-muted-foreground">{Number(detail.fitrah.jumlah_jiwa)||1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.harga_beras)||0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format(Number(detail.fitrah.jumlah_uang)||0)}</strong></p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2"><Checkbox id="adm-mal" checked={detail.mal.enabled} onCheckedChange={v => setDetail(d => ({ ...d, mal: { ...d.mal, enabled: !!v } }))} /><Label htmlFor="adm-mal" className="cursor-pointer font-medium">Zakat Mal</Label></div>
-        {detail.mal.enabled && <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.mal.jumlah_uang} onChange={e => setDetail(d => ({ ...d, mal: { ...d.mal, jumlah_uang: e.target.value } }))} placeholder="0" /></div>}
-      </div>
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2"><Checkbox id="adm-infaq" checked={detail.infaq.enabled} onCheckedChange={v => setDetail(d => ({ ...d, infaq: { ...d.infaq, enabled: !!v } }))} /><Label htmlFor="adm-infaq" className="cursor-pointer font-medium">Infaq</Label></div>
-        {detail.infaq.enabled && <div className="ml-6"><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.infaq.jumlah_uang} onChange={e => setDetail(d => ({ ...d, infaq: { ...d.infaq, jumlah_uang: e.target.value } }))} placeholder="0" /></div>}
-      </div>
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2"><Checkbox id="adm-fidyah" checked={detail.fidyah.enabled} onCheckedChange={v => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, enabled: !!v } }))} /><Label htmlFor="adm-fidyah" className="cursor-pointer font-medium">Fidyah</Label></div>
-        {detail.fidyah.enabled && <div className="ml-6 grid grid-cols-2 gap-3"><div><Label>Jumlah Uang (Rp)</Label><Input type="number" value={detail.fidyah.jumlah_uang} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_uang: e.target.value } }))} placeholder="0" /></div><div><Label>Jumlah Beras (Kg)</Label><Input type="number" value={detail.fidyah.jumlah_beras} onChange={e => setDetail(d => ({ ...d, fidyah: { ...d.fidyah, jumlah_beras: e.target.value } }))} placeholder="0" /></div></div>}
-      </div>
-    </div>
   );
 
   return (
@@ -220,7 +162,7 @@ export default function DataZakat() {
                     </Select>
                   </div>
                 )}
-                <ZakatDetailFields />
+                <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="admin" />
                 <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
                 <Button onClick={handleSubmit} className="w-full">{editItem ? 'Simpan Perubahan' : 'Tambah Zakat'}</Button>
               </div>
