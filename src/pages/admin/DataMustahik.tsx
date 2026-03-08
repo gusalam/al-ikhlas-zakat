@@ -55,8 +55,16 @@ export default function DataMustahik() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="text-2xl font-serif font-bold">Data Mustahik</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportPdf({
+            title: 'Data Mustahik — Masjid Al-Ikhlas',
+            subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+            headers: ['No', 'Nama', 'RT', 'Kategori'],
+            rows: data.map((m, i) => [String(i + 1), m.nama, m.rt?.nama_rt || '-', m.kategori || '-']),
+            filename: 'Data_Mustahik_Al_Ikhlas.pdf',
+          })}><FileText className="w-4 h-4 mr-2" />Export PDF</Button>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { resetForm(); setEditItem(null); } }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>
