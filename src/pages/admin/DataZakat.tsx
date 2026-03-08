@@ -44,7 +44,7 @@ export default function DataZakat() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' }); setDetail(emptyDetail()); };
+  const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' }); setDetail(emptyDetail()); };
 
   const buildDetails = (): DetailZakatItem[] => {
     const items: DetailZakatItem[] = [];
