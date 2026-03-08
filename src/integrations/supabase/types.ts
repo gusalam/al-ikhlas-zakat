@@ -172,6 +172,7 @@ export type Database = {
       }
       transaksi_zakat: {
         Row: {
+          alamat_muzakki: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -182,6 +183,7 @@ export type Database = {
           tanggal: string
         }
         Insert: {
+          alamat_muzakki?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -192,6 +194,7 @@ export type Database = {
           tanggal?: string
         }
         Update: {
+          alamat_muzakki?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
