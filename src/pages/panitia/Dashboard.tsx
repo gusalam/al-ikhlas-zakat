@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Wheat } from 'lucide-react';
+import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
 
 export default function PanitiaDashboard() {
@@ -26,10 +26,10 @@ export default function PanitiaDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Panitia</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote },
+          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote },
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users },

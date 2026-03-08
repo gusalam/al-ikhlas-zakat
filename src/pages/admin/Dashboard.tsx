@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Wheat, TrendingUp, Truck } from 'lucide-react';
+import { Banknote, Users, Wheat, TrendingUp, Truck } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { friendlyError } from '@/lib/errorHandler';
@@ -65,10 +65,10 @@ export default function AdminDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-emerald-600' },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-blue-600' },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-amber-600' },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-purple-600' },
+          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-purple-600' },
           
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><DollarSign className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentZakat.map((z: any, i: number) => (

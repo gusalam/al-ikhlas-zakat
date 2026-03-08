@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { DollarSign, Users, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
+import { Banknote, Users, Wheat, TrendingUp, CalendarDays } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { usePagination } from '@/hooks/usePagination';
@@ -88,10 +88,10 @@ export default function Index() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: DollarSign, color: 'text-primary' },
-            { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: DollarSign, color: 'text-secondary' },
-            { label: 'Infaq', value: fmt(stats.totalInfaq), icon: DollarSign, color: 'text-primary' },
-            { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: DollarSign, color: 'text-secondary' },
+            { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-primary' },
+            { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-secondary' },
+            { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-primary' },
+            { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-secondary' },
             { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
             { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-secondary' },
             { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
