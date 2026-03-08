@@ -55,8 +55,10 @@ export default function InputZakat() {
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
+    let query = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
+    if (debouncedListSearch.trim()) query = query.ilike('nama_muzakki', `%${debouncedListSearch.trim()}%`);
     const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
-      supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
+      query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
     ]);
     setData(transaksi || []);
