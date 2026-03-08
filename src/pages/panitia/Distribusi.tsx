@@ -248,7 +248,7 @@ export default function PanitiaDistribusi() {
             <TableBody>
               {data.map(d => (
                 <TableRow key={d.id}>
-                  <TableCell>{d.mustahik?.nama || '-'}</TableCell>
+                  <TableCell>{d.mustahik?.nama || '-'}{d.mustahik?.alamat ? <span className="block text-xs text-muted-foreground">{d.mustahik.alamat}</span> : ''}</TableCell>
                   <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
                   <TableCell><Badge variant="outline">{d.sumber_zakat || '-'}</Badge></TableCell>
                   <TableCell><Badge variant="secondary">{d.jenis_bantuan || 'Uang'}</Badge></TableCell>
