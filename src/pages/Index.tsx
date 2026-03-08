@@ -151,14 +151,20 @@ export default function Index() {
               <TableBody>
                 {zakatData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : zakatData.map((z: any) => (
-                  <TableRow key={z.id}>
-                    <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
-                    <TableCell>{z.jenis_zakat}</TableCell>
-                    <TableCell>{fmt(Number(z.jumlah_uang))}{Number(z.jumlah_beras) > 0 ? ` + ${z.jumlah_beras} Kg` : ''}</TableCell>
-                    <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
-                  </TableRow>
-                ))}
+                ) : zakatData.map((z: any) => {
+                  const details = z.detail_zakat || [];
+                  const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
+                  const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
+                  const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
+                  return (
+                    <TableRow key={z.id}>
+                      <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
+                      <TableCell>{jenisList || '-'}</TableCell>
+                      <TableCell>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</TableCell>
+                      <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
