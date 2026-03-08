@@ -38,6 +38,10 @@ function getAvailableFund(stats: any, sumber: string): number {
   return map[sumber] || 0;
 }
 
+function getAvailableBeras(stats: any): number {
+  return stats.totalBeras || 0;
+}
+
 export default function Distribusi() {
   const { user } = useAuth();
   const [data, setData] = useState<any[]>([]);
