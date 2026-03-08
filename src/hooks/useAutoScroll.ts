@@ -1,59 +1,46 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface UseAutoScrollOptions {
+interface UseRunningListOptions {
   totalItems: number;
-  visibleItems?: number;
   intervalMs?: number;
   isPaused?: boolean;
 }
 
+/**
+ * Running list hook: advances by 1 row at a time, looping back to 0.
+ * Returns current offset index for CSS translateY.
+ */
 export function useAutoScroll({
   totalItems,
-  visibleItems = 10,
   intervalMs = 3000,
   isPaused = false,
-}: UseAutoScrollOptions) {
-  const [scrollIndex, setScrollIndex] = useState(0);
+}: UseRunningListOptions) {
+  const [offset, setOffset] = useState(0);
   const [isUserPaused, setIsUserPaused] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const maxIndex = Math.max(0, totalItems - visibleItems);
   const paused = isPaused || isUserPaused;
 
-  // Reset scroll when items change significantly
+  // Reset when data changes
   useEffect(() => {
-    setScrollIndex(0);
+    setOffset(0);
   }, [totalItems]);
 
   useEffect(() => {
-    if (paused || totalItems <= visibleItems) {
+    if (paused || totalItems <= 0) {
       clearInterval(intervalRef.current);
       return;
     }
 
     intervalRef.current = setInterval(() => {
-      setScrollIndex((prev) => {
-        if (prev >= maxIndex) return 0; // loop
-        return prev + 1;
-      });
+      setOffset((prev) => (prev + 1) % totalItems);
     }, intervalMs);
 
     return () => clearInterval(intervalRef.current);
-  }, [paused, totalItems, visibleItems, intervalMs, maxIndex]);
+  }, [paused, totalItems, intervalMs]);
 
   const pause = useCallback(() => setIsUserPaused(true), []);
   const resume = useCallback(() => setIsUserPaused(false), []);
 
-  const visibleData = <T,>(data: T[]): T[] => {
-    return data.slice(scrollIndex, scrollIndex + visibleItems);
-  };
-
-  return {
-    scrollIndex,
-    isUserPaused,
-    pause,
-    resume,
-    visibleData,
-    isScrolling: !paused && totalItems > visibleItems,
-  };
+  return { offset, pause, resume, isPaused: paused };
 }
