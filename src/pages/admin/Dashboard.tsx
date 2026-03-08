@@ -59,12 +59,15 @@ export default function AdminDashboard() {
       setDistribusiData(d);
       setRtData(r);
 
+      const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0);
+      const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
       setStats({
-        totalZakat: z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0),
+        totalZakat,
         totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
         totalMustahik: m.length,
-        totalDistribusi: d.reduce((s, item) => s + Number(item.jumlah), 0),
+        totalDistribusi,
         totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras || 0), 0),
+        saldoZakat: totalZakat - totalDistribusi,
       });
     };
     fetchData();
