@@ -133,7 +133,7 @@ export default function InputZakat() {
       if (detailError) { toast.error(friendlyError(detailError)); return; }
 
       toast.success(`Zakat ${form.nama_muzakki} berhasil disimpan`);
-      setKwitansiData({ nomor: inserted.nomor_kwitansi, nama_muzakki: form.nama_muzakki, details: items, tanggal: form.tanggal, penerima: form.penerima || form.nama_muzakki });
+      setKwitansiData({ nomor: inserted.nomor_kwitansi, nama_muzakki: form.nama_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || undefined, details: items, tanggal: form.tanggal, penerima: form.penerima || form.nama_muzakki });
       setKwitansiOpen(true);
       resetForm();
       setShowForm(false);
