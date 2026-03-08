@@ -1,17 +1,17 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
-import { Banknote, Users, Wheat, TrendingUp, CalendarDays, Search } from 'lucide-react';
+import { Banknote, Users, Wheat, CalendarDays, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
-import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)', 'hsl(0, 72%, 51%)'];
+const PAGE_SIZE = 20;
 
 export default function Index() {
   const { stats, fetchStats } = useZakatStats();
@@ -20,69 +20,150 @@ export default function Index() {
   const [rtChartData, setRtChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  // Search state
   const [zakatSearch, setZakatSearch] = useState('');
   const [distSearch, setDistSearch] = useState('');
-  const [debouncedZakatSearch, setDebouncedZakatSearch] = useState('');
-  const [debouncedDistSearch, setDebouncedDistSearch] = useState('');
-  const zakatPag = usePagination(50);
-  const distPag = usePagination(50);
 
-  // Debounce search inputs
+  // Pagination state (0-indexed)
+  const [zakatPage, setZakatPage] = useState(0);
+  const [zakatTotal, setZakatTotal] = useState(0);
+  const [distPage, setDistPage] = useState(0);
+  const [distTotal, setDistTotal] = useState(0);
+
+  const zakatTotalPages = Math.max(1, Math.ceil(zakatTotal / PAGE_SIZE));
+  const distTotalPages = Math.max(1, Math.ceil(distTotal / PAGE_SIZE));
+
+  // Refs for latest values (avoid stale closures in realtime callbacks)
+  const zakatSearchRef = useRef('');
+  const distSearchRef = useRef('');
+  const zakatPageRef = useRef(0);
+  const distPageRef = useRef(0);
+
+  // Sync refs
+  zakatSearchRef.current = zakatSearch;
+  distSearchRef.current = distSearch;
+  zakatPageRef.current = zakatPage;
+  distPageRef.current = distPage;
+
+  // Debounce timer refs
+  const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const distDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // ---- Fetch zakat data ----
+  const fetchZakat = useCallback(async (search: string, page: number) => {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    let query = supabase
+      .from('transaksi_zakat')
+      .select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' })
+      .order('tanggal', { ascending: false });
+
+    if (search.trim()) {
+      query = query.ilike('nama_muzakki', `%${search.trim()}%`);
+    }
+
+    const { data, count, error } = await query.range(from, to);
+    if (!error) {
+      setZakatData(data || []);
+      setZakatTotal(count || 0);
+    }
+  }, []);
+
+  // ---- Fetch distribusi data ----
+  const fetchDistribusi = useCallback(async (search: string, page: number) => {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    const { data, count, error } = await supabase
+      .from('distribusi')
+      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, rt(nama_rt))', { count: 'exact' })
+      .order('tanggal', { ascending: false })
+      .ilike('mustahik.nama', search.trim() ? `%${search.trim()}%` : '%')
+      .range(from, to);
+
+    if (!error) {
+      setDistribusiData(data || []);
+      setDistTotal(count || 0);
+    }
+  }, []);
+
+  // ---- Fetch chart data (only once, no search/pagination) ----
+  const fetchChartData = useCallback(async () => {
+    const { data } = await supabase.rpc('get_zakat_per_rt');
+    if (data && Array.isArray(data)) {
+      setRtChartData(data.map((r: any) => ({ name: r.nama_rt, value: Number(r.total_zakat) })));
+    }
+  }, []);
+
+  // ---- Initial load ----
   useEffect(() => {
-    const t = setTimeout(() => { setDebouncedZakatSearch(zakatSearch); zakatPag.reset(); }, 400);
-    return () => clearTimeout(t);
-  }, [zakatSearch]);
+    const init = async () => {
+      await Promise.all([
+        fetchStats(),
+        fetchZakat('', 0),
+        fetchDistribusi('', 0),
+        fetchChartData(),
+      ]);
+      setLastUpdated(new Date());
+      setLoading(false);
+    };
+    init();
+  }, []);
 
+  // ---- Realtime channels ----
   useEffect(() => {
-    const t = setTimeout(() => { setDebouncedDistSearch(distSearch); distPag.reset(); }, 400);
-    return () => clearTimeout(t);
-  }, [distSearch]);
+    const handleRealtimeUpdate = () => {
+      fetchStats();
+      fetchZakat(zakatSearchRef.current, zakatPageRef.current);
+      fetchDistribusi(distSearchRef.current, distPageRef.current);
+      fetchChartData();
+      setLastUpdated(new Date());
+    };
 
-  const fetchData = async () => {
-    await fetchStats();
+    const ch1 = supabase.channel('pub-zakat-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, handleRealtimeUpdate)
+      .subscribe();
+    const ch2 = supabase.channel('pub-dist-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, handleRealtimeUpdate)
+      .subscribe();
 
-    let zakatQuery = supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false });
-    if (debouncedZakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${debouncedZakatSearch.trim()}%`);
-    zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
+    return () => {
+      supabase.removeChannel(ch1);
+      supabase.removeChannel(ch2);
+    };
+  }, [fetchStats, fetchZakat, fetchDistribusi, fetchChartData]);
 
-    const distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to);
-
-    const [zRes, dRes, rtRes] = await Promise.all([
-      zakatQuery,
-      distQuery,
-      supabase.from('transaksi_zakat').select('rt(nama_rt), detail_zakat(jumlah_uang)'),
-    ]);
-
-    setZakatData(zRes.data || []);
-    zakatPag.setTotalCount(zRes.count || 0);
-
-    const distFiltered = debouncedDistSearch.trim()
-      ? (dRes.data || []).filter((d: any) => (d.mustahik?.nama || '').toLowerCase().includes(debouncedDistSearch.trim().toLowerCase()))
-      : (dRes.data || []);
-    setDistribusiData(distFiltered);
-    distPag.setTotalCount(debouncedDistSearch.trim() ? distFiltered.length : (dRes.count || 0));
-
-    const rtMap: Record<string, number> = {};
-    (rtRes.data || []).forEach((t: any) => {
-      const rtName = t.rt?.nama_rt || 'Tidak ada RT';
-      const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
-      rtMap[rtName] = (rtMap[rtName] || 0) + totalUang;
-    });
-    setRtChartData(Object.entries(rtMap).map(([name, value]) => ({ name, value })));
-
-    setLastUpdated(new Date());
-    setLoading(false);
+  // ---- Search handlers with debounce ----
+  const handleZakatSearch = (value: string) => {
+    setZakatSearch(value);
+    clearTimeout(zakatDebounceRef.current);
+    zakatDebounceRef.current = setTimeout(() => {
+      setZakatPage(0);
+      fetchZakat(value, 0);
+    }, 400);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [zakatPag.page, distPag.page, debouncedZakatSearch, debouncedDistSearch]);
+  const handleDistSearch = (value: string) => {
+    setDistSearch(value);
+    clearTimeout(distDebounceRef.current);
+    distDebounceRef.current = setTimeout(() => {
+      setDistPage(0);
+      fetchDistribusi(value, 0);
+    }, 400);
+  };
 
-  useEffect(() => {
-    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, fetchData).subscribe();
-    const ch2 = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
-    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, []);
+  // ---- Pagination handlers ----
+  const handleZakatPageChange = (newPage: number) => {
+    setZakatPage(newPage);
+    fetchZakat(zakatSearch, newPage);
+  };
+
+  const handleDistPageChange = (newPage: number) => {
+    setDistPage(newPage);
+    fetchDistribusi(distSearch, newPage);
+  };
 
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
@@ -172,12 +253,13 @@ export default function Index() {
           </Card>
         </div>
 
+        {/* Transparansi Zakat */}
         <Card>
           <CardHeader>
             <CardTitle className="font-serif text-xl">Transparansi Zakat</CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => setZakatSearch(e.target.value)} className="pl-9" />
+              <Input placeholder="Cari nama muzakki..." value={zakatSearch} onChange={(e) => handleZakatSearch(e.target.value)} className="pl-9" />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
@@ -202,16 +284,24 @@ export default function Index() {
                 })}
               </TableBody>
             </Table>
-            <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
+            <PaginationControls
+              page={zakatPage}
+              totalPages={zakatTotalPages}
+              totalCount={zakatTotal}
+              onNext={() => handleZakatPageChange(Math.min(zakatPage + 1, zakatTotalPages - 1))}
+              onPrev={() => handleZakatPageChange(Math.max(zakatPage - 1, 0))}
+              onGoTo={(p) => handleZakatPageChange(p)}
+            />
           </CardContent>
         </Card>
 
+        {/* Distribusi Zakat */}
         <Card>
           <CardHeader>
             <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => setDistSearch(e.target.value)} className="pl-9" />
+              <Input placeholder="Cari nama mustahik..." value={distSearch} onChange={(e) => handleDistSearch(e.target.value)} className="pl-9" />
             </div>
           </CardHeader>
           <CardContent className="overflow-auto">
@@ -231,7 +321,14 @@ export default function Index() {
                 ))}
               </TableBody>
             </Table>
-            <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
+            <PaginationControls
+              page={distPage}
+              totalPages={distTotalPages}
+              totalCount={distTotal}
+              onNext={() => handleDistPageChange(Math.min(distPage + 1, distTotalPages - 1))}
+              onPrev={() => handleDistPageChange(Math.max(distPage - 1, 0))}
+              onGoTo={(p) => handleDistPageChange(p)}
+            />
           </CardContent>
         </Card>
       </main>
