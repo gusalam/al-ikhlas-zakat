@@ -4,8 +4,9 @@ import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { exportPdf } from '@/lib/exportPdf';
 
 const COLORS = ['hsl(152, 55%, 28%)', 'hsl(42, 80%, 55%)', 'hsl(200, 70%, 50%)'];
 
@@ -64,13 +65,42 @@ export default function Laporan() {
     const a = document.createElement('a'); a.href = url; a.download = 'laporan_zakat.csv'; a.click();
   };
 
+  const exportPdfZakat = () => {
+    exportPdf({
+      title: 'Laporan Zakat — Masjid Al-Ikhlas',
+      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      headers: ['Nama Muzakki', 'Jenis', 'Jumlah Uang', 'Beras (Kg)', 'RT', 'Tanggal'],
+      rows: zakatData.map(z => [
+        z.nama_muzakki, z.jenis_zakat, fmt(Number(z.jumlah_uang)),
+        `${z.jumlah_beras || 0}`, z.rt?.nama_rt || '-',
+        new Date(z.tanggal).toLocaleDateString('id-ID'),
+      ]),
+      filename: 'Laporan_Zakat_Al_Ikhlas.pdf',
+    });
+  };
+
+  const exportPdfDistribusi = () => {
+    exportPdf({
+      title: 'Laporan Distribusi Zakat — Masjid Al-Ikhlas',
+      subtitle: `Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      headers: ['Nama Mustahik', 'RT', 'Jumlah', 'Tanggal'],
+      rows: distribusiData.map(d => [
+        d.mustahik?.nama || '-', d.mustahik?.rt?.nama_rt || '-',
+        fmt(Number(d.jumlah)), new Date(d.tanggal).toLocaleDateString('id-ID'),
+      ]),
+      filename: 'Laporan_Distribusi_Al_Ikhlas.pdf',
+    });
+  };
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-serif font-bold">Laporan</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
-          <Button onClick={exportExcel}><Download className="w-4 h-4 mr-2" />Excel</Button>
+          <Button variant="outline" onClick={exportExcel}><Download className="w-4 h-4 mr-2" />Excel</Button>
+          <Button variant="outline" onClick={exportPdfZakat}><FileText className="w-4 h-4 mr-2" />PDF Zakat</Button>
+          <Button onClick={exportPdfDistribusi}><FileText className="w-4 h-4 mr-2" />PDF Distribusi</Button>
         </div>
       </div>
       <div className="grid md:grid-cols-4 gap-4 mb-6">
