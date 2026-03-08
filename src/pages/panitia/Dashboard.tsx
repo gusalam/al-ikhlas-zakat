@@ -28,16 +28,16 @@ export default function PanitiaDashboard() {
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
-  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 8000);
-  const aTotalMal = useCountUp(stats.totalMal, 1500, 8000);
-  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 8000);
-  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 8000);
-  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 8000);
-  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 8000);
-  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 8000);
-  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 8000);
-  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 8000);
-  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 8000);
+  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 30000);
+  const aTotalMal = useCountUp(stats.totalMal, 1500, 30000);
+  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 30000);
+  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 30000);
+  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 30000);
+  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 30000);
+  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 30000);
+  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 30000);
+  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 30000);
+  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 30000);
 
   return (
     <PanitiaLayout>

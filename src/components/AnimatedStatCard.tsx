@@ -21,7 +21,7 @@ export default function AnimatedStatCard({
   isCurrency = false,
   icon: Icon,
   color = 'text-primary',
-  loopInterval = 8000,
+  loopInterval = 30000,
 }: AnimatedStatCardProps) {
   const animatedValue = useCountUp(value, 1500, loopInterval);
 
