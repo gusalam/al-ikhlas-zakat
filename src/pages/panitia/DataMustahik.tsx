@@ -172,6 +172,8 @@ export default function PanitiaMustahik() {
           </Select>
         </div>
       </div>
+
+      <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
             <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>RT</TableHead><TableHead>Kategori</TableHead><TableHead>Alamat</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
