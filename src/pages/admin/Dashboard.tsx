@@ -107,7 +107,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
         {[
           { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600' },
           { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600' },
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
         ].map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}><CardContent className="p-4"><div className="flex items-center gap-2 mb-2"><div className={`p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-5 h-5" /></div></div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-lg font-bold mt-1">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-3 sm:p-4"><div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2"><div className={`p-1.5 sm:p-2 rounded-lg bg-muted ${s.color}`}><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></div></div><p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p><p className="text-sm sm:text-lg font-bold mt-0.5 sm:mt-1 whitespace-nowrap" style={{ wordBreak: 'keep-all' }}>{s.value}</p></CardContent></Card>
           );
         })}
       </div>
