@@ -14,12 +14,15 @@ export default function PanitiaDashboard() {
         supabase.from('mustahik').select('id'),
         supabase.from('distribusi').select('jumlah'),
       ]);
+      const totalZakat = (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang), 0);
+      const totalDistribusi = (distribusi || []).reduce((s, d) => s + Number(d.jumlah), 0);
       setStats({
-        totalZakat: (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang), 0),
+        totalZakat,
         totalMuzakki: new Set((zakat || []).map(z => z.nama_muzakki)).size,
         totalMustahik: mustahik?.length || 0,
-        totalDistribusi: (distribusi || []).reduce((s, d) => s + Number(d.jumlah), 0),
+        totalDistribusi,
         totalBeras: (zakat || []).reduce((s, z) => s + Number(z.jumlah_beras), 0),
+        saldoZakat: totalZakat - totalDistribusi,
       });
     };
     fetch();
