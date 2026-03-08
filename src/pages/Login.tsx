@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { friendlyError } from '@/lib/errorHandler';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo-masjid.webp';
 import SplashScreen from '@/components/SplashScreen';
 
 const SPLASH_KEY = 'zakat-login-splash-shown';

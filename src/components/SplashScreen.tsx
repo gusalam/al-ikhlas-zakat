@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import logo from '@/assets/logo.png';
+import splashLogo from '@/assets/splash-logo.webp';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -12,7 +12,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onComplete, 500); // wait for exit animation
+      setTimeout(onComplete, 500);
     }, 2500);
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -28,9 +28,9 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           transition={{ duration: 0.4 }}
         >
           <motion.img
-            src={logo}
+            src={splashLogo}
             alt="Logo Masjid Al-Ikhlas"
-            className="w-20 h-20 rounded-full bg-primary-foreground/20 p-1 mb-6"
+            className="w-28 h-28 rounded-full bg-primary-foreground/20 p-1 mb-6"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -47,15 +47,23 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               delay: 0.3,
             }}
           >
-            Sistem Zakat Masjid Al-Ikhlas
+            Sistem Zakat
           </motion.h1>
           <motion.p
-            className="text-primary-foreground/70 text-sm mt-3"
+            className="text-primary-foreground/90 text-lg font-serif mt-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            Masjid Al-Ikhlas
+          </motion.p>
+          <motion.p
+            className="text-primary-foreground/60 text-sm mt-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
-            Transparansi Zakat Online
+            Kebon Baru
           </motion.p>
         </motion.div>
       )}

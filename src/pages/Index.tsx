@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Link } from 'react-router-dom';
 import { Banknote, Users, Wheat, CalendarDays } from 'lucide-react';
 import SearchInput from '@/components/SearchInput';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo-masjid.webp';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
 import SplashScreen from '@/components/SplashScreen';
