@@ -140,11 +140,11 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       }
       if (p.beras > 0) {
         doc.setFont('helvetica', 'normal');
-        doc.text(`Beras : ${p.beras} Liter`, 155, y);
+        doc.text(`Beras : ${p.beras} Kg`, 155, y);
       } else if (p.no === 1 || p.no === 4) {
         doc.setFont('helvetica', 'normal');
         doc.text('Beras :', 155, y);
-        doc.text('Liter', 185, y);
+        doc.text('Kg', 185, y);
       }
       y += 7;
     });
@@ -239,7 +239,7 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                           <td style={{ width: '30px', fontWeight: 'bold' }}>{p.uang > 0 ? 'Rp' : ''}</td>
                           <td style={{ width: '80px', fontWeight: 'bold' }}>{p.uang > 0 ? fmt(p.uang) : ''}</td>
                           <td style={{ width: '50px' }}>{(p.no === 1 || p.no === 4) ? 'Beras :' : ''}</td>
-                          <td>{(p.no === 1 || p.no === 4) ? (p.beras > 0 ? `${p.beras} Liter` : 'Liter') : ''}</td>
+                          <td>{(p.no === 1 || p.no === 4) ? (p.beras > 0 ? `${p.beras} Kg` : 'Kg') : ''}</td>
                         </tr>
                       ))}
                     </tbody>
