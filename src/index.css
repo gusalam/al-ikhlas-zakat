@@ -104,3 +104,17 @@
     font-family: 'Amiri', serif;
   }
 }
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(var(--ticker-distance));
+  }
+}
+
+.ticker-scroll {
+  animation: ticker-scroll linear infinite;
+  will-change: transform;
+}
