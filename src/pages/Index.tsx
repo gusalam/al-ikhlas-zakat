@@ -195,27 +195,27 @@ export default function Index() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Card>
-            <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
-            <CardContent className="p-2 sm:p-6">
+            <CardHeader className="p-4 sm:p-6 pb-3"><CardTitle className="font-serif text-xl sm:text-2xl">Grafik Jenis Zakat</CardTitle></CardHeader>
+            <CardContent className="p-4 sm:p-6">
               {pieData.length > 0 ? (
-                <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={250}>
+                <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={280}>
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" isAnimationActive animationBegin={0} animationDuration={1200} animationEasing="ease-out" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" isAnimationActive animationBegin={0} animationDuration={1200} animationEasing="ease-out" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                       {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
                     <Tooltip formatter={(v: number) => fmt(v)} /><Legend />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <p className="text-center text-muted-foreground py-12">Belum ada data zakat</p>}
+              ) : <p className="text-center text-muted-foreground text-base py-12">Belum ada data zakat</p>}
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Zakat per RT</CardTitle></CardHeader>
-            <CardContent className="p-2 sm:p-6">
+            <CardHeader className="p-4 sm:p-6 pb-3"><CardTitle className="font-serif text-xl sm:text-2xl">Zakat per RT</CardTitle></CardHeader>
+            <CardContent className="p-4 sm:p-6">
               {rtChartData.length > 0 ? (
-                <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={300}>
+                <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={320}>
                   <BarChart data={rtChartData}>
-                    <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
+                    <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={13} /><YAxis fontSize={13} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
                     <Tooltip formatter={(v: number) => fmt(v)} />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationBegin={0} animationDuration={1500} animationEasing="ease-out">
                       {rtChartData.map((_, index) => (
@@ -224,7 +224,7 @@ export default function Index() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              ) : <p className="text-center text-muted-foreground py-12">Belum ada data</p>}
+              ) : <p className="text-center text-muted-foreground text-base py-12">Belum ada data</p>}
             </CardContent>
           </Card>
         </div>
