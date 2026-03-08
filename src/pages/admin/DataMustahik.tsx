@@ -82,6 +82,7 @@ export default function DataMustahik() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       <Card>
         <CardContent className="overflow-auto p-0">

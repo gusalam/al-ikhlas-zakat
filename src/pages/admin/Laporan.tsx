@@ -96,9 +96,11 @@ export default function Laporan() {
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-serif font-bold">Laporan</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportCSV}><Download className="w-4 h-4 mr-2" />CSV</Button>
-          <Button onClick={exportExcel}><Download className="w-4 h-4 mr-2" />Excel</Button>
+          <Button variant="outline" onClick={exportExcel}><Download className="w-4 h-4 mr-2" />Excel</Button>
+          <Button variant="outline" onClick={exportPdfZakat}><FileText className="w-4 h-4 mr-2" />PDF Zakat</Button>
+          <Button onClick={exportPdfDistribusi}><FileText className="w-4 h-4 mr-2" />PDF Distribusi</Button>
         </div>
       </div>
       <div className="grid md:grid-cols-4 gap-4 mb-6">
