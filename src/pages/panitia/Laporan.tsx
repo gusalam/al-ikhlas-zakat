@@ -121,7 +121,7 @@ export default function PanitiaLaporan() {
       { Keterangan: 'Zakat Mal', Jumlah: stats.totalMal },
       { Keterangan: 'Infaq', Jumlah: stats.totalInfaq },
       { Keterangan: 'Fidyah', Jumlah: stats.totalFidyah },
-      { Keterangan: 'Total Terkumpul', Jumlah: stats.totalZakat },
+      
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summarySheet), 'Ringkasan');
@@ -138,7 +138,7 @@ export default function PanitiaLaporan() {
       rows: [
         ['Zakat Fitrah', fmt(stats.totalFitrah)], ['Zakat Mal', fmt(stats.totalMal)],
         ['Infaq', fmt(stats.totalInfaq)], ['Fidyah', fmt(stats.totalFidyah)],
-        ['Total Terkumpul', fmt(stats.totalZakat)],
+        
       ],
       filename: `Laporan_Keuangan_${filterLabel.replace(/\s/g, '_')}.pdf`,
     });
@@ -175,7 +175,7 @@ export default function PanitiaLaporan() {
           { label: 'Zakat Mal', value: fmt(stats.totalMal) },
           { label: 'Infaq', value: fmt(stats.totalInfaq) },
           { label: 'Fidyah', value: fmt(stats.totalFidyah) },
-          { label: 'Total Terkumpul', value: fmt(stats.totalZakat), highlight: true },
+          
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString() },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg` },
         ].map(s => (
