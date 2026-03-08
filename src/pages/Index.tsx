@@ -73,7 +73,7 @@ export default function Index() {
     // Fetch data with joins (no count overhead)
     let dataQuery = supabase
       .from('transaksi_zakat')
-      .select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
+      .select('id, nama_muzakki, alamat_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
       .order('tanggal', { ascending: false })
       .range(from, to);
 
@@ -295,7 +295,7 @@ export default function Index() {
                   const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
                   return (
                     <TableRow key={z.id}>
-                      <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
+                      <TableCell className="font-medium">{z.nama_muzakki}{z.alamat_muzakki ? <span className="block text-xs text-muted-foreground">{z.alamat_muzakki}</span> : ''}</TableCell>
                       <TableCell>{jenisList || '-'}</TableCell>
                       <TableCell>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</TableCell>
                       <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>

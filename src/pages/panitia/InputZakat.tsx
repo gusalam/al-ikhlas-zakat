@@ -28,7 +28,7 @@ interface MuzakkiSuggestion {
 
 const emptyForm = () => ({
   nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0],
-  penerima: '', alamat: '', status_muzakki: 'RT',
+  penerima: '', alamat: '', status_muzakki: 'RT', alamat_muzakki: '',
 });
 
 export default function InputZakat() {
@@ -124,6 +124,7 @@ export default function InputZakat() {
         nama_muzakki: form.nama_muzakki.trim(),
         rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
         tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki,
+        alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).select('id, nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
 
@@ -132,7 +133,7 @@ export default function InputZakat() {
       if (detailError) { toast.error(friendlyError(detailError)); return; }
 
       toast.success(`Zakat ${form.nama_muzakki} berhasil disimpan`);
-      setKwitansiData({ nomor: inserted.nomor_kwitansi, nama_muzakki: form.nama_muzakki, details: items, tanggal: form.tanggal, penerima: form.penerima || form.nama_muzakki });
+      setKwitansiData({ nomor: inserted.nomor_kwitansi, nama_muzakki: form.nama_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || undefined, details: items, tanggal: form.tanggal, penerima: form.penerima || form.nama_muzakki });
       setKwitansiOpen(true);
       resetForm();
       setShowForm(false);
@@ -143,7 +144,7 @@ export default function InputZakat() {
   const openEdit = (item: any) => {
     setEditItem(item);
     const details = item.detail_zakat || [];
-    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, penerima: '', alamat: '', status_muzakki: item.status_muzakki || 'RT' });
+    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, penerima: '', alamat: '', status_muzakki: item.status_muzakki || 'RT', alamat_muzakki: item.alamat_muzakki || '' });
     const d = emptyDetail();
     details.forEach((det: any) => {
       if (det.jenis_zakat === 'Zakat Fitrah') { d.fitrah = { enabled: true, jumlah_jiwa: String(det.jumlah_jiwa || 1), harga_beras: '15000', jumlah_uang: String(det.jumlah_uang || 0), jumlah_beras: String(det.jumlah_beras || 0) }; }
@@ -164,6 +165,7 @@ export default function InputZakat() {
       nama_muzakki: form.nama_muzakki.trim(),
       rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
       tanggal: form.tanggal, status_muzakki: form.status_muzakki,
+      alamat_muzakki: form.alamat_muzakki.trim() || null,
     }).eq('id', editItem.id);
     if (error) { toast.error(friendlyError(error)); return; }
 
@@ -184,7 +186,7 @@ export default function InputZakat() {
   };
 
   const toKwitansiData = (t: any): KwitansiData => ({
-    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki,
+    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki, alamat_muzakki: t.alamat_muzakki || undefined,
     details: (t.detail_zakat || []).map((d: any) => ({ jenis_zakat: d.jenis_zakat, jumlah_uang: Number(d.jumlah_uang) || 0, jumlah_beras: Number(d.jumlah_beras) || 0, jumlah_jiwa: Number(d.jumlah_jiwa) || 0 })),
     tanggal: t.tanggal, penerima: t.nama_muzakki,
   });
@@ -262,6 +264,8 @@ export default function InputZakat() {
               </div>
             )}
 
+            <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
+
             <ZakatDetailFields detail={detail} onChange={handleDetailChange} idPrefix="panitia" />
 
             <div><Label>Tanggal Transaksi</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} /></div>
@@ -314,6 +318,7 @@ export default function InputZakat() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-base">#{t.nomor_kwitansi} — {t.nama_muzakki}</p>
+                  {t.alamat_muzakki && <p className="text-xs text-muted-foreground">{t.alamat_muzakki}</p>}
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {(t.detail_zakat || []).map((d: any, i: number) => (
                       <span key={i} className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{d.jenis_zakat}</span>
@@ -345,6 +350,7 @@ export default function InputZakat() {
           <DialogHeader><DialogTitle>Edit Data Zakat</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+            <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
             <div>
               <Label>Status Muzakki</Label>
               <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>

@@ -17,6 +17,7 @@ export interface DetailZakatItem {
 export interface KwitansiData {
   nomor: number;
   nama_muzakki: string;
+  alamat_muzakki?: string;
   details: DetailZakatItem[];
   tanggal: string;
   penerima: string;
@@ -104,6 +105,11 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       y += 10;
       doc.setFont('helvetica', 'normal'); doc.text('Nama Muzakki', labelX, y); doc.text(':', colonX, y);
       doc.setFont('helvetica', 'bold'); doc.text(data.nama_muzakki, valX, y);
+      if (data.alamat_muzakki) {
+        y += 6;
+        doc.setFont('helvetica', 'normal'); doc.text('Alamat', labelX, y); doc.text(':', colonX, y);
+        doc.setFont('helvetica', 'normal'); doc.text(data.alamat_muzakki, valX, y);
+      }
       if (totalJiwa > 0) {
         doc.setFont('helvetica', 'normal'); doc.text('Jumlah Jiwa', 145, y); doc.text(':', 175, y);
         doc.setFont('helvetica', 'bold'); doc.text(`${totalJiwa} Orang`, 180, y);
@@ -183,6 +189,9 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                     <tr><td style={{ padding: '3px 0' }}>Nama Muzakki</td><td>:</td><td><strong>{data.nama_muzakki}</strong></td>
                       {totalJiwa > 0 && <td style={{ textAlign: 'right' }}>Jumlah Jiwa : <strong style={{ border: '1px solid #ccc', padding: '1px 8px' }}>{totalJiwa}</strong> Orang</td>}
                     </tr>
+                    {data.alamat_muzakki && (
+                      <tr><td style={{ padding: '3px 0' }}>Alamat</td><td>:</td><td colSpan={2}>{data.alamat_muzakki}</td></tr>
+                    )}
                   </tbody>
                 </table>
                 <div style={{ marginTop: '10px' }}>

@@ -57,8 +57,8 @@ export default function PanitiaDistribusi() {
 
   const fetchData = async () => {
     const [{ data: dist, count }, { data: m }] = await Promise.all([
-      supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
-      supabase.from('mustahik').select('id, nama'),
+      supabase.from('distribusi').select('*, mustahik(nama, alamat, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(pag.from, pag.to),
+      supabase.from('mustahik').select('id, nama, alamat'),
     ]);
     setData(dist || []);
     pag.setTotalCount(count || 0);
@@ -189,7 +189,7 @@ export default function PanitiaDistribusi() {
               <div><Label>Mustahik <span className="text-destructive">*</span></Label>
                 <Select value={form.mustahik_id} onValueChange={v => setForm({ ...form, mustahik_id: v })}>
                   <SelectTrigger><SelectValue placeholder="Pilih Mustahik" /></SelectTrigger>
-                  <SelectContent>{mustahikList.map(m => <SelectItem key={m.id} value={m.id}>{m.nama}</SelectItem>)}</SelectContent>
+                  <SelectContent>{mustahikList.map(m => <SelectItem key={m.id} value={m.id}>{m.nama}{m.alamat ? ` — ${m.alamat}` : ''}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>Sumber Zakat <span className="text-destructive">*</span></Label>
@@ -248,7 +248,7 @@ export default function PanitiaDistribusi() {
             <TableBody>
               {data.map(d => (
                 <TableRow key={d.id}>
-                  <TableCell>{d.mustahik?.nama || '-'}</TableCell>
+                  <TableCell>{d.mustahik?.nama || '-'}{d.mustahik?.alamat ? <span className="block text-xs text-muted-foreground">{d.mustahik.alamat}</span> : ''}</TableCell>
                   <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
                   <TableCell><Badge variant="outline">{d.sumber_zakat || '-'}</Badge></TableCell>
                   <TableCell><Badge variant="secondary">{d.jenis_bantuan || 'Uang'}</Badge></TableCell>
@@ -276,7 +276,7 @@ export default function PanitiaDistribusi() {
           <Card key={d.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div><p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p><p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p></div>
+                <div><p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p>{d.mustahik?.alamat && <p className="text-xs text-muted-foreground">{d.mustahik.alamat}</p>}<p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p></div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(d)}><Pencil className="w-4 h-4" /></Button>
                   <DeleteButton id={d.id} />

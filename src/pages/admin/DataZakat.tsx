@@ -26,7 +26,7 @@ export default function DataZakat() {
   const [rtList, setRtList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  const [form, setForm] = useState({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' });
+  const [form, setForm] = useState({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' });
   const [detail, setDetail] = useState<DetailForm>(emptyDetail());
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
@@ -44,7 +44,7 @@ export default function DataZakat() {
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
-  const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT' }); setDetail(emptyDetail()); };
+  const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' }); setDetail(emptyDetail()); };
 
   const buildDetails = (): DetailZakatItem[] => {
     const items: DetailZakatItem[] = [];
@@ -63,7 +63,7 @@ export default function DataZakat() {
     if (editItem) {
       const { error } = await supabase.from('transaksi_zakat').update({
         nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
-        tanggal: form.tanggal, status_muzakki: form.status_muzakki,
+        tanggal: form.tanggal, status_muzakki: form.status_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
       await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
@@ -72,7 +72,7 @@ export default function DataZakat() {
     } else {
       const { data: inserted, error } = await supabase.from('transaksi_zakat').insert({
         nama_muzakki: form.nama_muzakki.trim(), rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
-        tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki,
+        tanggal: form.tanggal, created_by: user?.id, status_muzakki: form.status_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).select('id, nomor_kwitansi').single();
       if (error) { toast.error(friendlyError(error)); return; }
       await supabase.from('detail_zakat').insert(items.map(d => ({ transaksi_id: inserted.id, ...d })));
@@ -89,7 +89,7 @@ export default function DataZakat() {
 
   const openEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, status_muzakki: item.status_muzakki || 'RT' });
+    setForm({ nama_muzakki: item.nama_muzakki, rt_id: item.rt_id || '', tanggal: item.tanggal, status_muzakki: item.status_muzakki || 'RT', alamat_muzakki: item.alamat_muzakki || '' });
     const d = emptyDetail();
     (item.detail_zakat || []).forEach((det: any) => {
       if (det.jenis_zakat === 'Zakat Fitrah') d.fitrah = { enabled: true, jumlah_jiwa: String(det.jumlah_jiwa || 1), harga_beras: '15000', jumlah_uang: String(det.jumlah_uang || 0), jumlah_beras: String(det.jumlah_beras || 0) };
@@ -102,7 +102,7 @@ export default function DataZakat() {
   };
 
   const toKwitansiData = (t: any): KwitansiData => ({
-    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki,
+    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki, alamat_muzakki: t.alamat_muzakki || undefined,
     details: (t.detail_zakat || []).map((d: any) => ({ jenis_zakat: d.jenis_zakat, jumlah_uang: Number(d.jumlah_uang) || 0, jumlah_beras: Number(d.jumlah_beras) || 0, jumlah_jiwa: Number(d.jumlah_jiwa) || 0 })),
     tanggal: t.tanggal, penerima: t.nama_muzakki,
   });
@@ -147,6 +147,7 @@ export default function DataZakat() {
               <DialogHeader><DialogTitle>{editItem ? 'Edit' : 'Tambah'} Data Zakat</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} /></div>
+                <div><Label>Alamat Muzakki</Label><Input value={form.alamat_muzakki} onChange={e => setForm({ ...form, alamat_muzakki: e.target.value })} placeholder="Alamat muzakki (opsional)" /></div>
                 <div>
                   <Label>Status Muzakki</Label>
                   <Select value={form.status_muzakki} onValueChange={v => setForm({ ...form, status_muzakki: v, rt_id: v === 'Jamaah' ? '' : form.rt_id })}>
@@ -174,11 +175,12 @@ export default function DataZakat() {
       <Card className="hidden md:block">
         <CardContent className="overflow-auto p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Total Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Alamat</TableHead><TableHead>Status</TableHead><TableHead>Jenis</TableHead><TableHead>Total Uang</TableHead><TableHead>Beras</TableHead><TableHead>RT</TableHead><TableHead>Tanggal</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {data.map(t => (
                 <TableRow key={t.id}>
                   <TableCell>{t.nomor_kwitansi}</TableCell><TableCell>{t.nama_muzakki}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{t.alamat_muzakki || '-'}</TableCell>
                   <TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{t.status_muzakki || 'RT'}</span></TableCell>
                   <TableCell>{getJenisLabels(t)}</TableCell><TableCell>{fmt(getTotalUang(t))}</TableCell><TableCell>{getTotalBeras(t)} Kg</TableCell><TableCell>{t.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(t.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
@@ -205,6 +207,7 @@ export default function DataZakat() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-base">#{t.nomor_kwitansi} — {t.nama_muzakki}</p>
+                  {t.alamat_muzakki && <p className="text-xs text-muted-foreground">{t.alamat_muzakki}</p>}
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {(t.detail_zakat || []).map((d: any, i: number) => <span key={i} className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{d.jenis_zakat}</span>)}
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>{t.status_muzakki || 'RT'}</span>
