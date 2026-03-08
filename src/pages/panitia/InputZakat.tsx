@@ -325,10 +325,7 @@ export default function InputZakat() {
         <div className="flex items-center justify-between gap-2 mb-2">
           <h2 className="font-serif font-semibold text-base">Riwayat Zakat</h2>
         </div>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama muzakki..." value={listSearch} onChange={e => { setListSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
-        </div>
+        <SearchInput placeholder="Cari nama muzakki..." value={listSearch} onChange={v => { setListSearch(v); pag.goTo(1); }} />
         {data.length === 0 && <p className="text-center text-muted-foreground py-8">Belum ada data zakat</p>}
         {data.map(t => (
           <Card key={t.id}>
