@@ -186,7 +186,7 @@ export default function InputZakat() {
   };
 
   const toKwitansiData = (t: any): KwitansiData => ({
-    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki,
+    nomor: t.nomor_kwitansi || 0, nama_muzakki: t.nama_muzakki, alamat_muzakki: t.alamat_muzakki || undefined,
     details: (t.detail_zakat || []).map((d: any) => ({ jenis_zakat: d.jenis_zakat, jumlah_uang: Number(d.jumlah_uang) || 0, jumlah_beras: Number(d.jumlah_beras) || 0, jumlah_jiwa: Number(d.jumlah_jiwa) || 0 })),
     tanggal: t.tanggal, penerima: t.nama_muzakki,
   });
