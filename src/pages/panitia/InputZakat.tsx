@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, FileText, Search } from 'lucide-react';
+import { Plus, FileText, Search, Eye, Download } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
+import { downloadKwitansiPdf } from '@/lib/downloadKwitansi';
 
 interface MuzakkiSuggestion {
   nama_muzakki: string;
@@ -140,9 +141,19 @@ export default function InputZakat() {
     }
   };
 
+  const toKwitansiData = (z: any) => ({
+    nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1,
+    jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0,
+    tanggal: z.tanggal, penerima: z.nama_muzakki,
+  });
+
   const showKwitansi = (z: any) => {
-    setKwitansiData({ nomor: z.nomor_kwitansi || 0, nama_muzakki: z.nama_muzakki, jumlah_jiwa: z.jumlah_jiwa || 1, jenis_zakat: z.jenis_zakat, jumlah_uang: Number(z.jumlah_uang) || 0, jumlah_beras: Number(z.jumlah_beras) || 0, tanggal: z.tanggal, penerima: z.nama_muzakki });
+    setKwitansiData(toKwitansiData(z));
     setKwitansiOpen(true);
+  };
+
+  const handleDownloadKwitansi = (z: any) => {
+    downloadKwitansiPdf(toKwitansiData(z));
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -273,7 +284,12 @@ export default function InputZakat() {
               {data.map(z => (
                 <TableRow key={z.id}>
                   <TableCell>{z.nomor_kwitansi}</TableCell><TableCell>{z.nama_muzakki}</TableCell><TableCell>{z.jenis_zakat}</TableCell><TableCell>{fmt(Number(z.jumlah_uang))}</TableCell><TableCell>{z.jumlah_beras} Kg</TableCell><TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
-                  <TableCell><Button size="sm" variant="outline" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4 mr-1" />Kwitansi</Button></TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => showKwitansi(z)} title="Lihat Kwitansi"><Eye className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDownloadKwitansi(z)} title="Download Kwitansi"><Download className="w-4 h-4" /></Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -291,7 +307,10 @@ export default function InputZakat() {
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
                 <div><p className="font-semibold text-base">#{z.nomor_kwitansi} — {z.nama_muzakki}</p><span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1">{z.jenis_zakat}</span></div>
-                <Button size="sm" variant="outline" onClick={() => showKwitansi(z)}><FileText className="w-4 h-4" /></Button>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => showKwitansi(z)} title="Lihat"><Eye className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadKwitansi(z)} title="Download"><Download className="w-4 h-4" /></Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Uang:</span> <span className="font-medium">{fmt(Number(z.jumlah_uang))}</span></div>
