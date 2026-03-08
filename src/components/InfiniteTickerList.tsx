@@ -19,30 +19,50 @@ export default function InfiniteTickerList({
   const [isHovered, setIsHovered] = useState(false);
   const [heights, setHeights] = useState<{ total: number; visible: number } | null>(null);
 
-  // Measure after mount and data changes
-  useEffect(() => {
+  const measure = useCallback(() => {
     const el = firstCopyRef.current;
-    if (!el) return;
+    if (!el) return false;
+    const children = el.children;
+    if (children.length === 0) return false;
+    let total = 0;
+    let visible = 0;
+    for (let i = 0; i < children.length; i++) {
+      const h = (children[i] as HTMLElement).offsetHeight;
+      total += h;
+      if (i < visibleCount) visible += h;
+    }
+    if (total > 0 && visible > 0) {
+      setHeights(prev => {
+        if (prev && prev.total === total && prev.visible === visible) return prev;
+        return { total, visible };
+      });
+      return true;
+    }
+    return false;
+  }, [visibleCount]);
 
-    const doMeasure = () => {
-      const children = el.children;
-      if (children.length === 0) return;
-      let total = 0;
-      let visible = 0;
-      for (let i = 0; i < children.length; i++) {
-        const h = (children[i] as HTMLElement).offsetHeight;
-        total += h;
-        if (i < visibleCount) visible += h;
-      }
-      if (total > 0 && visible > 0) {
-        setHeights({ total, visible });
-      }
+  // Reset heights when data changes, then re-measure
+  useEffect(() => {
+    setHeights(null);
+  }, [data.length]);
+
+  // Poll for measurement until successful
+  useEffect(() => {
+    if (heights !== null) return;
+    if (data.length <= visibleCount) return;
+
+    let attempts = 0;
+    const maxAttempts = 20;
+    
+    const tryMeasure = () => {
+      attempts++;
+      if (measure() || attempts >= maxAttempts) return;
+      timerId = setTimeout(tryMeasure, 100);
     };
-
-    // Use setTimeout to ensure layout is settled
-    const t = setTimeout(doMeasure, 100);
-    return () => clearTimeout(t);
-  }, [data, visibleCount]);
+    
+    let timerId = setTimeout(tryMeasure, 50);
+    return () => clearTimeout(timerId);
+  }, [heights, data.length, visibleCount, measure]);
 
   const paused = isPaused || isHovered;
   const duration = data.length * durationPerItem;
@@ -90,13 +110,11 @@ export default function InfiniteTickerList({
           '--ticker-distance': `-${heights.total}px`,
         } as React.CSSProperties : undefined}
       >
-        {/* First copy - always rendered for measurement */}
         <div ref={firstCopyRef}>
           {data.map((item, i) => (
             <div key={`a-${i}`}>{renderRow(item, i)}</div>
           ))}
         </div>
-        {/* Second copy for seamless loop - only after measurement */}
         {isReady && (
           <div aria-hidden="true">
             {data.map((item, i) => (
