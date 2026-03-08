@@ -22,6 +22,7 @@ import PanitiaDashboard from "./pages/panitia/Dashboard";
 import InputZakat from "./pages/panitia/InputZakat";
 import PanitiaMustahik from "./pages/panitia/DataMustahik";
 import PanitiaDistribusi from "./pages/panitia/Distribusi";
+import PanitiaLaporan from "./pages/panitia/Laporan";
 
 const queryClient = new QueryClient();
 
