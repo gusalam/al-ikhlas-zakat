@@ -9,8 +9,12 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { friendlyError } from '@/lib/errorHandler';
 import logo from '@/assets/logo.png';
+import SplashScreen from '@/components/SplashScreen';
+
+const SPLASH_KEY = 'zakat-login-splash-shown';
 
 export default function Login() {
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -18,6 +22,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { signIn } = useAuth();
+
+  if (showSplash) return <SplashScreen onComplete={() => { sessionStorage.setItem(SPLASH_KEY, '1'); setShowSplash(false); }} />;
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div>;
 
