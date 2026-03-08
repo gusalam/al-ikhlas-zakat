@@ -113,9 +113,16 @@ export default function Laporan() {
           { label: 'Zakat Mal', value: fmt(totalMal) },
           { label: 'Infaq', value: fmt(totalInfaq) },
           { label: 'Fidyah', value: fmt(totalFidyah) },
+          { label: 'Total Pemasukan', value: fmt(totalPemasukan), highlight: true },
           { label: 'Total Distribusi', value: fmt(totalDistribusi) },
+          { label: 'Saldo Zakat', value: fmt(saldoZakat), highlight: true, isSaldo: true },
         ].map(s => (
-          <Card key={s.label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>
+          <Card key={s.label} className={s.highlight ? 'border-primary/30 bg-primary/5' : ''}>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">{s.label}</p>
+              <p className={`text-xl font-bold ${s.isSaldo ? (saldoZakat >= 0 ? 'text-emerald-600' : 'text-destructive') : ''}`}>{s.value}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
       <div className="grid md:grid-cols-2 gap-6">

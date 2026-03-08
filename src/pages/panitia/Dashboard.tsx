@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, Users, Truck, Wheat, Wallet } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function PanitiaDashboard() {
   const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0, totalFitrah: 0, totalMal: 0, totalInfaq: 0, totalFidyah: 0 });
