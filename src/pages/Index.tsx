@@ -222,27 +222,19 @@ export default function Index() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-primary' },
-            { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-secondary' },
-            { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-primary' },
-            { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-secondary' },
-            { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
-            { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-secondary' },
-            { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-primary' },
-            { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat, color: 'text-primary' },
-            { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat, color: 'text-secondary' },
-            { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-primary' },
-          ].map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.label} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2"><Icon className={`w-5 h-5 ${stat.color}`} /><span className="text-sm text-muted-foreground">{stat.label}</span></div>
-                  <p className="text-lg md:text-xl font-bold">{stat.value}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+            { label: 'Zakat Fitrah', value: stats.totalFitrah, icon: Banknote, color: 'text-primary', isCurrency: true },
+            { label: 'Zakat Mal', value: stats.totalMal, icon: Banknote, color: 'text-secondary', isCurrency: true },
+            { label: 'Infaq', value: stats.totalInfaq, icon: Banknote, color: 'text-primary', isCurrency: true },
+            { label: 'Fidyah', value: stats.totalFidyah, icon: Banknote, color: 'text-secondary', isCurrency: true },
+            { label: 'Total Muzakki', value: stats.totalMuzakki, icon: Users, color: 'text-primary' },
+            { label: 'Total Mustahik', value: stats.totalMustahik, icon: Users, color: 'text-secondary', suffix: ' Orang' },
+            { label: 'Jiwa Fitrah', value: stats.totalJiwaFitrah, icon: Users, color: 'text-primary', suffix: ' Orang' },
+            { label: 'Beras Fitrah', value: stats.totalBerasFitrah, icon: Wheat, color: 'text-primary', suffix: ' Kg' },
+            { label: 'Beras Fidyah', value: stats.totalBerasFidyah, icon: Wheat, color: 'text-secondary', suffix: ' Kg' },
+            { label: 'Total Beras', value: stats.totalBeras, icon: Wheat, color: 'text-primary', suffix: ' Kg' },
+          ].map((stat) => (
+            <AnimatedStatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} color={stat.color} isCurrency={stat.isCurrency} suffix={stat.suffix} />
+          ))}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
