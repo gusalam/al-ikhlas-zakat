@@ -61,10 +61,10 @@ export default function Index() {
 
   useEffect(() => {
     fetchData();
-    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'zakat' }, fetchData).subscribe();
+    const ch1 = supabase.channel('zakat-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'transaksi_zakat' }, fetchData).subscribe();
     const ch2 = supabase.channel('distribusi-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'distribusi' }, fetchData).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [zakatPag.page, distPag.page]);
+  }, [zakatPag.page, distPag.page, zakatSearch, distSearch]);
 
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
