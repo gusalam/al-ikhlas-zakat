@@ -183,6 +183,9 @@ export default function Index() {
     fetchDistribusi(distSearch, newPage);
   };
 
+  const pieKey = useAnimationLoop(6000);
+  const barKey = useAnimationLoop(5000);
+
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
     { name: 'Zakat Mal', value: stats.totalMal },
