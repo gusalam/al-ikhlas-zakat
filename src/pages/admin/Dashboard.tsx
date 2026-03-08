@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     try {
       const [rz, rd, mk, zrt] = await Promise.all([
         supabase.from('transaksi_zakat').select('nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras, jenis_zakat)').order('tanggal', { ascending: false }).limit(5),
-        supabase.from('distribusi').select('jumlah, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
+        supabase.from('distribusi').select('jumlah, jumlah_beras, jenis_bantuan, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('mustahik').select('kategori'),
         supabase.from('transaksi_zakat').select('nama_muzakki, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras)'),
       ]);

@@ -152,7 +152,7 @@ export default function Laporan() {
       <div className="md:hidden space-y-3">
         <h2 className="font-serif font-semibold text-base">Data Distribusi</h2>
         {distribusiData.length === 0 && <p className="text-center text-muted-foreground py-6">Belum ada data</p>}
-        {distribusiData.map(d => <Card key={d.id}><CardContent className="p-3 space-y-1"><p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p><div className="grid grid-cols-2 gap-1 text-xs"><span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span><span><span className="text-muted-foreground">Jumlah:</span> {fmt(Number(d.jumlah))}</span><span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span></div></CardContent></Card>)}
+        {distribusiData.map(d => <Card key={d.id}><CardContent className="p-3 space-y-1"><p className="font-semibold text-sm">{d.mustahik?.nama || '-'}</p><div className="grid grid-cols-2 gap-1 text-xs"><span><span className="text-muted-foreground">RT:</span> {d.mustahik?.rt?.nama_rt || '-'}</span><span><span className="text-muted-foreground">Jenis:</span> {d.jenis_bantuan || 'Uang'}</span><span><span className="text-muted-foreground">Jumlah:</span> {d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</span><span><span className="text-muted-foreground">Tgl:</span> {new Date(d.tanggal).toLocaleDateString('id-ID')}</span></div></CardContent></Card>)}
         <PaginationControls page={distPag.page} totalPages={distPag.totalPages} totalCount={distPag.totalCount} onNext={distPag.goNext} onPrev={distPag.goPrev} onGoTo={distPag.goTo} />
       </div>
     </AdminLayout>
