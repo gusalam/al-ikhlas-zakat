@@ -26,9 +26,9 @@ export default function Index() {
     await fetchStats();
 
     const [zRes, dRes, rtRes] = await Promise.all([
-      supabase.from('zakat').select('id, nama_muzakki, jenis_zakat, jumlah_uang, jumlah_beras, tanggal', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
+      supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false }).range(zakatPag.from, zakatPag.to),
       supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to),
-      supabase.from('zakat').select('jumlah_uang, rt(nama_rt)'),
+      supabase.from('transaksi_zakat').select('rt(nama_rt), detail_zakat(jumlah_uang)'),
     ]);
 
     setZakatData(zRes.data || []);
@@ -37,9 +37,10 @@ export default function Index() {
     distPag.setTotalCount(dRes.count || 0);
 
     const rtMap: Record<string, number> = {};
-    (rtRes.data || []).forEach((z: any) => {
-      const rtName = z.rt?.nama_rt || 'Tidak ada RT';
-      rtMap[rtName] = (rtMap[rtName] || 0) + Number(z.jumlah_uang || 0);
+    (rtRes.data || []).forEach((t: any) => {
+      const rtName = t.rt?.nama_rt || 'Tidak ada RT';
+      const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
+      rtMap[rtName] = (rtMap[rtName] || 0) + totalUang;
     });
     setRtChartData(Object.entries(rtMap).map(([name, value]) => ({ name, value })));
 
@@ -150,14 +151,20 @@ export default function Index() {
               <TableBody>
                 {zakatData.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>
-                ) : zakatData.map((z: any) => (
-                  <TableRow key={z.id}>
-                    <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
-                    <TableCell>{z.jenis_zakat}</TableCell>
-                    <TableCell>{fmt(Number(z.jumlah_uang))}{Number(z.jumlah_beras) > 0 ? ` + ${z.jumlah_beras} Kg` : ''}</TableCell>
-                    <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
-                  </TableRow>
-                ))}
+                ) : zakatData.map((z: any) => {
+                  const details = z.detail_zakat || [];
+                  const jenisList = details.map((d: any) => d.jenis_zakat).join(', ');
+                  const totalUang = details.reduce((s: number, d: any) => s + Number(d.jumlah_uang || 0), 0);
+                  const totalBeras = details.reduce((s: number, d: any) => s + (Number(d.jumlah_jiwa || 0) * 2.5) + Number(d.jumlah_beras || 0), 0);
+                  return (
+                    <TableRow key={z.id}>
+                      <TableCell className="font-medium">{z.nama_muzakki}</TableCell>
+                      <TableCell>{jenisList || '-'}</TableCell>
+                      <TableCell>{totalUang > 0 ? fmt(totalUang) : ''}{totalUang > 0 && totalBeras > 0 ? ' + ' : ''}{totalBeras > 0 ? `${totalBeras} Kg` : ''}</TableCell>
+                      <TableCell>{new Date(z.tanggal).toLocaleDateString('id-ID')}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <PaginationControls page={zakatPag.page} totalPages={zakatPag.totalPages} totalCount={zakatPag.totalCount} onNext={zakatPag.goNext} onPrev={zakatPag.goPrev} onGoTo={zakatPag.goTo} />
@@ -177,7 +184,7 @@ export default function Index() {
                     <TableCell className="font-medium">{d.mustahik?.nama || '-'}</TableCell>
                     <TableCell>{d.mustahik?.rt?.nama_rt || '-'}</TableCell>
                     <TableCell>{d.sumber_zakat || '-'}</TableCell>
-                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg` : fmt(Number(d.jumlah))}</TableCell>
+                    <TableCell>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</TableCell>
                     <TableCell>{new Date(d.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   </TableRow>
                 ))}
