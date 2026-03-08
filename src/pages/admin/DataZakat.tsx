@@ -39,6 +39,7 @@ export default function DataZakat() {
   const fetchData = async () => {
     let query = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
     if (debouncedSearch.trim()) query = query.ilike('nama_muzakki', `%${debouncedSearch.trim()}%`);
+    if (filterRt !== 'all') query = query.eq('rt_id', filterRt);
     const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
       query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
