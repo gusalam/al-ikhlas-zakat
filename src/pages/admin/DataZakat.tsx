@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, FileText, Eye, Download, Search } from 'lucide-react';
+import { Plus, Trash2, Pencil, FileText, Eye, Download, Search, RotateCcw } from 'lucide-react';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportPdf } from '@/lib/exportPdf';
@@ -33,11 +33,13 @@ export default function DataZakat() {
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
   const [search, setSearch] = useState('');
+  const [filterRt, setFilterRt] = useState('all');
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchData = async () => {
     let query = supabase.from('transaksi_zakat').select('*, rt(nama_rt), detail_zakat(*)', { count: 'exact' }).order('tanggal', { ascending: false });
     if (debouncedSearch.trim()) query = query.ilike('nama_muzakki', `%${debouncedSearch.trim()}%`);
+    if (filterRt !== 'all') query = query.eq('rt_id', filterRt);
     const [{ data: transaksi, count }, { data: rt }] = await Promise.all([
       query.range(pag.from, pag.to),
       supabase.from('rt').select('*').order('nama_rt'),
@@ -47,7 +49,7 @@ export default function DataZakat() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch, filterRt]);
 
   const resetForm = () => { setForm({ nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], status_muzakki: 'RT', alamat_muzakki: '' }); setDetail(emptyDetail()); };
 
@@ -144,6 +146,16 @@ export default function DataZakat() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Cari nama muzakki..." value={search} onChange={e => { setSearch(e.target.value); pag.goTo(1); }} className="pl-9 h-9" />
           </div>
+          <Select value={filterRt} onValueChange={v => { setFilterRt(v); pag.goTo(1); }}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Semua RT" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua RT</SelectItem>
+              {rtList.map(r => <SelectItem key={r.id} value={r.id}>{r.nama_rt}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {(search || filterRt !== 'all') && (
+            <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setFilterRt('all'); pag.goTo(1); }}><RotateCcw className="w-4 h-4 mr-1" />Reset</Button>
+          )}
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportPdf({
             title: 'Data Zakat — Masjid Al-Ikhlas',
