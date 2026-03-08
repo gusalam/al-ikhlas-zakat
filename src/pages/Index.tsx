@@ -294,7 +294,7 @@ export default function Index() {
               onPause={distScroll.pause}
               onResume={distScroll.resume}
               renderRow={(d: any, idx: number) => (
-                <div key={`d-${idx}`} className="grid grid-cols-4 gap-2 px-3 py-2.5 border-b border-border text-sm animate-fade-in">
+                <div key={`d-${idx}`} className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
                   <div className="font-medium">
                     {d.mustahik?.nama || '-'}
                     {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
