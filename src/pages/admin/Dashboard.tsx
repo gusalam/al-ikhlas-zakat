@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Truck, Wheat, TrendingUp } from 'lucide-react';
+import { DollarSign, Users, Truck, Wheat, TrendingUp, Wallet } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 
@@ -34,7 +34,7 @@ interface RtRow {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0 });
+  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0 });
   const [zakatData, setZakatData] = useState<ZakatRow[]>([]);
   const [mustahikData, setMustahikData] = useState<MustahikRow[]>([]);
   const [distribusiData, setDistribusiData] = useState<DistribusiRow[]>([]);
@@ -59,12 +59,15 @@ export default function AdminDashboard() {
       setDistribusiData(d);
       setRtData(r);
 
+      const totalZakat = z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0);
+      const totalDistribusi = d.reduce((s, item) => s + Number(item.jumlah), 0);
       setStats({
-        totalZakat: z.reduce((s, item) => s + Number(item.jumlah_uang || 0), 0),
+        totalZakat,
         totalMuzakki: new Set(z.map(item => item.nama_muzakki)).size,
         totalMustahik: m.length,
-        totalDistribusi: d.reduce((s, item) => s + Number(item.jumlah), 0),
+        totalDistribusi,
         totalBeras: z.reduce((s, item) => s + Number(item.jumlah_beras || 0), 0),
+        saldoZakat: totalZakat - totalDistribusi,
       });
     };
     fetchData();
@@ -102,13 +105,14 @@ export default function AdminDashboard() {
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Admin</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {[
           { label: 'Total Zakat Uang', value: fmt(stats.totalZakat), icon: DollarSign, color: 'text-emerald-600' },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
           { label: 'Jumlah Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
           { label: 'Jumlah Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-purple-600' },
           { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck, color: 'text-rose-600' },
+          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: Wallet, color: stats.saldoZakat < 0 ? 'text-destructive' : 'text-emerald-600' },
         ].map(s => {
           const Icon = s.icon;
           return (

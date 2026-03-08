@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 export default function Distribusi() {
   const { user } = useAuth();
@@ -19,21 +20,31 @@ export default function Distribusi() {
   const [mustahikList, setMustahikList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ mustahik_id: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0] });
+  const [saldoZakat, setSaldoZakat] = useState(0);
 
   const fetchData = async () => {
-    const [{ data: dist }, { data: mustahik }] = await Promise.all([
+    const [{ data: dist }, { data: mustahik }, { data: zakat }] = await Promise.all([
       supabase.from('distribusi').select('*, mustahik(nama, rt(nama_rt))').order('tanggal', { ascending: false }),
       supabase.from('mustahik').select('id, nama'),
+      supabase.from('zakat').select('jumlah_uang'),
     ]);
     setData(dist || []);
     setMustahikList(mustahik || []);
+    const totalZakat = (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang || 0), 0);
+    const totalDist = (dist || []).reduce((s, d) => s + Number(d.jumlah || 0), 0);
+    setSaldoZakat(totalZakat - totalDist);
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleSubmit = async () => {
+    const jumlah = Number(form.jumlah);
+    if (jumlah > saldoZakat) {
+      toast.error('Distribusi tidak boleh melebihi saldo zakat yang tersedia.');
+      return;
+    }
     const { error } = await supabase.from('distribusi').insert({
-      mustahik_id: form.mustahik_id, jumlah: Number(form.jumlah), tanggal: form.tanggal, created_by: user?.id,
+      mustahik_id: form.mustahik_id, jumlah, tanggal: form.tanggal, created_by: user?.id,
     });
     if (error) { toast.error(error.message); return; }
     toast.success('Distribusi berhasil dicatat');
@@ -50,8 +61,15 @@ export default function Distribusi() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-serif font-bold">Distribusi Zakat</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Wallet className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Saldo Zakat:</span>
+            <Badge variant={saldoZakat < 0 ? 'destructive' : 'secondary'} className="font-semibold">{fmt(saldoZakat)}</Badge>
+          </div>
+        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent>

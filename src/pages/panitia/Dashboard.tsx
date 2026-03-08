@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, Users, Truck, Wheat } from 'lucide-react';
+import { DollarSign, Users, Truck, Wheat, Wallet } from 'lucide-react';
 
 export default function PanitiaDashboard() {
-  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0 });
+  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -14,12 +14,15 @@ export default function PanitiaDashboard() {
         supabase.from('mustahik').select('id'),
         supabase.from('distribusi').select('jumlah'),
       ]);
+      const totalZakat = (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang), 0);
+      const totalDistribusi = (distribusi || []).reduce((s, d) => s + Number(d.jumlah), 0);
       setStats({
-        totalZakat: (zakat || []).reduce((s, z) => s + Number(z.jumlah_uang), 0),
+        totalZakat,
         totalMuzakki: new Set((zakat || []).map(z => z.nama_muzakki)).size,
         totalMustahik: mustahik?.length || 0,
-        totalDistribusi: (distribusi || []).reduce((s, d) => s + Number(d.jumlah), 0),
+        totalDistribusi,
         totalBeras: (zakat || []).reduce((s, z) => s + Number(z.jumlah_beras), 0),
+        saldoZakat: totalZakat - totalDistribusi,
       });
     };
     fetch();
@@ -36,6 +39,7 @@ export default function PanitiaDashboard() {
           { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
           { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users },
           { label: 'Total Distribusi', value: fmt(stats.totalDistribusi), icon: Truck },
+          { label: 'Saldo Zakat', value: fmt(stats.saldoZakat), icon: Wallet },
           { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },
         ].map(s => {
           const Icon = s.icon;
