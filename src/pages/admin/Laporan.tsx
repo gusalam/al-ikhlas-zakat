@@ -109,7 +109,8 @@ export default function Laporan() {
         {[
           { label: 'Zakat Fitrah', value: fmt(totalFitrah) },
           { label: 'Zakat Mal', value: fmt(totalMal) },
-          { label: 'Shodaqoh', value: fmt(totalShodaqoh) },
+          { label: 'Infaq', value: fmt(totalInfaq) },
+          { label: 'Fidyah', value: fmt(totalFidyah) },
           { label: 'Total Distribusi', value: fmt(totalDistribusi) },
         ].map(s => (
           <Card key={s.label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>

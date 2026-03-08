@@ -229,7 +229,7 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                       {[
                         { no: 1, name: 'Zakat Fitrah', uang: data.jenis_zakat === 'Zakat Fitrah' ? data.jumlah_uang : 0, beras: data.jenis_zakat === 'Zakat Fitrah' ? data.jumlah_beras : 0 },
                         { no: 2, name: 'Zakat Mal', uang: data.jenis_zakat === 'Zakat Mal' ? data.jumlah_uang : 0, beras: 0 },
-                        { no: 3, name: 'Infaq', uang: data.jenis_zakat === 'Shodaqoh' ? data.jumlah_uang : 0, beras: 0 },
+                        { no: 3, name: 'Infaq', uang: (data.jenis_zakat === 'Infaq' || data.jenis_zakat === 'Shodaqoh') ? data.jumlah_uang : 0, beras: 0 },
                         { no: 4, name: 'Fidyah', uang: data.jenis_zakat === 'Fidyah' ? data.jumlah_uang : 0, beras: data.jenis_zakat === 'Fidyah' ? data.jumlah_beras : 0 },
                       ].map(p => (
                         <tr key={p.no}>
