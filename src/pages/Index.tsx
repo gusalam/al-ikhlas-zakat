@@ -49,58 +49,35 @@ export default function Index() {
   const zakatDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const distDebounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // ---- Fetch zakat data ----
-  const fetchZakat = useCallback(async (search: string, page: number) => {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    // Fetch count separately (lightweight, no joins)
-    let countQuery = supabase
-      .from('transaksi_zakat')
-      .select('id', { count: 'exact', head: true });
-
-    if (search.trim()) {
-      countQuery = countQuery.ilike('nama_muzakki', `%${search.trim()}%`);
-    }
-
-    // Fetch data with joins (no count overhead)
-    let dataQuery = supabase
+  // ---- Fetch zakat data (all matching, no pagination) ----
+  const fetchZakat = useCallback(async (search: string) => {
+    let query = supabase
       .from('transaksi_zakat')
       .select('id, nama_muzakki, alamat_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)')
       .order('tanggal', { ascending: false })
-      .range(from, to);
+      .limit(PAGE_SIZE);
 
     if (search.trim()) {
-      dataQuery = dataQuery.ilike('nama_muzakki', `%${search.trim()}%`);
+      query = query.ilike('nama_muzakki', `%${search.trim()}%`);
     }
 
-    const [countResult, dataResult] = await Promise.all([countQuery, dataQuery]);
-
-    if (!dataResult.error) {
-      setZakatData(dataResult.data || []);
-      setZakatTotal(countResult.count || 0);
-    }
+    const { data, error } = await query;
+    if (!error) setZakatData(data || []);
   }, []);
 
-  // ---- Fetch distribusi data ----
-  const fetchDistribusi = useCallback(async (search: string, page: number) => {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { data, count, error } = await supabase
+  // ---- Fetch distribusi data (all matching, no pagination) ----
+  const fetchDistribusi = useCallback(async (search: string) => {
+    const { data, error } = await supabase
       .from('distribusi')
-      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, alamat, rt(nama_rt))', { count: 'exact' })
+      .select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik!inner(nama, alamat, rt(nama_rt))')
       .order('tanggal', { ascending: false })
       .ilike('mustahik.nama', search.trim() ? `%${search.trim()}%` : '%')
-      .range(from, to);
+      .limit(PAGE_SIZE);
 
-    if (!error) {
-      setDistribusiData(data || []);
-      setDistTotal(count || 0);
-    }
+    if (!error) setDistribusiData(data || []);
   }, []);
 
-  // ---- Fetch chart data (only once, no search/pagination) ----
+  // ---- Fetch chart data ----
   const fetchChartData = useCallback(async () => {
     const { data } = await supabase.rpc('get_zakat_per_rt');
     if (data && Array.isArray(data)) {
@@ -113,8 +90,8 @@ export default function Index() {
     const init = async () => {
       await Promise.all([
         fetchStats(),
-        fetchZakat('', 0),
-        fetchDistribusi('', 0),
+        fetchZakat(''),
+        fetchDistribusi(''),
         fetchChartData(),
       ]);
       setLastUpdated(new Date());
@@ -127,8 +104,8 @@ export default function Index() {
   useEffect(() => {
     const handleRealtimeUpdate = () => {
       fetchStats();
-      fetchZakat(zakatSearchRef.current, zakatPageRef.current);
-      fetchDistribusi(distSearchRef.current, distPageRef.current);
+      fetchZakat(zakatSearchRef.current);
+      fetchDistribusi(distSearchRef.current);
       fetchChartData();
       setLastUpdated(new Date());
     };
@@ -151,8 +128,7 @@ export default function Index() {
     setZakatSearch(value);
     clearTimeout(zakatDebounceRef.current);
     zakatDebounceRef.current = setTimeout(() => {
-      setZakatPage(0);
-      fetchZakat(value, 0);
+      fetchZakat(value);
     }, 400);
   };
 
@@ -160,22 +136,8 @@ export default function Index() {
     setDistSearch(value);
     clearTimeout(distDebounceRef.current);
     distDebounceRef.current = setTimeout(() => {
-      setDistPage(0);
-      fetchDistribusi(value, 0);
+      fetchDistribusi(value);
     }, 400);
-  };
-
-  // ---- Pagination handlers ----
-  const handleZakatPageChange = (newPage: number) => {
-    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
-    setZakatPage(p);
-    fetchZakat(zakatSearch, p);
-  };
-
-  const handleDistPageChange = (newPage: number) => {
-    const p = Math.max(0, newPage - 1); // goTo now sends 1-indexed
-    setDistPage(p);
-    fetchDistribusi(distSearch, p);
   };
 
   const pieKey = useAnimationLoop(20000);
