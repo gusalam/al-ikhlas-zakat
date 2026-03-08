@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, Users, Truck, Wheat, Wallet } from 'lucide-react';
 
 export default function PanitiaDashboard() {
-  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0 });
+  const [stats, setStats] = useState({ totalZakat: 0, totalMuzakki: 0, totalMustahik: 0, totalDistribusi: 0, totalBeras: 0, saldoZakat: 0 });
 
   useEffect(() => {
     const fetch = async () => {
