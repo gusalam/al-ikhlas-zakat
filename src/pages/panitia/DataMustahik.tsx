@@ -42,7 +42,7 @@ export default function PanitiaMustahik() {
     setRtList(rt || []);
   };
 
-  useEffect(() => { fetchData(); }, [pag.page]);
+  useEffect(() => { fetchData(); }, [pag.page, debouncedSearch]);
 
   const resetForm = () => { setForm({ ...emptyForm }); setEditItem(null); };
 
