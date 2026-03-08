@@ -48,7 +48,7 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
     setTimeout(() => { win.print(); win.close(); }, 500);
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 210] });
     const green = [39, 103, 73] as const;
     const lightGreen = [230, 245, 230] as const;
@@ -64,12 +64,19 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
     doc.setFillColor(...lightGreen);
     doc.rect(10, 10, 40, 128, 'F');
 
-    // Logo image
-    const img = new Image();
-    img.src = logoImg;
+    // Logo image - load asynchronously
     try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject();
+        img.src = logoImg;
+      });
       doc.addImage(img, 'PNG', 15, 15, 30, 30);
-    } catch {}
+    } catch {
+      // Continue without logo if it fails
+    }
 
     // Sidebar text
     doc.setFontSize(7);
