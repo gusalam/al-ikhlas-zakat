@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
+import { useCountUp } from '@/hooks/useAnimationLoop';
 
 interface RtStat { nama_rt: string; total_muzakki: number; total_jiwa_fitrah: number; total_zakat: number; }
 
@@ -27,21 +28,32 @@ export default function PanitiaDashboard() {
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
+  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 8000);
+  const aTotalMal = useCountUp(stats.totalMal, 1500, 8000);
+  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 8000);
+  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 8000);
+  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 8000);
+  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 8000);
+  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 8000);
+  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 8000);
+  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 8000);
+  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 8000);
+
   return (
     <PanitiaLayout>
       <h1 className="text-2xl md:text-3xl font-serif font-bold mb-6">Dashboard Panitia</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote },
-          { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users },
-          { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users },
-          { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users },
-          { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat },
-          { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat },
-          { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat },
+          { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote },
+          { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote },
+          { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote },
+          { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote },
+          { label: 'Total Muzakki', value: aTotalMuzakki.toString(), icon: Users },
+          { label: 'Total Mustahik', value: `${aTotalMustahik} Orang`, icon: Users },
+          { label: 'Jiwa Fitrah', value: `${aTotalJiwaFitrah} Orang`, icon: Users },
+          { label: 'Beras Fitrah', value: `${aTotalBerasFitrah} Kg`, icon: Wheat },
+          { label: 'Beras Fidyah', value: `${aTotalBerasFidyah} Kg`, icon: Wheat },
+          { label: 'Total Beras', value: `${aTotalBeras} Kg`, icon: Wheat },
         ].map(s => {
           const Icon = s.icon;
           return (

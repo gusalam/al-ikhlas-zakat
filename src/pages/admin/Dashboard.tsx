@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { friendlyError } from '@/lib/errorHandler';
 import { toast } from 'sonner';
 import { useZakatStats } from '@/hooks/useZakatStats';
+import { useCountUp } from '@/hooks/useAnimationLoop';
 
 export default function AdminDashboard() {
   const { stats, fetchStats } = useZakatStats();
@@ -45,6 +46,23 @@ export default function AdminDashboard() {
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  // Animated stats for cards
+  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 8000);
+  const aTotalMal = useCountUp(stats.totalMal, 1500, 8000);
+  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 8000);
+  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 8000);
+  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 8000);
+  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 8000);
+  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 8000);
+  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 8000);
+  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 8000);
+  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 8000);
+  const aTotalZakat = useCountUp(stats.totalZakat, 1500, 8000);
+  const aTotalDistribusiUang = useCountUp(stats.totalDistribusiUang, 1500, 8000);
+  const aSisaUang = useCountUp(stats.sisaUang, 1500, 8000);
+  const aTotalDistribusiBeras = useCountUp(stats.totalDistribusiBeras, 1500, 8000);
+  const aSisaBeras = useCountUp(stats.sisaBeras, 1500, 8000);
+
   const kategoriSummary = mustahikData.reduce((acc: Record<string, number>, m: any) => {
     const k = m.kategori || 'Tidak Dikategorikan'; acc[k] = (acc[k] || 0) + 1; return acc;
   }, {});
@@ -70,12 +88,12 @@ export default function AdminDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { label: 'Uang Masuk', value: fmt(stats.totalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Uang Didistribusikan', value: fmt(stats.totalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
-              { label: 'Sisa Uang', value: fmt(stats.sisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
-              { label: 'Beras Masuk', value: `${stats.totalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
-              { label: 'Beras Didistribusikan', value: `${stats.totalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
-              { label: 'Sisa Beras', value: `${stats.sisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
+              { label: 'Uang Masuk', value: fmt(aTotalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Uang Didistribusikan', value: fmt(aTotalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Uang', value: fmt(aSisaUang), icon: Package, color: stats.sisaUang < 0 ? 'text-red-600' : 'text-emerald-700' },
+              { label: 'Beras Masuk', value: `${aTotalBeras.toLocaleString('id-ID')} Kg`, icon: ArrowDownCircle, color: 'text-emerald-600' },
+              { label: 'Beras Didistribusikan', value: `${aTotalDistribusiBeras.toLocaleString('id-ID')} Kg`, icon: ArrowUpCircle, color: 'text-red-500' },
+              { label: 'Sisa Beras', value: `${aSisaBeras.toLocaleString('id-ID')} Kg`, icon: Package, color: stats.sisaBeras < 0 ? 'text-red-600' : 'text-emerald-700' },
             ].map(s => {
               const Icon = s.icon;
               return (
@@ -91,16 +109,16 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-emerald-600' },
-          { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-blue-600' },
-          { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-amber-600' },
-          { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-purple-600' },
-          { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
-          { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
-          { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
-          { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat, color: 'text-emerald-600' },
-          { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat, color: 'text-purple-600' },
-          { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
+          { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600' },
+          { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600' },
+          { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote, color: 'text-amber-600' },
+          { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote, color: 'text-purple-600' },
+          { label: 'Total Muzakki', value: aTotalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
+          { label: 'Total Mustahik', value: `${aTotalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
+          { label: 'Jiwa Fitrah', value: `${aTotalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
+          { label: 'Beras Fitrah', value: `${aTotalBerasFitrah} Kg`, icon: Wheat, color: 'text-emerald-600' },
+          { label: 'Beras Fidyah', value: `${aTotalBerasFidyah} Kg`, icon: Wheat, color: 'text-purple-600' },
+          { label: 'Total Beras', value: `${aTotalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
         ].map(s => {
           const Icon = s.icon;
           return (

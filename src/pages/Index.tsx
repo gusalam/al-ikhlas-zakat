@@ -10,6 +10,8 @@ import logo from '@/assets/logo.png';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import PaginationControls from '@/components/PaginationControls';
 import SplashScreen from '@/components/SplashScreen';
+import AnimatedStatCard from '@/components/AnimatedStatCard';
+import { useAnimationLoop } from '@/hooks/useAnimationLoop';
 
 const SPLASH_KEY = 'zakat-splash-shown';
 
@@ -181,6 +183,9 @@ export default function Index() {
     fetchDistribusi(distSearch, newPage);
   };
 
+  const pieKey = useAnimationLoop(6000);
+  const barKey = useAnimationLoop(5000);
+
   const pieData = [
     { name: 'Zakat Fitrah', value: stats.totalFitrah },
     { name: 'Zakat Mal', value: stats.totalMal },
@@ -217,27 +222,19 @@ export default function Index() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Zakat Fitrah', value: fmt(stats.totalFitrah), icon: Banknote, color: 'text-primary' },
-            { label: 'Zakat Mal', value: fmt(stats.totalMal), icon: Banknote, color: 'text-secondary' },
-            { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-primary' },
-            { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-secondary' },
-            { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
-            { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-secondary' },
-            { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-primary' },
-            { label: 'Beras Fitrah', value: `${stats.totalBerasFitrah} Kg`, icon: Wheat, color: 'text-primary' },
-            { label: 'Beras Fidyah', value: `${stats.totalBerasFidyah} Kg`, icon: Wheat, color: 'text-secondary' },
-            { label: 'Total Beras', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-primary' },
-          ].map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.label} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2"><Icon className={`w-5 h-5 ${stat.color}`} /><span className="text-sm text-muted-foreground">{stat.label}</span></div>
-                  <p className="text-lg md:text-xl font-bold">{stat.value}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+            { label: 'Zakat Fitrah', value: stats.totalFitrah, icon: Banknote, color: 'text-primary', isCurrency: true },
+            { label: 'Zakat Mal', value: stats.totalMal, icon: Banknote, color: 'text-secondary', isCurrency: true },
+            { label: 'Infaq', value: stats.totalInfaq, icon: Banknote, color: 'text-primary', isCurrency: true },
+            { label: 'Fidyah', value: stats.totalFidyah, icon: Banknote, color: 'text-secondary', isCurrency: true },
+            { label: 'Total Muzakki', value: stats.totalMuzakki, icon: Users, color: 'text-primary' },
+            { label: 'Total Mustahik', value: stats.totalMustahik, icon: Users, color: 'text-secondary', suffix: ' Orang' },
+            { label: 'Jiwa Fitrah', value: stats.totalJiwaFitrah, icon: Users, color: 'text-primary', suffix: ' Orang' },
+            { label: 'Beras Fitrah', value: stats.totalBerasFitrah, icon: Wheat, color: 'text-primary', suffix: ' Kg' },
+            { label: 'Beras Fidyah', value: stats.totalBerasFidyah, icon: Wheat, color: 'text-secondary', suffix: ' Kg' },
+            { label: 'Total Beras', value: stats.totalBeras, icon: Wheat, color: 'text-primary', suffix: ' Kg' },
+          ].map((stat) => (
+            <AnimatedStatCard key={stat.label} label={stat.label} value={stat.value} icon={stat.icon} color={stat.color} isCurrency={stat.isCurrency} suffix={stat.suffix} />
+          ))}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -245,9 +242,9 @@ export default function Index() {
             <CardHeader><CardTitle className="font-serif text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
             <CardContent>
               {pieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={300}>
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" isAnimationActive animationBegin={0} animationDuration={1200} animationEasing="ease-out" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                       {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
                     <Tooltip formatter={(v: number) => fmt(v)} /><Legend />
@@ -260,11 +257,11 @@ export default function Index() {
             <CardHeader><CardTitle className="font-serif text-xl">Zakat per RT</CardTitle></CardHeader>
             <CardContent>
               {rtChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={300}>
                   <BarChart data={rtChartData}>
                     <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={12} /><YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
                     <Tooltip formatter={(v: number) => fmt(v)} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationBegin={0} animationDuration={1500} animationEasing="ease-out">
                       {rtChartData.map((_, index) => (
                         <Cell key={index} fill={['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#84CC16', '#6366F1', '#D946EF', '#22C55E', '#EAB308', '#0EA5E9'][index % 15]} />
                       ))}
