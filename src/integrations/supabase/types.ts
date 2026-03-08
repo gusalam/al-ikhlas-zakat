@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      detail_zakat: {
+        Row: {
+          id: string
+          jenis_zakat: string
+          jumlah_beras: number | null
+          jumlah_jiwa: number | null
+          jumlah_uang: number | null
+          transaksi_id: string
+        }
+        Insert: {
+          id?: string
+          jenis_zakat: string
+          jumlah_beras?: number | null
+          jumlah_jiwa?: number | null
+          jumlah_uang?: number | null
+          transaksi_id: string
+        }
+        Update: {
+          id?: string
+          jenis_zakat?: string
+          jumlah_beras?: number | null
+          jumlah_jiwa?: number | null
+          jumlah_uang?: number | null
+          transaksi_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detail_zakat_transaksi_id_fkey"
+            columns: ["transaksi_id"]
+            isOneToOne: false
+            referencedRelation: "transaksi_zakat"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       distribusi: {
         Row: {
           created_at: string | null
@@ -134,6 +169,47 @@ export type Database = {
           nama_rt?: string
         }
         Relationships: []
+      }
+      transaksi_zakat: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          nama_muzakki: string
+          nomor_kwitansi: number
+          rt_id: string | null
+          status_muzakki: string | null
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nama_muzakki: string
+          nomor_kwitansi?: number
+          rt_id?: string | null
+          status_muzakki?: string | null
+          tanggal?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nama_muzakki?: string
+          nomor_kwitansi?: number
+          rt_id?: string | null
+          status_muzakki?: string | null
+          tanggal?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaksi_zakat_rt_id_fkey"
+            columns: ["rt_id"]
+            isOneToOne: false
+            referencedRelation: "rt"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
