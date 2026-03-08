@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
+import { friendlyError } from '@/lib/errorHandler';
 
 export default function PanitiaMustahik() {
   const [data, setData] = useState<any[]>([]);
