@@ -20,11 +20,23 @@ import PaginationControls from '@/components/PaginationControls';
 
 const SUMBER_OPTIONS = ['Zakat Fitrah', 'Zakat Mal', 'Infaq', 'Fidyah'];
 const JENIS_BANTUAN_OPTIONS = ['Uang', 'Beras'];
+const MAX_UANG = 999_999_999;
+const MAX_BERAS = 99_999;
 
 const emptyForm = {
   mustahik_id: '', jumlah: '', jumlah_beras: '', tanggal: new Date().toISOString().split('T')[0],
   sumber_zakat: 'Zakat Fitrah', jenis_bantuan: 'Uang',
 };
+
+function getAvailableFund(stats: any, sumber: string): number {
+  const map: Record<string, number> = {
+    'Zakat Fitrah': stats.totalFitrah,
+    'Zakat Mal': stats.totalMal,
+    'Infaq': stats.totalInfaq,
+    'Fidyah': stats.totalFidyah,
+  };
+  return map[sumber] || 0;
+}
 
 export default function PanitiaDistribusi() {
   const { user } = useAuth();
@@ -32,7 +44,9 @@ export default function PanitiaDistribusi() {
   const [mustahikList, setMustahikList] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [submitting, setSubmitting] = useState(false);
   const { stats, fetchStats } = useZakatStats();
+  const [distribusiPerSumber, setDistribusiPerSumber] = useState<Record<string, number>>({});
   const pag = usePagination(50);
 
   const fetchData = async () => {
@@ -44,29 +58,80 @@ export default function PanitiaDistribusi() {
     pag.setTotalCount(count || 0);
     setMustahikList(m || []);
     await fetchStats();
+
+    // Fetch total distribusi uang per sumber_zakat
+    const { data: allDist } = await supabase.from('distribusi').select('sumber_zakat, jumlah');
+    const totals: Record<string, number> = {};
+    (allDist || []).forEach((d: any) => {
+      const s = d.sumber_zakat || 'Zakat Fitrah';
+      totals[s] = (totals[s] || 0) + Number(d.jumlah || 0);
+    });
+    setDistribusiPerSumber(totals);
   };
 
   useEffect(() => { fetchData(); }, [pag.page]);
 
   const handleSubmit = async () => {
+    if (submitting) return;
     if (!form.mustahik_id) { toast.error('Pilih mustahik terlebih dahulu'); return; }
     if (form.jenis_bantuan === 'Uang' && !Number(form.jumlah)) { toast.error('Jumlah uang wajib diisi'); return; }
     if (form.jenis_bantuan === 'Beras' && !Number(form.jumlah_beras)) { toast.error('Jumlah beras wajib diisi'); return; }
 
-    const payload: any = {
-      mustahik_id: form.mustahik_id,
-      jumlah: form.jenis_bantuan === 'Uang' ? Number(form.jumlah) : 0,
-      jumlah_beras: form.jenis_bantuan === 'Beras' ? Number(form.jumlah_beras) : 0,
-      tanggal: form.tanggal,
-      created_by: user?.id,
-      sumber_zakat: form.sumber_zakat,
-      jenis_bantuan: form.jenis_bantuan,
-    };
+    const jumlahUang = form.jenis_bantuan === 'Uang' ? Number(form.jumlah) : 0;
 
-    const { error } = await supabase.from('distribusi').insert(payload);
-    if (error) { toast.error(friendlyError(error)); return; }
-    toast.success('Distribusi zakat berhasil dicatat ✓');
-    setOpen(false); setForm({ ...emptyForm }); fetchData();
+    // Validate amount doesn't exceed available fund
+    if (form.jenis_bantuan === 'Uang' && jumlahUang > 0) {
+      const totalDana = getAvailableFund(stats, form.sumber_zakat);
+      const sudahDisalurkan = distribusiPerSumber[form.sumber_zakat] || 0;
+      const sisaDana = totalDana - sudahDisalurkan;
+      if (jumlahUang > sisaDana) {
+        const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+        toast.error(`Jumlah distribusi melebihi dana ${form.sumber_zakat} yang tersedia. Sisa dana: ${fmt(sisaDana)}`);
+        return;
+      }
+    }
+
+    setSubmitting(true);
+    try {
+      // Check for duplicate
+      const { data: existing } = await supabase.from('distribusi')
+        .select('id')
+        .eq('mustahik_id', form.mustahik_id)
+        .eq('sumber_zakat', form.sumber_zakat)
+        .eq('tanggal', form.tanggal)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        toast.error('Distribusi untuk mustahik ini dengan jenis zakat yang sama pada tanggal ini sudah tercatat.');
+        setSubmitting(false);
+        return;
+      }
+
+      const payload: any = {
+        mustahik_id: form.mustahik_id,
+        jumlah: jumlahUang,
+        jumlah_beras: form.jenis_bantuan === 'Beras' ? Number(form.jumlah_beras) : 0,
+        tanggal: form.tanggal,
+        created_by: user?.id,
+        sumber_zakat: form.sumber_zakat,
+        jenis_bantuan: form.jenis_bantuan,
+      };
+
+      const { error } = await supabase.from('distribusi').insert(payload);
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('Distribusi untuk mustahik ini dengan jenis zakat yang sama pada tanggal ini sudah tercatat.');
+        } else {
+          toast.error(friendlyError(error));
+        }
+        setSubmitting(false);
+        return;
+      }
+      toast.success('Distribusi zakat berhasil dicatat ✓');
+      setOpen(false); setForm({ ...emptyForm }); fetchData();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -75,6 +140,11 @@ export default function PanitiaDistribusi() {
     if (d.jenis_bantuan === 'Beras') return `${Number(d.jumlah_beras) || 0} Kg`;
     return fmt(Number(d.jumlah) || 0);
   };
+
+  // Show remaining fund for selected sumber
+  const totalDana = getAvailableFund(stats, form.sumber_zakat);
+  const sudahDisalurkan = distribusiPerSumber[form.sumber_zakat] || 0;
+  const sisaDana = totalDana - sudahDisalurkan;
 
   return (
     <PanitiaLayout>
@@ -96,6 +166,9 @@ export default function PanitiaDistribusi() {
                   <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
                   <SelectContent>{SUMBER_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
+                {form.jenis_bantuan === 'Uang' && (
+                  <p className="text-xs text-muted-foreground mt-1">Sisa dana {form.sumber_zakat}: <span className={sisaDana <= 0 ? 'text-destructive font-semibold' : 'font-semibold'}>{fmt(sisaDana)}</span></p>
+                )}
               </div>
               <div><Label>Jenis Bantuan <span className="text-destructive">*</span></Label>
                 <Select value={form.jenis_bantuan} onValueChange={v => setForm({ ...form, jenis_bantuan: v, jumlah: '', jumlah_beras: '' })}>
@@ -104,17 +177,27 @@ export default function PanitiaDistribusi() {
                 </Select>
               </div>
               {form.jenis_bantuan === 'Uang' && (
-                <div><Label>Jumlah Uang (Rp) <span className="text-destructive">*</span></Label><Input type="number" value={form.jumlah} onChange={e => setForm({ ...form, jumlah: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>Jumlah Uang (Rp) <span className="text-destructive">*</span></Label>
+                  <Input type="number" min={0} max={MAX_UANG} value={form.jumlah} onChange={e => {
+                    const v = Math.min(Number(e.target.value), MAX_UANG);
+                    setForm({ ...form, jumlah: v > 0 ? String(v) : e.target.value });
+                  }} className="h-12 text-base" placeholder="0" />
+                </div>
               )}
               {form.jenis_bantuan === 'Beras' && (
-                <div><Label>Jumlah Beras (Kg) <span className="text-destructive">*</span></Label><Input type="number" value={form.jumlah_beras} onChange={e => setForm({ ...form, jumlah_beras: e.target.value })} className="h-12 text-base" /></div>
+                <div><Label>Jumlah Beras (Kg) <span className="text-destructive">*</span></Label>
+                  <Input type="number" min={0} max={MAX_BERAS} step="0.5" value={form.jumlah_beras} onChange={e => {
+                    const v = Math.min(Number(e.target.value), MAX_BERAS);
+                    setForm({ ...form, jumlah_beras: v > 0 ? String(v) : e.target.value });
+                  }} className="h-12 text-base" placeholder="0" />
+                </div>
               )}
               <div><Label>Tanggal</Label><Input type="date" value={form.tanggal} onChange={e => setForm({ ...form, tanggal: e.target.value })} className="h-12 text-base" /></div>
               <AlertDialog>
-                <AlertDialogTrigger asChild><Button className="w-full h-12">Distribusikan</Button></AlertDialogTrigger>
+                <AlertDialogTrigger asChild><Button className="w-full h-12" disabled={submitting}>Distribusikan</Button></AlertDialogTrigger>
                 <AlertDialogContent>
-                  <AlertDialogHeader><AlertDialogTitle>Konfirmasi Distribusi</AlertDialogTitle><AlertDialogDescription>Yakin ingin mencatat distribusi ini?</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={handleSubmit}>Ya</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogHeader><AlertDialogTitle>Konfirmasi Distribusi</AlertDialogTitle><AlertDialogDescription>Apakah Anda yakin ingin mendistribusikan zakat ini?</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={handleSubmit} disabled={submitting}>Ya, Distribusikan</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </div>
