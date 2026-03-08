@@ -36,18 +36,18 @@ export default function KelolaPanitia() {
   useEffect(() => { fetchData(); }, []);
 
   const handleSubmit = async () => {
-    if (!form.name || !form.email || !form.password) { toast.error('Semua field harus diisi'); return; }
-    if (form.password.length < 6) { toast.error('Password minimal 6 karakter'); return; }
+    if (!form.name || !form.email || !form.password) { toast.error('Harap isi semua data yang diperlukan.'); return; }
+    if (form.password.length < 6) { toast.error('Password minimal 6 karakter.'); return; }
     setSubmitting(true);
     try {
       const res = await supabase.functions.invoke('create-panitia', {
         body: { name: form.name, email: form.email, password: form.password },
       });
       if (res.error) throw res.error;
-      toast.success('Panitia berhasil ditambahkan');
+      toast.success('Panitia berhasil ditambahkan ✓');
       setOpen(false); setForm({ name: '', email: '', password: '' }); fetchData();
     } catch (err: any) {
-      toast.error(err.message || 'Gagal menambah panitia');
+      toast.error(friendlyError(err));
     }
     setSubmitting(false);
   };
