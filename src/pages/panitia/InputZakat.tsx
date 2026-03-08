@@ -171,9 +171,10 @@ export default function InputZakat() {
       jenis_zakat: form.jenis_zakat,
       jumlah_uang: Number(form.jumlah_uang) || 0,
       jumlah_beras: Number(form.jumlah_beras) || 0,
-      rt_id: form.rt_id || null,
+      rt_id: form.status_muzakki === 'RT' ? (form.rt_id || null) : null,
       tanggal: form.tanggal,
       jumlah_jiwa: Number(form.jumlah_jiwa) || 1,
+      status_muzakki: form.status_muzakki,
     }).eq('id', editItem.id);
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success('Data zakat berhasil diperbarui ✓');
