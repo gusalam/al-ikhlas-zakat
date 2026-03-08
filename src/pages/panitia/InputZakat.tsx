@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import PanitiaLayout from '@/components/layouts/PanitiaLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,13 +9,19 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, FileText } from 'lucide-react';
+import { Plus, FileText, Search } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData } from '@/components/KwitansiZakat';
 import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
+
+interface MuzakkiSuggestion {
+  nama_muzakki: string;
+  jumlah_jiwa: number;
+  rt_id: string | null;
+}
 
 export default function InputZakat() {
   const { user } = useAuth();
@@ -26,6 +32,13 @@ export default function InputZakat() {
   const [kwitansiOpen, setKwitansiOpen] = useState(false);
   const [kwitansiData, setKwitansiData] = useState<KwitansiData | null>(null);
   const pag = usePagination(50);
+
+  // Muzakki search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<MuzakkiSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
     const [{ data: zakat, count }, { data: rt }] = await Promise.all([
@@ -38,6 +51,64 @@ export default function InputZakat() {
   };
 
   useEffect(() => { fetchData(); }, [pag.page]);
+
+  // Live search muzakki
+  const searchMuzakki = useCallback(async (query: string) => {
+    if (query.length < 2) { setSuggestions([]); return; }
+    const { data } = await supabase
+      .from('zakat')
+      .select('nama_muzakki, jumlah_jiwa, rt_id')
+      .ilike('nama_muzakki', `%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    // Deduplicate by nama_muzakki, keep latest
+    const seen = new Map<string, MuzakkiSuggestion>();
+    (data || []).forEach(d => {
+      if (!seen.has(d.nama_muzakki)) {
+        seen.set(d.nama_muzakki, { nama_muzakki: d.nama_muzakki, jumlah_jiwa: d.jumlah_jiwa, rt_id: d.rt_id });
+      }
+    });
+    setSuggestions(Array.from(seen.values()));
+  }, []);
+
+  const handleSearchInput = (value: string) => {
+    setSearchQuery(value);
+    setForm(f => ({ ...f, nama_muzakki: value }));
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => {
+      searchMuzakki(value);
+      setShowSuggestions(true);
+    }, 300);
+  };
+
+  const selectMuzakki = (m: MuzakkiSuggestion) => {
+    const jiwa = String(m.jumlah_jiwa || 1);
+    const beras = (Number(jiwa) || 1) * 2.5;
+    const uang = beras * (Number(form.harga_beras) || 0);
+    const isRt = !!m.rt_id;
+    setForm(f => ({
+      ...f,
+      nama_muzakki: m.nama_muzakki,
+      jumlah_jiwa: jiwa,
+      rt_id: m.rt_id || '',
+      kategori_muzakki: isRt ? 'rt' : 'jamaah',
+      ...(f.jenis_zakat === 'Zakat Fitrah' ? { jumlah_beras: String(beras), jumlah_uang: String(uang) } : {}),
+    }));
+    setSearchQuery(m.nama_muzakki);
+    setShowSuggestions(false);
+  };
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleSubmit = async () => {
     const { data: inserted, error } = await supabase.from('zakat').insert({
@@ -59,6 +130,7 @@ export default function InputZakat() {
     setKwitansiOpen(true);
 
     setForm({ nama_muzakki: '', jenis_zakat: 'Zakat Fitrah', jumlah_uang: '', jumlah_beras: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0], jumlah_jiwa: '1', penerima: '', harga_beras: '15000', kategori_muzakki: 'rt' });
+    setSearchQuery('');
     fetchData();
   };
 
@@ -73,12 +145,41 @@ export default function InputZakat() {
     <PanitiaLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="text-xl md:text-2xl font-serif font-bold">Input Zakat</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setSearchQuery(''); setShowSuggestions(false); } }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tambah</Button></DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Input Zakat Baru</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div><Label>Nama Muzakki</Label><Input value={form.nama_muzakki} onChange={e => setForm({ ...form, nama_muzakki: e.target.value })} className="h-12 text-base" /></div>
+              {/* Muzakki search with auto-fill */}
+              <div className="relative" ref={suggestionsRef}>
+                <Label>Nama Muzakki</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    value={searchQuery || form.nama_muzakki}
+                    onChange={e => handleSearchInput(e.target.value)}
+                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                    placeholder="Ketik nama untuk mencari..."
+                    className="h-12 text-base pl-9"
+                  />
+                </div>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {suggestions.map((m, i) => (
+                      <button
+                        key={`${m.nama_muzakki}-${i}`}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-accent text-sm transition-colors"
+                        onClick={() => selectMuzakki(m)}
+                      >
+                        <span className="font-medium">{m.nama_muzakki}</span>
+                        <span className="text-muted-foreground ml-2">({m.jumlah_jiwa} jiwa)</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div><Label>Jumlah Jiwa</Label><Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => {
                 const jiwa = e.target.value;
                 if (form.jenis_zakat === 'Zakat Fitrah') {
