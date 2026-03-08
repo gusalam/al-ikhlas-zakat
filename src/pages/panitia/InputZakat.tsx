@@ -28,7 +28,7 @@ interface MuzakkiSuggestion {
 
 const emptyForm = () => ({
   nama_muzakki: '', rt_id: '', tanggal: new Date().toISOString().split('T')[0],
-  penerima: '', alamat: '', status_muzakki: 'RT',
+  penerima: '', alamat: '', status_muzakki: 'RT', alamat_muzakki: '',
 });
 
 export default function InputZakat() {
