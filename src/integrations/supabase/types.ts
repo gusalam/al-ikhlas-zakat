@@ -198,6 +198,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_zakat_stats: { Args: never; Returns: Json }
+      get_zakat_stats_filtered: {
+        Args: { _end_date?: string; _start_date?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
