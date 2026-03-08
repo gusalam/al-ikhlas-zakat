@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 import { toast } from 'sonner';
-import { Plus, Search, Eye, Download, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Eye, Download, Pencil, Trash2 } from 'lucide-react';
+import SearchInput from '@/components/SearchInput';
 import { friendlyError } from '@/lib/errorHandler';
 import { useAuth } from '@/contexts/AuthContext';
 import KwitansiZakat, { KwitansiData, DetailZakatItem } from '@/components/KwitansiZakat';
