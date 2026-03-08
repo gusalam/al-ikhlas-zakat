@@ -239,7 +239,7 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
                           <td style={{ width: '30px', fontWeight: 'bold' }}>{p.uang > 0 ? 'Rp' : ''}</td>
                           <td style={{ width: '80px', fontWeight: 'bold' }}>{p.uang > 0 ? fmt(p.uang) : ''}</td>
                           <td style={{ width: '50px' }}>{(p.no === 1 || p.no === 4) ? 'Beras :' : ''}</td>
-                          <td>{(p.no === 1 || p.no === 4) ? (p.beras > 0 ? `${p.beras} Liter` : 'Liter') : ''}</td>
+                          <td>{(p.no === 1 || p.no === 4) ? (p.beras > 0 ? `${p.beras} Kg` : 'Kg') : ''}</td>
                         </tr>
                       ))}
                     </tbody>
