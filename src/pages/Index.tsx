@@ -93,7 +93,7 @@ export default function Index() {
             { label: 'Infaq', value: fmt(stats.totalInfaq), icon: Banknote, color: 'text-primary' },
             { label: 'Fidyah', value: fmt(stats.totalFidyah), icon: Banknote, color: 'text-secondary' },
             { label: 'Total Muzakki', value: stats.totalMuzakki.toString(), icon: Users, color: 'text-primary' },
-            { label: 'Total Mustahik', value: stats.totalMustahik.toString(), icon: Users, color: 'text-secondary' },
+            { label: 'Total Mustahik', value: `${stats.totalMustahik} Orang`, icon: Users, color: 'text-secondary' },
             { label: 'Jiwa Fitrah', value: `${stats.totalJiwaFitrah} Orang`, icon: Users, color: 'text-primary' },
             { label: 'Beras (Kg)', value: `${stats.totalBeras} Kg`, icon: Wheat, color: 'text-secondary' },
           ].map((stat) => {
