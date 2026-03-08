@@ -276,7 +276,7 @@ export default function PanitiaDistribusi() {
           <Card key={d.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between">
-                <div><p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p><p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p></div>
+                <div><p className="font-semibold text-base">{d.mustahik?.nama || '-'}</p>{d.mustahik?.alamat && <p className="text-xs text-muted-foreground">{d.mustahik.alamat}</p>}<p className="text-sm text-muted-foreground">{d.mustahik?.rt?.nama_rt || '-'}</p></div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(d)}><Pencil className="w-4 h-4" /></Button>
                   <DeleteButton id={d.id} />
