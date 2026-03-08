@@ -113,7 +113,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-primary" />Kategori Mustahik</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Object.entries(kategoriSummary).map(([kategori, count]) => (
+              {Object.entries(kategoriSummary).map(([kategori, count]: [string, any]) => (
                 <div key={kategori} className="flex items-center justify-between"><Badge variant="secondary">{kategori}</Badge><span className="font-semibold">{count} orang</span></div>
               ))}
               {Object.keys(kategoriSummary).length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}
