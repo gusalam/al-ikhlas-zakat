@@ -180,6 +180,7 @@ export default function DataZakat() {
               {data.map(t => (
                 <TableRow key={t.id}>
                   <TableCell>{t.nomor_kwitansi}</TableCell><TableCell>{t.nama_muzakki}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{t.alamat_muzakki || '-'}</TableCell>
                   <TableCell><span className={`inline-block text-xs px-2 py-0.5 rounded-full ${t.status_muzakki === 'Jamaah' ? 'bg-secondary text-secondary-foreground' : 'bg-primary/10 text-primary'}`}>{t.status_muzakki || 'RT'}</span></TableCell>
                   <TableCell>{getJenisLabels(t)}</TableCell><TableCell>{fmt(getTotalUang(t))}</TableCell><TableCell>{getTotalBeras(t)} Kg</TableCell><TableCell>{t.rt?.nama_rt || '-'}</TableCell><TableCell>{new Date(t.tanggal).toLocaleDateString('id-ID')}</TableCell>
                   <TableCell>
