@@ -240,11 +240,11 @@ export default function Index() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Card>
             <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Grafik Jenis Zakat</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-6">
               {pieData.length > 0 ? (
-                <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={300}>
+                <ResponsiveContainer key={`pie-${pieKey}`} width="100%" height={250}>
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" isAnimationActive animationBegin={0} animationDuration={1200} animationEasing="ease-out" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" isAnimationActive animationBegin={0} animationDuration={1200} animationEasing="ease-out" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                       {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
                     <Tooltip formatter={(v: number) => fmt(v)} /><Legend />
@@ -254,7 +254,7 @@ export default function Index() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="font-serif text-xl">Zakat per RT</CardTitle></CardHeader>
+            <CardHeader className="p-3 sm:p-6 pb-2"><CardTitle className="font-serif text-base sm:text-xl">Zakat per RT</CardTitle></CardHeader>
             <CardContent>
               {rtChartData.length > 0 ? (
                 <ResponsiveContainer key={`bar-${barKey}`} width="100%" height={300}>
