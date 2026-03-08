@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { friendlyError } from '@/lib/errorHandler';
 import { toast } from 'sonner';
 import { useZakatStats } from '@/hooks/useZakatStats';
+import { useCountUp } from '@/hooks/useAnimationLoop';
 
 export default function AdminDashboard() {
   const { stats, fetchStats } = useZakatStats();
