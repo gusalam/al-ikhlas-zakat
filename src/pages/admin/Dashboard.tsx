@@ -47,21 +47,21 @@ export default function AdminDashboard() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
   // Animated stats for cards
-  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 8000);
-  const aTotalMal = useCountUp(stats.totalMal, 1500, 8000);
-  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 8000);
-  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 8000);
-  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 8000);
-  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 8000);
-  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 8000);
-  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 8000);
-  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 8000);
-  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 8000);
-  const aTotalZakat = useCountUp(stats.totalZakat, 1500, 8000);
-  const aTotalDistribusiUang = useCountUp(stats.totalDistribusiUang, 1500, 8000);
-  const aSisaUang = useCountUp(stats.sisaUang, 1500, 8000);
-  const aTotalDistribusiBeras = useCountUp(stats.totalDistribusiBeras, 1500, 8000);
-  const aSisaBeras = useCountUp(stats.sisaBeras, 1500, 8000);
+  const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 30000);
+  const aTotalMal = useCountUp(stats.totalMal, 1500, 30000);
+  const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 30000);
+  const aTotalFidyah = useCountUp(stats.totalFidyah, 1500, 30000);
+  const aTotalMuzakki = useCountUp(stats.totalMuzakki, 1500, 30000);
+  const aTotalMustahik = useCountUp(stats.totalMustahik, 1500, 30000);
+  const aTotalJiwaFitrah = useCountUp(stats.totalJiwaFitrah, 1500, 30000);
+  const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 30000);
+  const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 30000);
+  const aTotalBeras = useCountUp(stats.totalBeras, 1500, 30000);
+  const aTotalZakat = useCountUp(stats.totalZakat, 1500, 30000);
+  const aTotalDistribusiUang = useCountUp(stats.totalDistribusiUang, 1500, 30000);
+  const aSisaUang = useCountUp(stats.sisaUang, 1500, 30000);
+  const aTotalDistribusiBeras = useCountUp(stats.totalDistribusiBeras, 1500, 30000);
+  const aSisaBeras = useCountUp(stats.sisaBeras, 1500, 30000);
 
   const kategoriSummary = mustahikData.reduce((acc: Record<string, number>, m: any) => {
     const k = m.kategori || 'Tidak Dikategorikan'; acc[k] = (acc[k] || 0) + 1; return acc;
