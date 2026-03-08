@@ -42,7 +42,7 @@ export default function Index() {
     await fetchStats();
 
     let zakatQuery = supabase.from('transaksi_zakat').select('id, nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jenis_zakat, jumlah_uang, jumlah_beras, jumlah_jiwa)', { count: 'exact' }).order('tanggal', { ascending: false });
-    if (zakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${zakatSearch.trim()}%`);
+    if (debouncedZakatSearch.trim()) zakatQuery = zakatQuery.ilike('nama_muzakki', `%${debouncedZakatSearch.trim()}%`);
     zakatQuery = zakatQuery.range(zakatPag.from, zakatPag.to);
 
     const distQuery = supabase.from('distribusi').select('id, jumlah, jumlah_beras, jenis_bantuan, sumber_zakat, tanggal, mustahik(nama, rt(nama_rt))', { count: 'exact' }).order('tanggal', { ascending: false }).range(distPag.from, distPag.to);
