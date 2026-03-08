@@ -1,13 +1,8 @@
 import { ReactNode, useMemo } from 'react';
 
 interface RunningListWrapperProps {
-  /** All rendered row elements (full dataset) */
-  children: ReactNode;
-  /** All data items for building the visible window */
   data: any[];
-  /** Current offset from useAutoScroll */
   offset: number;
-  /** How many rows to show */
   visibleCount: number;
   onPause: () => void;
   onResume: () => void;
