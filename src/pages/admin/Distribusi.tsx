@@ -64,13 +64,16 @@ export default function Distribusi() {
     setMustahikList(mustahik || []);
     await fetchStats();
 
-    const { data: allDist } = await supabase.from('distribusi').select('sumber_zakat, jumlah');
+    const { data: allDist } = await supabase.from('distribusi').select('sumber_zakat, jumlah, jumlah_beras, jenis_bantuan');
     const totals: Record<string, number> = {};
+    let totalBerasDist = 0;
     (allDist || []).forEach((d: any) => {
       const s = d.sumber_zakat || 'Zakat Fitrah';
       totals[s] = (totals[s] || 0) + Number(d.jumlah || 0);
+      if (d.jenis_bantuan === 'Beras') totalBerasDist += Number(d.jumlah_beras || 0);
     });
     setDistribusiPerSumber(totals);
+    setDistribusiBeras(totalBerasDist);
   };
 
   useEffect(() => { fetchData(); }, [pag.page]);
