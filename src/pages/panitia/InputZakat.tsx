@@ -347,15 +347,33 @@ export default function InputZakat() {
                 </div>
               )}
               <div>
-                <Label>Jumlah Jiwa</Label>
-                <Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => setForm({ ...form, jumlah_jiwa: e.target.value })} />
+                <Label>Jumlah Jiwa {form.jenis_zakat === 'Zakat Fitrah' && <span className="text-destructive">*</span>}</Label>
+                <Input type="number" min="1" value={form.jumlah_jiwa} onChange={e => {
+                  if (form.jenis_zakat === 'Zakat Fitrah') {
+                    const jiwa = Number(e.target.value) || 1;
+                    const beras = jiwa * 2.5;
+                    const uang = beras * (Number(form.harga_beras) || 0);
+                    setForm({ ...form, jumlah_jiwa: e.target.value, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                  } else {
+                    setForm({ ...form, jumlah_jiwa: e.target.value });
+                  }
+                }} />
               </div>
             </div>
 
             {/* Jenis Zakat */}
             <div>
               <Label>Jenis Zakat</Label>
-              <Select value={form.jenis_zakat} onValueChange={v => setForm({ ...form, jenis_zakat: v, jumlah_uang: '', jumlah_beras: '' })}>
+              <Select value={form.jenis_zakat} onValueChange={v => {
+                if (v === 'Zakat Fitrah') {
+                  const jiwa = Number(form.jumlah_jiwa) || 1;
+                  const beras = jiwa * 2.5;
+                  const uang = beras * (Number(form.harga_beras) || 0);
+                  setForm({ ...form, jenis_zakat: v, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                } else {
+                  setForm({ ...form, jenis_zakat: v, jumlah_uang: '', jumlah_beras: '' });
+                }
+              }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Zakat Fitrah">Zakat Fitrah</SelectItem>
@@ -365,6 +383,23 @@ export default function InputZakat() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Kalkulasi Zakat Fitrah */}
+            {form.jenis_zakat === 'Zakat Fitrah' && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4 space-y-3">
+                  <p className="text-sm font-semibold text-primary">Kalkulasi Zakat Fitrah</p>
+                  <div><Label>Harga Beras per Kg (Rp)</Label><Input type="number" value={form.harga_beras} onChange={e => {
+                    const harga = e.target.value;
+                    const jiwa = Number(form.jumlah_jiwa) || 1;
+                    const beras = jiwa * 2.5;
+                    const uang = beras * (Number(harga) || 0);
+                    setForm({ ...form, harga_beras: harga, jumlah_beras: String(beras), jumlah_uang: String(uang) });
+                  }} /></div>
+                  <p className="text-xs text-muted-foreground">Rumus: {Number(form.jumlah_jiwa) || 1} jiwa × 2,5 Kg × Rp {new Intl.NumberFormat('id-ID').format(Number(form.harga_beras) || 0)} = <strong>Rp {new Intl.NumberFormat('id-ID').format((Number(form.jumlah_jiwa) || 1) * 2.5 * (Number(form.harga_beras) || 0))}</strong></p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Metode Pembayaran */}
             <div>
