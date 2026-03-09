@@ -31,12 +31,12 @@ export default function AnimatedStatCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4 sm:p-5">
+      <CardContent className="p-4 sm:p-5 min-h-[100px] sm:min-h-[110px]">
         <div className="flex items-center gap-2 mb-2">
           <Icon className={`w-5 h-5 sm:w-6 sm:h-6 shrink-0 ${color}`} />
           <span className="text-sm sm:text-base text-muted-foreground leading-tight break-words">{label}</span>
         </div>
-        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold break-words" style={{ lineHeight: '1.3', wordBreak: 'break-word' }}>
+        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tabular-nums" style={{ lineHeight: '1.3' }}>
           {display}
         </p>
       </CardContent>
