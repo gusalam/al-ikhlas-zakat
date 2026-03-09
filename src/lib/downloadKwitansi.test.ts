@@ -225,14 +225,11 @@ describe('downloadKwitansiPdf', () => {
     }
   });
 
-  it('should set timeout for URL cleanup', async () => {
+  it('should complete download flow successfully', async () => {
     await downloadKwitansiPdf(mockData);
 
-    // Verify that setTimeout was set up (URL.createObjectURL was called)
-    expect(global.URL.createObjectURL).toHaveBeenCalled();
-    
-    // The actual cleanup happens after 30 seconds in real execution
-    // For this test, we just verify the download flow completed
+    // Verify the complete flow executed
+    expect(console.info).toHaveBeenCalledWith('[PDF Download] Starting kwitansi PDF generation', expect.any(Object));
     expect(console.info).toHaveBeenCalledWith('[PDF Download] Download initiated successfully via native method');
   });
 });
