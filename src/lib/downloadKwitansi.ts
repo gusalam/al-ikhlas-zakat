@@ -31,7 +31,10 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 export async function downloadKwitansiPdf(data: KwitansiData) {
+  console.info('[PDF Download] Starting kwitansi PDF generation', { nomor: data.nomor, nama: data.nama_muzakki });
+  
   try {
+    console.info('[PDF Download] Creating jsPDF instance');
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 210] });
     const green = [39, 103, 73] as const;
     const lightGreen = [230, 245, 230] as const;
@@ -40,17 +43,21 @@ export async function downloadKwitansiPdf(data: KwitansiData) {
     const totalUang = payments.reduce((s, p) => s + p.uang, 0);
     const totalJiwa = data.details.find(d => d.jenis_zakat === 'Zakat Fitrah')?.jumlah_jiwa || 0;
 
+    console.info('[PDF Download] Drawing PDF layout');
     doc.setDrawColor(...green); doc.setLineWidth(1.5); doc.rect(5, 5, 200, 138);
     doc.setLineWidth(0.5); doc.rect(7, 7, 196, 134);
     doc.setFillColor(...lightGreen); doc.rect(10, 10, 40, 128, 'F');
 
     try {
+      console.info('[PDF Download] Loading logo image');
       const img = await loadImage(logoImg);
       doc.addImage(img, 'PNG', 15, 15, 30, 30);
-    } catch {
-      // Logo load failed, continue without it
+      console.info('[PDF Download] Logo added successfully');
+    } catch (error) {
+      console.warn('[PDF Download] Failed to load logo, continuing without it', error);
     }
 
+    console.info('[PDF Download] Adding text content');
     doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...green);
     doc.text('BADAN AMIL', 30, 55, { align: 'center' }); doc.text('ZAKAT', 30, 60, { align: 'center' });
     doc.text('MASJID AL-IKHLAS', 30, 65, { align: 'center' }); doc.text('KEBON BARU', 30, 70, { align: 'center' });
@@ -104,28 +111,49 @@ export async function downloadKwitansiPdf(data: KwitansiData) {
     y += 15;
     doc.setFont('helvetica', 'bold'); doc.text(data.penerima, 165, y, { align: 'center' });
 
+    console.info('[PDF Download] Generating PDF blob');
     const blob = doc.output('blob');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kwitansi-zakat-${data.nomor}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const fileName = `kwitansi-zakat-${data.nomor}.pdf`;
     
-    // Cleanup URL setelah delay untuk memastikan download selesai
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-    
-    toast.success('Kwitansi PDF berhasil diunduh', {
-      description: 'Klik untuk membuka file',
-      action: {
-        label: '📄 Buka',
-        onClick: () => window.open(url, '_blank')
-      },
-      duration: 5000,
-    });
+    // Try modern download method first
+    try {
+      console.info('[PDF Download] Attempting browser native download');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        console.info('[PDF Download] URL cleaned up');
+      }, 30000);
+      
+      console.info('[PDF Download] Download initiated successfully via native method');
+      
+      toast.success('Kwitansi PDF berhasil diunduh', {
+        description: 'Klik untuk membuka file',
+        action: {
+          label: '📄 Buka',
+          onClick: () => window.open(url, '_blank')
+        },
+        duration: 5000,
+      });
+    } catch (nativeError) {
+      // Fallback to FileSaver.js for better browser compatibility
+      console.warn('[PDF Download] Native download failed, using FileSaver.js fallback', nativeError);
+      saveAs(blob, fileName);
+      console.info('[PDF Download] Download initiated successfully via FileSaver.js');
+      
+      toast.success('Kwitansi PDF berhasil diunduh', {
+        description: 'File telah diunduh menggunakan metode alternatif',
+        duration: 5000,
+      });
+    }
   } catch (error) {
-    console.error('Download kwitansi error:', error);
+    console.error('[PDF Download] Failed to generate or download PDF', error);
     toast.error('Gagal mengunduh kwitansi PDF. Silakan coba lagi.');
   }
 }
