@@ -77,16 +77,16 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold mb-4 sm:mb-6">Dashboard Admin</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-6 sm:mb-8 leading-tight">Dashboard Admin</h1>
       {/* Stok Zakat Audit */}
       <Card className="mb-6 sm:mb-8 border-primary/20">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" />Audit Stok Zakat
+          <CardTitle className="text-xl sm:text-2xl font-semibold flex items-center gap-2 leading-relaxed">
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Audit Stok Zakat
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 sm:p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {[
               { label: 'Uang Masuk', value: fmt(aTotalZakat), icon: ArrowDownCircle, color: 'text-emerald-600' },
               { label: 'Uang Distribusi', value: fmt(aTotalDistribusiUang), icon: ArrowUpCircle, color: 'text-red-500' },
@@ -97,9 +97,9 @@ export default function AdminDashboard() {
             ].map(s => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-muted/50">
-                  <div className={`p-1.5 sm:p-2 rounded-lg bg-background ${s.color}`}><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></div>
-                  <div className="min-w-0"><p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{s.label}</p><p className="text-sm sm:text-lg font-bold whitespace-nowrap" style={{ wordBreak: 'keep-all' }}>{s.value}</p></div>
+                <div key={s.label} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-muted/50">
+                  <div className={`p-2 sm:p-2.5 rounded-lg bg-background ${s.color}`}><Icon className="w-5 h-5 sm:w-6 sm:h-6" /></div>
+                  <div className="min-w-0"><p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">{s.label}</p><p className="text-lg sm:text-xl md:text-2xl font-bold leading-tight break-words">{s.value}</p></div>
                 </div>
               );
             })}
