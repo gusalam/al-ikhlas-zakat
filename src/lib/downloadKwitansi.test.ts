@@ -198,7 +198,8 @@ describe('downloadKwitansiPdf', () => {
   });
 
   it('should use FileSaver fallback when native download fails', async () => {
-    // Mock native download to fail
+    // Mock native download to fail by making appendChild throw
+    const originalAppendChild = document.body.appendChild;
     vi.spyOn(document.body, 'appendChild').mockImplementation(() => {
       throw new Error('Mock native download error');
     });
@@ -207,11 +208,11 @@ describe('downloadKwitansiPdf', () => {
 
     await downloadKwitansiPdf(mockData);
 
-    expect(console.warn).toHaveBeenCalledWith(
-      '[PDF Download] Native download failed, using FileSaver.js fallback',
-      expect.any(Error)
-    );
+    // Verify FileSaver was used
     expect(saveAs).toHaveBeenCalled();
+    expect(console.info).toHaveBeenCalledWith('[PDF Download] Download initiated successfully via FileSaver.js');
+
+    document.body.appendChild = originalAppendChild;
   });
 
   it('should generate correct filename based on nomor kwitansi', async () => {
