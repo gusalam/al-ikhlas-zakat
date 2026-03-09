@@ -9,6 +9,7 @@ import { friendlyError } from '@/lib/errorHandler';
 import { toast } from 'sonner';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { useCountUp } from '@/hooks/useAnimationLoop';
+import ZakatTrendChart from '@/components/ZakatTrendChart';
 
 export default function AdminDashboard() {
   const { stats, fetchStats } = useZakatStats();
@@ -16,19 +17,22 @@ export default function AdminDashboard() {
   const [recentDistribusi, setRecentDistribusi] = useState<any[]>([]);
   const [mustahikData, setMustahikData] = useState<any[]>([]);
   const [zakatByRt, setZakatByRt] = useState<any[]>([]);
+  const [zakatTrend, setZakatTrend] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [rz, rd, mk, zrt] = await Promise.all([
+      const [rz, rd, mk, zrt, trend] = await Promise.all([
         supabase.from('transaksi_zakat').select('nama_muzakki, tanggal, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras, jenis_zakat)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('distribusi').select('jumlah, jumlah_beras, jenis_bantuan, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('mustahik').select('kategori'),
         supabase.from('transaksi_zakat').select('nama_muzakki, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras)'),
+        supabase.from('transaksi_zakat').select('tanggal, detail_zakat(jumlah_uang, jenis_zakat)').order('tanggal', { ascending: true }),
       ]);
       setRecentZakat(rz.data || []);
       setRecentDistribusi(rd.data || []);
       setMustahikData(mk.data || []);
       setZakatByRt(zrt.data || []);
+      setZakatTrend(trend.data || []);
       await fetchStats();
     } catch (err) {
       toast.error(friendlyError(err));
@@ -107,6 +111,11 @@ export default function AdminDashboard() {
             </Card>
           );
         })}
+      </div>
+
+      {/* Trend Chart */}
+      <div className="mb-5">
+        <ZakatTrendChart data={zakatTrend} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
