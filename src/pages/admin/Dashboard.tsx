@@ -113,6 +113,11 @@ export default function AdminDashboard() {
         })}
       </div>
 
+      {/* Trend Chart */}
+      <div className="mb-5">
+        <ZakatTrendChart data={zakatTrend} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <Card>
           <CardHeader className="pb-3">
