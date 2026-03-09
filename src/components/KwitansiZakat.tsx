@@ -161,7 +161,6 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
         },
         duration: 5000,
         onDismiss: () => URL.revokeObjectURL(url),
-        onAutoClose: () => URL.revokeObjectURL(url),
       });
     } catch (error) {
       console.error('Download kwitansi error:', error);

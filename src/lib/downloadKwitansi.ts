@@ -120,7 +120,6 @@ export async function downloadKwitansiPdf(data: KwitansiData) {
       },
       duration: 5000,
       onDismiss: () => URL.revokeObjectURL(url),
-      onAutoClose: () => URL.revokeObjectURL(url),
     });
   } catch (error) {
     console.error('Download kwitansi error:', error);
