@@ -141,6 +141,7 @@ const FidyahFields = memo(function FidyahFields({
             <Input
               type="number"
               inputMode="numeric"
+              min="0"
               defaultValue={fidyah.jumlah_uang}
               onBlur={e => onFieldChange('jumlah_uang', e.target.value)}
               onChange={e => onFieldChange('jumlah_uang', e.target.value)}
@@ -152,6 +153,8 @@ const FidyahFields = memo(function FidyahFields({
             <Input
               type="number"
               inputMode="numeric"
+              min="0"
+              step="0.5"
               defaultValue={fidyah.jumlah_beras}
               onBlur={e => onFieldChange('jumlah_beras', e.target.value)}
               onChange={e => onFieldChange('jumlah_beras', e.target.value)}
