@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [recentDistribusi, setRecentDistribusi] = useState<any[]>([]);
   const [mustahikData, setMustahikData] = useState<any[]>([]);
   const [zakatByRt, setZakatByRt] = useState<any[]>([]);
+  const [zakatTrend, setZakatTrend] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
