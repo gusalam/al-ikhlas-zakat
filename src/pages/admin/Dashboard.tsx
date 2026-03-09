@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { useCountUp } from '@/hooks/useAnimationLoop';
 import ZakatTrendChart from '@/components/ZakatTrendChart';
+import MustahikPieChart from '@/components/MustahikPieChart';
 
 export default function AdminDashboard() {
   const { stats, fetchStats } = useZakatStats();
