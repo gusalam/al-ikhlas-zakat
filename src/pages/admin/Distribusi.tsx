@@ -88,19 +88,34 @@ export default function Distribusi() {
     if (form.jenis_bantuan === 'Beras' && !Number(form.jumlah_beras)) { toast.error('Jumlah beras wajib diisi'); return; }
 
     const jumlahUang = form.jenis_bantuan === 'Uang' ? Number(form.jumlah) : 0;
+    const jumlahBeras = form.jenis_bantuan === 'Beras' ? Number(form.jumlah_beras) : 0;
 
-    if (!editItem && form.jenis_bantuan === 'Uang' && jumlahUang > 0) {
+    // Validasi nilai negatif
+    if (jumlahUang < 0 || jumlahBeras < 0) {
+      toast.error('Jumlah tidak boleh negatif');
+      return;
+    }
+
+    // Validasi stok untuk uang (baik create maupun edit)
+    if (form.jenis_bantuan === 'Uang' && jumlahUang > 0) {
       const totalDana = getAvailableFund(stats, form.sumber_zakat);
       const sudahDisalurkan = distribusiPerSumber[form.sumber_zakat] || 0;
-      const sisaDana = totalDana - sudahDisalurkan;
+      // Saat edit, kurangi nilai distribusi yang sedang diedit dari total yang sudah disalurkan
+      const sudahDisalurkanTanpaEdit = editItem ? sudahDisalurkan - Number(editItem.jumlah || 0) : sudahDisalurkan;
+      const sisaDana = totalDana - sudahDisalurkanTanpaEdit;
       if (jumlahUang > sisaDana) {
         toast.error(`Jumlah distribusi melebihi dana ${form.sumber_zakat} yang tersedia. Sisa dana: ${fmt(sisaDana)}`);
         return;
       }
     }
-    if (!editItem && form.jenis_bantuan === 'Beras') {
-      const sisaBeras = getAvailableBeras(stats) - distribusiBeras;
-      if (Number(form.jumlah_beras) > sisaBeras) {
+    
+    // Validasi stok untuk beras (baik create maupun edit)
+    if (form.jenis_bantuan === 'Beras' && jumlahBeras > 0) {
+      const totalBerasStok = getAvailableBeras(stats);
+      // Saat edit, kurangi nilai distribusi yang sedang diedit dari total yang sudah disalurkan
+      const sudahDisalurkanTanpaEdit = editItem ? distribusiBeras - Number(editItem.jumlah_beras || 0) : distribusiBeras;
+      const sisaBeras = totalBerasStok - sudahDisalurkanTanpaEdit;
+      if (jumlahBeras > sisaBeras) {
         toast.error(`Jumlah beras melebihi stok tersedia. Sisa beras: ${sisaBeras} Kg`);
         return;
       }
