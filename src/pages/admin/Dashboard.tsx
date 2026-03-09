@@ -156,27 +156,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary shrink-0" />
-              Kategori Mustahik
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="space-y-2.5">
-              {Object.entries(kategoriSummary).map(([kategori, count]: [string, any]) => (
-                <div key={kategori} className="flex items-center justify-between py-1">
-                  <Badge variant="secondary" className="text-xs">{kategori}</Badge>
-                  <span className="font-semibold text-sm tabular-nums">{fmtNum(count)} orang</span>
-                </div>
-              ))}
-              {Object.keys(kategoriSummary).length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-6">Belum ada data</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <MustahikPieChart data={mustahikData} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
