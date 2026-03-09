@@ -151,9 +151,18 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       a.download = `kwitansi-zakat-${data.nomor}.pdf`;
       document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success('Kwitansi PDF berhasil diunduh ✓');
+      
+      toast.success('Kwitansi PDF berhasil diunduh', {
+        description: 'Klik untuk membuka file',
+        action: {
+          label: '📄 Buka',
+          onClick: () => window.open(url, '_blank')
+        },
+        duration: 5000,
+        onDismiss: () => URL.revokeObjectURL(url),
+        onAutoClose: () => URL.revokeObjectURL(url),
+      });
     } catch (error) {
       console.error('Download kwitansi error:', error);
       toast.error('Gagal mengunduh kwitansi PDF. Silakan coba lagi.');
