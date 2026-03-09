@@ -145,7 +145,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-primary" />Kategori Mustahik</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Kategori Mustahik</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {Object.entries(kategoriSummary).map(([kategori, count]: [string, any]) => (
