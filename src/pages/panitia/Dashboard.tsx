@@ -41,8 +41,8 @@ export default function PanitiaDashboard() {
 
   return (
     <PanitiaLayout>
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold mb-4 sm:mb-6">Dashboard Panitia</h1>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-6 sm:mb-8 leading-tight">Dashboard Panitia</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {[
           { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote },
           { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote },
@@ -57,13 +57,13 @@ export default function PanitiaDashboard() {
         ].map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}><CardContent className="p-3 sm:p-4"><div className="flex items-center gap-1.5 sm:gap-2 mb-1"><Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" /><span className="text-[11px] sm:text-sm text-muted-foreground leading-tight">{s.label}</span></div><p className="text-sm sm:text-xl font-bold whitespace-nowrap" style={{ wordBreak: 'keep-all' }}>{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-4 sm:p-5"><div className="flex items-center gap-2 mb-2"><Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" /><span className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">{s.label}</span></div><p className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight break-words">{s.value}</p></CardContent></Card>
           );
         })}
       </div>
       {rtStats.length > 0 && (
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="font-serif text-base sm:text-lg">Statistik Zakat per RT</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="font-serif text-lg sm:text-xl leading-relaxed">Statistik Zakat per RT</CardTitle></CardHeader>
           <CardContent className="overflow-auto p-4 hidden md:block">
             <Table>
               <TableHeader><TableRow><TableHead>RT</TableHead><TableHead className="text-right">Muzakki</TableHead><TableHead className="text-right">Jiwa Fitrah</TableHead><TableHead className="text-right">Total Zakat</TableHead></TableRow></TableHeader>
