@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { useCountUp } from '@/hooks/useAnimationLoop';
+import ZakatTrendChart from '@/components/ZakatTrendChart';
 
 interface RtStat { nama_rt: string; total_muzakki: number; total_jiwa_fitrah: number; total_zakat: number; }
 
