@@ -100,10 +100,11 @@ const SimpleMoneyField = memo(function SimpleMoneyField({
       </div>
       {enabled && (
         <div className="ml-6">
-          <Label>Jumlah Uang (Rp)</Label>
+          <Label>Jumlah Uang (Rp) <span className="text-destructive">*</span></Label>
           <Input
             type="number"
             inputMode="numeric"
+            min="0"
             defaultValue={value}
             key={`${id}-${enabled}`}
             onBlur={e => onValueChange(e.target.value)}
