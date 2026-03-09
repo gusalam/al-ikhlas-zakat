@@ -178,7 +178,9 @@ export default function InputZakat() {
     if (error) { toast.error(friendlyError(error)); return; }
 
     // Delete old details, insert new
-    await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
+    const { error: deleteError } = await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
+    if (deleteError) { toast.error(friendlyError(deleteError)); return; }
+    
     const detailRows = items.map(d => ({ transaksi_id: editItem.id, ...d }));
     const { error: detailError } = await supabase.from('detail_zakat').insert(detailRows);
     if (detailError) { toast.error(friendlyError(detailError)); return; }

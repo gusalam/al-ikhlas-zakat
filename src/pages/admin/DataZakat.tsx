@@ -75,7 +75,9 @@ export default function DataZakat() {
         tanggal: form.tanggal, status_muzakki: form.status_muzakki, alamat_muzakki: form.alamat_muzakki.trim() || null,
       }).eq('id', editItem.id);
       if (error) { toast.error(friendlyError(error)); return; }
-      await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
+      const { error: deleteError } = await supabase.from('detail_zakat').delete().eq('transaksi_id', editItem.id);
+      if (deleteError) { toast.error(friendlyError(deleteError)); return; }
+      
       await supabase.from('detail_zakat').insert(items.map(d => ({ transaksi_id: editItem.id, ...d })));
       toast.success('Data zakat berhasil diperbarui ✓');
     } else {
