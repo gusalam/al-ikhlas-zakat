@@ -159,18 +159,18 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Banknote className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentZakat.map((t: any, i: number) => {
                 const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
                 const totalBeras = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
                 return (
-                  <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
-                    <div><p className="font-medium text-sm">{t.nama_muzakki}</p><p className="text-xs text-muted-foreground">{fmtDate(t.tanggal)} · {t.rt?.nama_rt || '-'}</p></div>
+                  <div key={i} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                    <div><p className="font-semibold text-base leading-relaxed break-words">{t.nama_muzakki}</p><p className="text-sm text-muted-foreground leading-relaxed">{fmtDate(t.tanggal)} · {t.rt?.nama_rt || '-'}</p></div>
                     <div className="text-right">
-                      {totalUang > 0 && <p className="text-sm font-semibold">{fmt(totalUang)}</p>}
-                      {totalBeras > 0 && <p className="text-sm text-muted-foreground">{totalBeras} Kg</p>}
+                      {totalUang > 0 && <p className="text-base font-bold leading-tight break-words">{fmt(totalUang)}</p>}
+                      {totalBeras > 0 && <p className="text-sm text-muted-foreground leading-relaxed">{totalBeras} Kg</p>}
                     </div>
                   </div>
                 );
@@ -180,15 +180,15 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Truck className="w-4 h-4 text-primary" />Distribusi Terbaru</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Distribusi Terbaru</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentDistribusi.map((d: any, i: number) => (
-                <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
-                  <div><p className="font-medium text-sm">{d.mustahik?.nama || '-'}</p><p className="text-xs text-muted-foreground">{fmtDate(d.tanggal)}</p></div>
+                <div key={i} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                  <div><p className="font-semibold text-base leading-relaxed break-words">{d.mustahik?.nama || '-'}</p><p className="text-sm text-muted-foreground leading-relaxed">{fmtDate(d.tanggal)}</p></div>
                   {d.jenis_bantuan === 'Beras'
-                    ? <p className="text-sm font-semibold">{Number(d.jumlah_beras) || 0} Kg</p>
-                    : <p className="text-sm font-semibold">{fmt(d.jumlah)}</p>
+                    ? <p className="text-base font-bold leading-tight break-words">{Number(d.jumlah_beras) || 0} Kg</p>
+                    : <p className="text-base font-bold leading-tight break-words">{fmt(d.jumlah)}</p>
                   }
                 </div>
               ))}
