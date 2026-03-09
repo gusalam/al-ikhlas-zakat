@@ -336,9 +336,9 @@ export default function Index() {
 
       <footer className="bg-primary text-primary-foreground py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="font-serif text-lg">Masjid Al-Ikhlas</p>
-          <p className="text-sm opacity-75 mt-1">Sistem Transparansi Zakat — {new Date().getFullYear()}</p>
-          <Link to="/login" className="text-sm underline opacity-75 mt-2 inline-block md:hidden">Login Panitia</Link>
+          <p className="font-serif text-xl md:text-2xl">Masjid Al-Ikhlas</p>
+          <p className="text-base md:text-lg opacity-75 mt-2">Sistem Transparansi Zakat — {new Date().getFullYear()}</p>
+          <Link to="/login" className="text-base underline opacity-75 mt-3 inline-block md:hidden">Login Panitia</Link>
         </div>
       </footer>
     </div>
