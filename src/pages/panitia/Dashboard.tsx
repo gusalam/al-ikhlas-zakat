@@ -27,6 +27,7 @@ export default function PanitiaDashboard() {
   }, [fetchData]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+  const fmtNum = (n: number) => n.toLocaleString('id-ID');
 
   const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 30000);
   const aTotalMal = useCountUp(stats.totalMal, 1500, 30000);
@@ -39,45 +40,96 @@ export default function PanitiaDashboard() {
   const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 30000);
   const aTotalBeras = useCountUp(stats.totalBeras, 1500, 30000);
 
+  const statCards = [
+    { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Total Muzakki', value: fmtNum(aTotalMuzakki), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Total Mustahik', value: `${fmtNum(aTotalMustahik)} Orang`, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Jiwa Fitrah', value: `${fmtNum(aTotalJiwaFitrah)} Orang`, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Beras Fitrah', value: `${fmtNum(aTotalBerasFitrah)} Kg`, icon: Wheat, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Beras Fidyah', value: `${fmtNum(aTotalBerasFidyah)} Kg`, icon: Wheat, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Total Beras', value: `${fmtNum(aTotalBeras)} Kg`, icon: Wheat, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+  ];
+
   return (
     <PanitiaLayout>
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-6 sm:mb-8 leading-tight">Dashboard Panitia</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        {[
-          { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote },
-          { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote },
-          { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote },
-          { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote },
-          { label: 'Total Muzakki', value: aTotalMuzakki.toString(), icon: Users },
-          { label: 'Total Mustahik', value: `${aTotalMustahik} Orang`, icon: Users },
-          { label: 'Jiwa Fitrah', value: `${aTotalJiwaFitrah} Orang`, icon: Users },
-          { label: 'Beras Fitrah', value: `${aTotalBerasFitrah} Kg`, icon: Wheat },
-          { label: 'Beras Fidyah', value: `${aTotalBerasFidyah} Kg`, icon: Wheat },
-          { label: 'Total Beras', value: `${aTotalBeras} Kg`, icon: Wheat },
-        ].map(s => {
+      <h1 className="text-2xl sm:text-3xl font-serif font-bold mb-5 sm:mb-6 leading-tight">Dashboard Panitia</h1>
+
+      {/* Stat Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
+        {statCards.map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}><CardContent className="p-4 sm:p-5"><div className="flex items-center gap-2 mb-2"><Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" /><span className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">{s.label}</span></div><p className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight break-words">{s.value}</p></CardContent></Card>
+            <Card key={s.label} className="hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <div className={`p-1.5 rounded-md ${s.bg} ${s.color} shrink-0`}>
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </div>
+                  <span className="text-xs sm:text-sm text-muted-foreground leading-tight line-clamp-1">{s.label}</span>
+                </div>
+                <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold tabular-nums leading-tight text-foreground">
+                  {s.value}
+                </p>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
+
+      {/* RT Stats Table */}
       {rtStats.length > 0 && (
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="font-serif text-lg sm:text-xl leading-relaxed">Statistik Zakat per RT</CardTitle></CardHeader>
-          <CardContent className="overflow-auto p-4 hidden md:block">
-            <Table>
-              <TableHeader><TableRow><TableHead>RT</TableHead><TableHead className="text-right">Muzakki</TableHead><TableHead className="text-right">Jiwa Fitrah</TableHead><TableHead className="text-right">Total Zakat</TableHead></TableRow></TableHeader>
-              <TableBody>{rtStats.map(r => (<TableRow key={r.nama_rt}><TableCell className="font-medium">{r.nama_rt}</TableCell><TableCell className="text-right">{r.total_muzakki}</TableCell><TableCell className="text-right">{r.total_jiwa_fitrah}</TableCell><TableCell className="text-right">{fmt(Number(r.total_zakat))}</TableCell></TableRow>))}</TableBody>
-            </Table>
+          <CardHeader className="pb-3">
+            <CardTitle className="font-serif text-base sm:text-lg">Statistik Zakat per RT</CardTitle>
+          </CardHeader>
+
+          {/* Desktop table */}
+          <CardContent className="px-4 pb-4 hidden md:block">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>RT</TableHead>
+                    <TableHead className="text-right">Muzakki</TableHead>
+                    <TableHead className="text-right">Jiwa Fitrah</TableHead>
+                    <TableHead className="text-right">Total Zakat</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rtStats.map(r => (
+                    <TableRow key={r.nama_rt}>
+                      <TableCell className="font-medium">{r.nama_rt}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmtNum(r.total_muzakki)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmtNum(r.total_jiwa_fitrah)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmt(Number(r.total_zakat))}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
-          <CardContent className="p-3 md:hidden space-y-2">
+
+          {/* Mobile cards */}
+          <CardContent className="px-3 pb-3 md:hidden space-y-2">
             {rtStats.map(r => (
-              <div key={r.nama_rt} className="border rounded-lg p-3">
-                <p className="font-semibold text-sm mb-1">{r.nama_rt}</p>
-                <div className="grid grid-cols-3 gap-1 text-xs">
-                  <div><span className="text-muted-foreground">Muzakki</span><p className="font-bold">{r.total_muzakki}</p></div>
-                  <div><span className="text-muted-foreground">Jiwa</span><p className="font-bold">{r.total_jiwa_fitrah}</p></div>
-                  <div><span className="text-muted-foreground">Zakat</span><p className="font-bold">{fmt(Number(r.total_zakat))}</p></div>
+              <div key={r.nama_rt} className="border border-border rounded-lg p-3">
+                <p className="font-semibold text-sm mb-2">{r.nama_rt}</p>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground mb-0.5">Muzakki</p>
+                    <p className="font-bold tabular-nums">{fmtNum(r.total_muzakki)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-0.5">Jiwa</p>
+                    <p className="font-bold tabular-nums">{fmtNum(r.total_jiwa_fitrah)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-0.5">Zakat</p>
+                    <p className="font-bold tabular-nums">{fmt(Number(r.total_zakat))}</p>
+                  </div>
                 </div>
               </div>
             ))}

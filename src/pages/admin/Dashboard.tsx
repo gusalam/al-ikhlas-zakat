@@ -44,9 +44,9 @@ export default function AdminDashboard() {
   }, [fetchData]);
 
   const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+  const fmtNum = (n: number) => n.toLocaleString('id-ID');
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  // Animated stats for cards
   const aTotalFitrah = useCountUp(stats.totalFitrah, 1500, 30000);
   const aTotalMal = useCountUp(stats.totalMal, 1500, 30000);
   const aTotalInfaq = useCountUp(stats.totalInfaq, 1500, 30000);
@@ -57,6 +57,19 @@ export default function AdminDashboard() {
   const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 30000);
   const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 30000);
   const aTotalBeras = useCountUp(stats.totalBeras, 1500, 30000);
+
+  const statCards = [
+    { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Total Muzakki', value: fmtNum(aTotalMuzakki), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Total Mustahik', value: `${fmtNum(aTotalMustahik)} Orang`, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Jiwa Fitrah', value: `${fmtNum(aTotalJiwaFitrah)} Orang`, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Beras Fitrah', value: `${fmtNum(aTotalBerasFitrah)} Kg`, icon: Wheat, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Beras Fidyah', value: `${fmtNum(aTotalBerasFidyah)} Kg`, icon: Wheat, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Total Beras', value: `${fmtNum(aTotalBeras)} Kg`, icon: Wheat, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+  ];
 
   const kategoriSummary = mustahikData.reduce((acc: Record<string, number>, m: any) => {
     const k = m.kategori || 'Tidak Dikategorikan'; acc[k] = (acc[k] || 0) + 1; return acc;
@@ -72,95 +85,142 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold mb-6 sm:mb-8 leading-tight">Dashboard Admin</h1>
+      <h1 className="text-2xl sm:text-3xl font-serif font-bold mb-5 sm:mb-6 leading-tight">Dashboard Admin</h1>
 
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        {[
-          { label: 'Zakat Fitrah', value: fmt(aTotalFitrah), icon: Banknote, color: 'text-emerald-600' },
-          { label: 'Zakat Mal', value: fmt(aTotalMal), icon: Banknote, color: 'text-blue-600' },
-          { label: 'Infaq', value: fmt(aTotalInfaq), icon: Banknote, color: 'text-amber-600' },
-          { label: 'Fidyah', value: fmt(aTotalFidyah), icon: Banknote, color: 'text-purple-600' },
-          { label: 'Total Muzakki', value: aTotalMuzakki.toString(), icon: Users, color: 'text-blue-600' },
-          { label: 'Total Mustahik', value: `${aTotalMustahik} Orang`, icon: Users, color: 'text-purple-600' },
-          { label: 'Jiwa Fitrah', value: `${aTotalJiwaFitrah} Orang`, icon: Users, color: 'text-emerald-600' },
-          { label: 'Beras Fitrah', value: `${aTotalBerasFitrah} Kg`, icon: Wheat, color: 'text-emerald-600' },
-          { label: 'Beras Fidyah', value: `${aTotalBerasFidyah} Kg`, icon: Wheat, color: 'text-purple-600' },
-          { label: 'Total Beras', value: `${aTotalBeras} Kg`, icon: Wheat, color: 'text-amber-600' },
-        ].map(s => {
+      {/* Stat Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
+        {statCards.map(s => {
           const Icon = s.icon;
           return (
-            <Card key={s.label}><CardContent className="p-4 sm:p-5"><div className="flex items-center gap-2 mb-2"><div className={`p-2 sm:p-2.5 rounded-lg bg-muted ${s.color}`}><Icon className="w-5 h-5 sm:w-6 sm:h-6" /></div></div><p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{s.label}</p><p className="text-xl sm:text-2xl md:text-3xl font-bold mt-1 leading-tight break-words">{s.value}</p></CardContent></Card>
+            <Card key={s.label} className="hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <div className={`p-1.5 rounded-md ${s.bg} ${s.color} shrink-0`}>
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </div>
+                  <span className="text-xs sm:text-sm text-muted-foreground leading-tight line-clamp-1">{s.label}</span>
+                </div>
+                <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold tabular-nums leading-tight text-foreground">
+                  {s.value}
+                </p>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Ringkasan Zakat Per RT</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+              Ringkasan Zakat Per RT
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>RT</TableHead><TableHead className="text-right">Muzakki</TableHead><TableHead className="text-right">Uang</TableHead><TableHead className="text-right">Beras (Kg)</TableHead></TableRow></TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>RT</TableHead>
+                    <TableHead className="text-right">Muzakki</TableHead>
+                    <TableHead className="text-right">Uang</TableHead>
+                    <TableHead className="text-right">Beras (Kg)</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {Object.entries(rtZakatSummary).map(([rt, d]: [string, any]) => (
-                    <TableRow key={rt}><TableCell className="font-medium">{rt}</TableCell><TableCell className="text-right">{d.muzakki.size}</TableCell><TableCell className="text-right">{fmt(d.uang)}</TableCell><TableCell className="text-right">{d.beras}</TableCell></TableRow>
+                    <TableRow key={rt}>
+                      <TableCell className="font-medium">{rt}</TableCell>
+                      <TableCell className="text-right">{fmtNum(d.muzakki.size)}</TableCell>
+                      <TableCell className="text-right">{fmt(d.uang)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(d.beras)}</TableCell>
+                    </TableRow>
                   ))}
-                  {Object.keys(rtZakatSummary).length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Belum ada data</TableCell></TableRow>}
+                  {Object.keys(rtZakatSummary).length === 0 && (
+                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">Belum ada data</TableCell></TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Kategori Mustahik</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary shrink-0" />
+              Kategori Mustahik
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-2.5">
               {Object.entries(kategoriSummary).map(([kategori, count]: [string, any]) => (
-                <div key={kategori} className="flex items-center justify-between"><Badge variant="secondary">{kategori}</Badge><span className="font-semibold">{count} orang</span></div>
+                <div key={kategori} className="flex items-center justify-between py-1">
+                  <Badge variant="secondary" className="text-xs">{kategori}</Badge>
+                  <span className="font-semibold text-sm tabular-nums">{fmtNum(count)} orang</span>
+                </div>
               ))}
-              {Object.keys(kategoriSummary).length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}
+              {Object.keys(kategoriSummary).length === 0 && (
+                <p className="text-center text-muted-foreground text-sm py-6">Belum ada data</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Banknote className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Zakat Terbaru</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <Banknote className="w-5 h-5 text-primary shrink-0" />
+              Zakat Terbaru
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-0">
               {recentZakat.map((t: any, i: number) => {
                 const totalUang = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_uang) || 0), 0);
                 const totalBeras = (t.detail_zakat || []).reduce((s: number, d: any) => s + (Number(d.jumlah_beras) || 0), 0);
                 return (
-                  <div key={i} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
-                    <div><p className="font-semibold text-base leading-relaxed break-words">{t.nama_muzakki}</p><p className="text-sm text-muted-foreground leading-relaxed">{fmtDate(t.tanggal)} · {t.rt?.nama_rt || '-'}</p></div>
-                    <div className="text-right">
-                      {totalUang > 0 && <p className="text-base font-bold leading-tight break-words">{fmt(totalUang)}</p>}
-                      {totalBeras > 0 && <p className="text-sm text-muted-foreground leading-relaxed">{totalBeras} Kg</p>}
+                  <div key={i} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="font-semibold text-sm leading-tight truncate">{t.nama_muzakki}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{fmtDate(t.tanggal)} · {t.rt?.nama_rt || '-'}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      {totalUang > 0 && <p className="text-sm font-bold tabular-nums">{fmt(totalUang)}</p>}
+                      {totalBeras > 0 && <p className="text-xs text-muted-foreground tabular-nums">{fmtNum(totalBeras)} Kg</p>}
                     </div>
                   </div>
                 );
               })}
-              {recentZakat.length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}
+              {recentZakat.length === 0 && <p className="text-center text-muted-foreground text-sm py-6">Belum ada data</p>}
             </div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Distribusi Terbaru</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <Truck className="w-5 h-5 text-primary shrink-0" />
+              Distribusi Terbaru
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-0">
               {recentDistribusi.map((d: any, i: number) => (
-                <div key={i} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
-                  <div><p className="font-semibold text-base leading-relaxed break-words">{d.mustahik?.nama || '-'}</p><p className="text-sm text-muted-foreground leading-relaxed">{fmtDate(d.tanggal)}</p></div>
-                  {d.jenis_bantuan === 'Beras'
-                    ? <p className="text-base font-bold leading-tight break-words">{Number(d.jumlah_beras) || 0} Kg</p>
-                    : <p className="text-base font-bold leading-tight break-words">{fmt(d.jumlah)}</p>
-                  }
+                <div key={i} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <p className="font-semibold text-sm leading-tight truncate">{d.mustahik?.nama || '-'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{fmtDate(d.tanggal)}</p>
+                  </div>
+                  <p className="text-sm font-bold tabular-nums shrink-0">
+                    {d.jenis_bantuan === 'Beras' ? `${fmtNum(Number(d.jumlah_beras) || 0)} Kg` : fmt(d.jumlah)}
+                  </p>
                 </div>
               ))}
-              {recentDistribusi.length === 0 && <p className="text-center text-muted-foreground text-sm">Belum ada data</p>}
+              {recentDistribusi.length === 0 && <p className="text-center text-muted-foreground text-sm py-6">Belum ada data</p>}
             </div>
           </CardContent>
         </Card>
