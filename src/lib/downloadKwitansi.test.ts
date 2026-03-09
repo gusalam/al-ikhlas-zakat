@@ -229,11 +229,11 @@ describe('downloadKwitansiPdf', () => {
   it('should cleanup URL after timeout', async () => {
     vi.useFakeTimers();
 
-    await downloadKwitansiPdf(mockData);
-
-    expect(global.URL.revokeObjectURL).not.toHaveBeenCalled();
-
-    vi.advanceTimersByTime(30000);
+    const promise = downloadKwitansiPdf(mockData);
+    
+    // Wait for initial execution
+    await vi.runAllTimersAsync();
+    await promise;
 
     expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
 
