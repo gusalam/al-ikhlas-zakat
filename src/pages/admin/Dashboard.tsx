@@ -57,11 +57,6 @@ export default function AdminDashboard() {
   const aTotalBerasFitrah = useCountUp(stats.totalBerasFitrah, 1500, 30000);
   const aTotalBerasFidyah = useCountUp(stats.totalBerasFidyah, 1500, 30000);
   const aTotalBeras = useCountUp(stats.totalBeras, 1500, 30000);
-  const aTotalZakat = useCountUp(stats.totalZakat, 1500, 30000);
-  const aTotalDistribusiUang = useCountUp(stats.totalDistribusiUang, 1500, 30000);
-  const aSisaUang = useCountUp(stats.sisaUang, 1500, 30000);
-  const aTotalDistribusiBeras = useCountUp(stats.totalDistribusiBeras, 1500, 30000);
-  const aSisaBeras = useCountUp(stats.sisaBeras, 1500, 30000);
 
   const kategoriSummary = mustahikData.reduce((acc: Record<string, number>, m: any) => {
     const k = m.kategori || 'Tidak Dikategorikan'; acc[k] = (acc[k] || 0) + 1; return acc;
