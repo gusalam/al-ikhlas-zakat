@@ -129,7 +129,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary" />Ringkasan Zakat Per RT</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-relaxed"><TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />Ringkasan Zakat Per RT</CardTitle></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
