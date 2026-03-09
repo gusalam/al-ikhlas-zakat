@@ -17,8 +17,12 @@ export default function PanitiaDashboard() {
 
   const fetchData = useCallback(async () => {
     await fetchStats();
-    const { data } = await supabase.rpc('get_zakat_per_rt');
-    setRtStats((data as unknown as RtStat[]) || []);
+    const [rtRes, trendRes] = await Promise.all([
+      supabase.rpc('get_zakat_per_rt'),
+      supabase.from('transaksi_zakat').select('tanggal, detail_zakat(jumlah_uang, jenis_zakat)').order('tanggal', { ascending: true }),
+    ]);
+    setRtStats((rtRes.data as unknown as RtStat[]) || []);
+    setZakatTrend(trendRes.data || []);
   }, [fetchStats]);
 
   useEffect(() => {
