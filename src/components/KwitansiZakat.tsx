@@ -153,6 +153,9 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
       a.click();
       document.body.removeChild(a);
       
+      // Cleanup URL setelah delay untuk memastikan download selesai
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      
       toast.success('Kwitansi PDF berhasil diunduh', {
         description: 'Klik untuk membuka file',
         action: {
@@ -160,7 +163,6 @@ export default function KwitansiZakat({ open, onOpenChange, data }: Props) {
           onClick: () => window.open(url, '_blank')
         },
         duration: 5000,
-        onDismiss: () => URL.revokeObjectURL(url),
       });
     } catch (error) {
       console.error('Download kwitansi error:', error);
