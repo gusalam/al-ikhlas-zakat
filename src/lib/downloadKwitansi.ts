@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { saveAs } from 'file-saver';
 import { terbilang } from '@/lib/terbilang';
 import logoImg from '@/assets/logo-masjid.webp';
 import { KwitansiData, DetailZakatItem } from '@/components/KwitansiZakat';
