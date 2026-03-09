@@ -112,6 +112,9 @@ export async function downloadKwitansiPdf(data: KwitansiData) {
     a.click();
     document.body.removeChild(a);
     
+    // Cleanup URL setelah delay untuk memastikan download selesai
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    
     toast.success('Kwitansi PDF berhasil diunduh', {
       description: 'Klik untuk membuka file',
       action: {
@@ -119,7 +122,6 @@ export async function downloadKwitansiPdf(data: KwitansiData) {
         onClick: () => window.open(url, '_blank')
       },
       duration: 5000,
-      onDismiss: () => URL.revokeObjectURL(url),
     });
   } catch (error) {
     console.error('Download kwitansi error:', error);
