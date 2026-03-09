@@ -2,6 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { downloadKwitansiPdf } from './downloadKwitansi';
 import type { KwitansiData } from '@/components/KwitansiZakat';
 
+// Mock Image constructor globally
+global.Image = class {
+  onload: (() => void) | null = null;
+  onerror: ((event: Event) => void) | null = null;
+  src = '';
+  crossOrigin = '';
+  
+  constructor() {
+    setTimeout(() => {
+      if (this.onload) this.onload();
+    }, 0);
+  }
+} as any;
+
 // Mock jsPDF
 vi.mock('jspdf', () => {
   const mockDoc = {
