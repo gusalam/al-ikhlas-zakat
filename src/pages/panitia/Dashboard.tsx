@@ -6,17 +6,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Banknote, Users, Wheat } from 'lucide-react';
 import { useZakatStats } from '@/hooks/useZakatStats';
 import { useCountUp } from '@/hooks/useAnimationLoop';
+import ZakatTrendChart from '@/components/ZakatTrendChart';
 
 interface RtStat { nama_rt: string; total_muzakki: number; total_jiwa_fitrah: number; total_zakat: number; }
 
 export default function PanitiaDashboard() {
   const { stats, fetchStats } = useZakatStats();
   const [rtStats, setRtStats] = useState<RtStat[]>([]);
+  const [zakatTrend, setZakatTrend] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     await fetchStats();
-    const { data } = await supabase.rpc('get_zakat_per_rt');
-    setRtStats((data as unknown as RtStat[]) || []);
+    const [rtRes, trendRes] = await Promise.all([
+      supabase.rpc('get_zakat_per_rt'),
+      supabase.from('transaksi_zakat').select('tanggal, detail_zakat(jumlah_uang, jenis_zakat)').order('tanggal', { ascending: true }),
+    ]);
+    setRtStats((rtRes.data as unknown as RtStat[]) || []);
+    setZakatTrend(trendRes.data || []);
   }, [fetchStats]);
 
   useEffect(() => {
@@ -77,6 +83,11 @@ export default function PanitiaDashboard() {
             </Card>
           );
         })}
+      </div>
+
+      {/* Trend Chart */}
+      <div className="mb-5">
+        <ZakatTrendChart data={zakatTrend} />
       </div>
 
       {/* RT Stats Table */}
