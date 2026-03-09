@@ -13,6 +13,7 @@ interface RtStat { nama_rt: string; total_muzakki: number; total_jiwa_fitrah: nu
 export default function PanitiaDashboard() {
   const { stats, fetchStats } = useZakatStats();
   const [rtStats, setRtStats] = useState<RtStat[]>([]);
+  const [zakatTrend, setZakatTrend] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     await fetchStats();
