@@ -85,6 +85,11 @@ export default function PanitiaDashboard() {
         })}
       </div>
 
+      {/* Trend Chart */}
+      <div className="mb-5">
+        <ZakatTrendChart data={zakatTrend} />
+      </div>
+
       {/* RT Stats Table */}
       {rtStats.length > 0 && (
         <Card>
