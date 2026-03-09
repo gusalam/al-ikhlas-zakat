@@ -100,10 +100,11 @@ const SimpleMoneyField = memo(function SimpleMoneyField({
       </div>
       {enabled && (
         <div className="ml-6">
-          <Label>Jumlah Uang (Rp)</Label>
+          <Label>Jumlah Uang (Rp) <span className="text-destructive">*</span></Label>
           <Input
             type="number"
             inputMode="numeric"
+            min="0"
             defaultValue={value}
             key={`${id}-${enabled}`}
             onBlur={e => onValueChange(e.target.value)}
@@ -140,6 +141,7 @@ const FidyahFields = memo(function FidyahFields({
             <Input
               type="number"
               inputMode="numeric"
+              min="0"
               defaultValue={fidyah.jumlah_uang}
               onBlur={e => onFieldChange('jumlah_uang', e.target.value)}
               onChange={e => onFieldChange('jumlah_uang', e.target.value)}
@@ -151,6 +153,8 @@ const FidyahFields = memo(function FidyahFields({
             <Input
               type="number"
               inputMode="numeric"
+              min="0"
+              step="0.5"
               defaultValue={fidyah.jumlah_beras}
               onBlur={e => onFieldChange('jumlah_beras', e.target.value)}
               onChange={e => onFieldChange('jumlah_beras', e.target.value)}
