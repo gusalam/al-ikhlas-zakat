@@ -286,14 +286,13 @@ export default function Index() {
 
         {/* Distribusi Zakat */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-serif text-xl">Distribusi Zakat</CardTitle>
-            <div className="mt-2">
-              <SearchInput placeholder="Cari nama mustahik..." value={distSearch} onChange={handleDistSearch} />
-            </div>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="font-serif text-xl sm:text-2xl mb-3">Distribusi Zakat</CardTitle>
+            <SearchInput placeholder="Cari nama mustahik..." value={distSearch} onChange={handleDistSearch} />
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2 border-b-2 border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <CardContent className="p-0">
+            {/* Desktop Table Header - hidden on mobile */}
+            <div className="hidden md:grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 px-4 sm:px-6 py-3 border-b-2 border-border text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               <div>Nama Mustahik</div><div>Sumber Zakat</div><div>Jumlah Bantuan</div><div>Tanggal</div>
             </div>
             <InfiniteTickerList
@@ -301,19 +300,34 @@ export default function Index() {
               visibleCount={VISIBLE_ROWS}
               isPaused={distTickerPaused}
               renderRow={(d: any, idx: number) => (
-                <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-3 sm:gap-4 px-3 py-2.5 border-b border-border text-sm leading-relaxed">
-                  <div className="font-medium">
-                    {d.mustahik?.nama || '-'}
+                <>
+                  {/* Mobile Card Layout */}
+                  <div className="md:hidden px-4 py-4 border-b border-border space-y-2">
+                    <div className="font-semibold text-base leading-relaxed break-words">{d.mustahik?.nama || '-'}</div>
                     {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
-                      <span className="block text-xs text-muted-foreground">
+                      <div className="text-sm text-muted-foreground break-words">
                         {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
-                      </span>
+                      </div>
                     )}
+                    <div className="text-base"><span className="text-muted-foreground text-sm">Sumber Zakat:</span> {d.sumber_zakat || '-'}</div>
+                    <div className="text-base font-medium"><span className="text-muted-foreground text-sm font-normal">Jumlah Bantuan:</span> {d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</div>
+                    <div className="text-sm text-muted-foreground">Tanggal: {new Date(d.tanggal).toLocaleDateString('id-ID')}</div>
                   </div>
-                  <div>{d.sumber_zakat || '-'}</div>
-                  <div>{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</div>
-                  <div>{new Date(d.tanggal).toLocaleDateString('id-ID')}</div>
-                </div>
+                  {/* Desktop Table Layout */}
+                  <div className="hidden md:grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 px-4 sm:px-6 py-3 border-b border-border text-base leading-relaxed">
+                    <div className="font-medium break-words">
+                      {d.mustahik?.nama || '-'}
+                      {(d.mustahik?.rt?.nama_rt || d.mustahik?.alamat) && (
+                        <span className="block text-sm text-muted-foreground mt-0.5 break-words">
+                          {[d.mustahik?.rt?.nama_rt, d.mustahik?.alamat].filter(Boolean).join(' — ')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="break-words">{d.sumber_zakat || '-'}</div>
+                    <div className="break-words">{d.jenis_bantuan === 'Beras' ? `${Number(d.jumlah_beras) || 0} Kg Beras` : fmt(Number(d.jumlah))}</div>
+                    <div>{new Date(d.tanggal).toLocaleDateString('id-ID')}</div>
+                  </div>
+                </>
               )}
             />
           </CardContent>
