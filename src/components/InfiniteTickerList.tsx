@@ -47,7 +47,7 @@ export default function InfiniteTickerList({
   const handleResume = useCallback(() => setIsHovered(false), []);
 
   if (data.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">Belum ada data</p>;
+    return <p className="text-center text-muted-foreground text-base py-8 px-4">Belum ada data</p>;
   }
 
   if (data.length <= visibleCount) {
