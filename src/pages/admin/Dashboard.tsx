@@ -26,11 +26,13 @@ export default function AdminDashboard() {
         supabase.from('distribusi').select('jumlah, jumlah_beras, jenis_bantuan, tanggal, mustahik_id, mustahik(nama)').order('tanggal', { ascending: false }).limit(5),
         supabase.from('mustahik').select('kategori'),
         supabase.from('transaksi_zakat').select('nama_muzakki, rt(nama_rt), detail_zakat(jumlah_uang, jumlah_beras)'),
+        supabase.from('transaksi_zakat').select('tanggal, detail_zakat(jumlah_uang, jenis_zakat)').order('tanggal', { ascending: true }),
       ]);
       setRecentZakat(rz.data || []);
       setRecentDistribusi(rd.data || []);
       setMustahikData(mk.data || []);
       setZakatByRt(zrt.data || []);
+      setZakatTrend(trend.data || []);
       await fetchStats();
     } catch (err) {
       toast.error(friendlyError(err));
