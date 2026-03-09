@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import splashLogo from '@/assets/splash-logo.webp';
 
@@ -8,14 +8,16 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [visible, setVisible] = useState(true);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onComplete, 500);
+      setTimeout(() => onCompleteRef.current(), 500);
     }, 2500);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
 
   return (
     <AnimatePresence>
