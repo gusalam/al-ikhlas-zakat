@@ -87,14 +87,19 @@ export default function Index() {
   // ---- Initial load ----
   useEffect(() => {
     const init = async () => {
-      await Promise.all([
-        fetchStats(),
-        fetchZakat(''),
-        fetchDistribusi(''),
-        fetchChartData(),
-      ]);
-      setLastUpdated(new Date());
-      setLoading(false);
+      try {
+        await Promise.all([
+          fetchStats(),
+          fetchZakat(''),
+          fetchDistribusi(''),
+          fetchChartData(),
+        ]);
+        setLastUpdated(new Date());
+      } catch (err) {
+        console.error('Failed to load initial data:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     init();
   }, []);
